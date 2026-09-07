@@ -73,5 +73,5 @@ First milestone: the **data audit** (see [docs/roadmap.md](docs/roadmap.md)).
 
 ## License
 
-TBC — likely AGPL-3.0 for code (aligning with Democracy Club) and CC-BY for
-datasets. Blocked on Campaign Lab clarifying the scrape's license.
+Code: [AGPL-3.0](LICENSE) (aligning with Democracy Club's approach).
+Datasets: CC-BY (TBC — blocked on Campaign Lab clarifying the scrape's license).
