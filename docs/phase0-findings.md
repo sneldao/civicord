@@ -49,7 +49,7 @@ longer resolves.
 
 ## Next
 
-1. Phase 1: Wayback CDX backfill — priority on the 863 non-live sites.
-2. Repurposing analysis on redirect destinations (`final_url` clustering).
-3. Frontend: design direction sign-off → static site build (scaffold exists in
-   `frontend/`).
+1. Current sprint: frontend restyle + ENSv2 identity layer + Subgraph/MCP
+   agent — see [plan.md](plan.md).
+2. Phase 1: Wayback CDX backfill — priority on the 863 non-live sites.
+3. Repurposing analysis on redirect destinations (`final_url` clustering).

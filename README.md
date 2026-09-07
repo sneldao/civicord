@@ -1,106 +1,60 @@
 # Civicord
 
-**A longitudinal tracker of UK political candidate and representative websites.**
+**An open, longitudinal tracker of UK candidate and MP websites** — which sites
+are still live, what content changed, and which claims quietly disappeared.
 
-Civicord turns one-off snapshots of candidate websites into a living, queryable
-dataset: which sites are still live, what content has changed, which pages and
-claims have disappeared, and how messaging shifts after elections, scandals,
-office changes and local events.
+Built on [Campaign Lab's April 2025 candidate-website scrape](https://github.com/CampaignLab/candidate-website-scrape),
+keyed on [Democracy Club](https://candidates.democracyclub.org.uk/) person IDs,
+and extended backwards via the Wayback Machine. The UK has the canonical roster
+and a national election web crawl, but nobody joins them into per-candidate,
+longitudinal change tracking as open data. The US analogues are EDGI's
+web-monitoring and the Library of Congress's Elections Web Archive — see
+[RESEARCH.md](RESEARCH.md).
 
-It builds directly on [Campaign Lab's candidate-website-scrape](https://github.com/CampaignLab/candidate-website-scrape)
-(April 2025 scrape) and extends it forward — and backwards via the Wayback
-Machine — into an open, maintained record of political messaging change.
+## Status
 
-## Why
+**2026-09-07 · Phase 0 complete.** Liveness audit of all 2,375 scraped candidate
+websites: **64% still live ~17 months after the scrape** — 363 domains gone
+entirely, 372 serving HTTP errors, 659 URLs redirect elsewhere. Findings and
+interpretation: [docs/phase0-findings.md](docs/phase0-findings.md). What's
+next: [docs/plan.md](docs/plan.md).
 
-- **The gap:** The US has both halves of this (the Library of Congress's 20-year
-  [US Elections Web Archive](https://www.loc.gov/collections/united-states-elections-web-archive/about-this-collection/)
-  and EDGI's open-source
-  [web-monitoring](https://github.com/edgi-govdata-archiving/web-monitoring)).
-  The UK has a canonical roster ([Democracy Club](https://candidates.democracyclub.org.uk/))
-  and a national election web crawl ([UK Web Archive](https://www.webarchive.org.uk/)),
-  but **no one joins them into per-candidate, longitudinal change tracking** as open data.
-- **The precedent:** "Politicians quietly deleting things" has proven public value
-  (ProPublica's Politwoops archived 500k+ deleted tweets before it shut down).
-- **The maintenance problem:** candidate websites rot, get repurposed, or vanish
-  after elections. Nobody currently maintains a database of *who has what website,
-  and what happened to it*.
+## Development
 
-## What we're building
+```bash
+git clone https://github.com/sneldao/civicord.git && cd civicord
+cp .env.example .env     # keys never committed; gitleaks runs in pre-commit
+pre-commit install       # secrets scanning + ruff lint/format
 
-An open dataset + lightweight product with three layers:
+# Pipeline (Python)
+python -m venv .venv && source .venv/bin/activate
+pip install -e '.[dev]'
+civicord download --full          # Campaign Lab scrape → data/raw/
+civicord ingest                   # → data/out/{candidacies,websites,pages}.csv
+civicord audit --content-check    # liveness pass → data/out/audit_liveness.csv
+civicord report                   # → data/out/audit_report.md
+pytest
 
-1. **Identity layer** — a maintained database of candidates and representatives,
-   keyed on Democracy Club person IDs, joined to their websites over time.
-2. **Archive layer** — snapshots from three sources stitched together per site:
-   Campaign Lab's April 2025 scrape, Wayback Machine CDX history, and our own
-   periodic live crawls.
-3. **Change layer** — text-level diffs between snapshots with significance
-   scoring, topic tags, deleted-claim detection, and per-candidate change logs.
-
-Outputs: searchable archive, per-candidate change timelines, topic-shift analysis
-over time, and alerts for meaningful changes on candidate/MP websites.
+# Frontend (Astro 7, fully static — reads pipeline CSVs at build time)
+cd frontend && npm install && npm run dev
+```
 
 ## Documentation
 
 | Doc | Purpose |
 | --- | --- |
-| [RESEARCH.md](RESEARCH.md) | Adjacent projects, validated gaps, prior art |
-| [docs/architecture.md](docs/architecture.md) | System design, data model, pipeline phases |
-| [docs/roadmap.md](docs/roadmap.md) | Phased delivery plan (audit → MVP → monitoring) |
+| [docs/plan.md](docs/plan.md) | Delivery plan, current sprint, risks & blockers |
+| [docs/architecture.md](docs/architecture.md) | System design, data model, data sources, pipeline |
+| [docs/phase0-findings.md](docs/phase0-findings.md) | Phase 0 liveness-audit baseline (64% live) |
 | [docs/outreach.md](docs/outreach.md) | Partner strategy and draft outreach emails |
-| [docs/data-sources.md](docs/data-sources.md) | Every data source, access method, and license status |
-| [docs/phase0-findings.md](docs/phase0-findings.md) | Phase 0 audit results — the liveness baseline |
+| [RESEARCH.md](RESEARCH.md) | Adjacent projects, validated gaps, prior art |
 
-## Development
+## AI-assisted development
 
-```bash
-git clone https://github.com/your-org/civicord.git
-cd civicord
-cp .env.example .env   # add your keys (never commit .env)
-pre-commit install     # secrets scanning + linting on every commit
-```
-
-- **Secrets:** `.env` is gitignored; gitleaks runs in a pre-commit hook and
-  blocks commits containing credentials.
-- **Linting:** ruff (lint + format) via pre-commit.
-- **Search API:** Parallel Search (key in `.env` as `PARALLEL_AI_API_KEY`).
-
-### Phase 0 pipeline
-
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -e '.[dev]'
-civicord download --full         # Campaign Lab scrape → data/raw/
-civicord ingest                  # → data/out/{candidacies,websites,pages}.csv
-civicord audit --content-check   # liveness pass → data/out/audit_liveness.csv
-civicord report                  # → data/out/audit_report.md
-pytest                           # unit tests
-```
-
-### Frontend (early scaffold)
-
-```bash
-cd frontend
-npm install
-npm run dev    # builds src/data/candidates.json from ../data/out first
-```
-
-Astro 7, fully static — reads the pipeline's CSVs at build time, no backend.
-Currently wireframe-quality; the design direction is being finalised.
-
-## Status
-
-**Phase 0 complete (2026-09-07).** Full liveness audit of the Campaign Lab
-scrape: **1,512 of 2,375 candidate websites (64%) still live** ~17 months
-after the April 2025 scrape — 363 domains fully gone, 372 serving HTTP errors.
-Details and interpretation in
-[docs/phase0-findings.md](docs/phase0-findings.md).
-
-Next up: Phase 1 (Wayback CDX backfill, priority on the 863 non-live sites)
-and the frontend build (Astro scaffold in `frontend/`, design direction
-pending). Partner outreach underway; the scrape's reuse license remains the
-open blocker.
+Development is human-directed with AI coding assistance (Cline): pipeline
+implementation, frontend scaffolding, and docs drafting. Architecture, data
+and design decisions, and project direction are human calls. Noted for
+transparency per hackathon rules.
 
 ## License
 

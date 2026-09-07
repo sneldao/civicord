@@ -90,4 +90,4 @@ conversations should happen **before** writing the diff engine.
 
 | Date | Org | Contact | Outcome |
 | --- | --- | --- | --- |
-| 2026-09-07 | Campaign Lab | In-person visit | Scrape license + metadata questions raised (see roadmap blockers) |
+| 2026-09-07 | Campaign Lab | In-person visit | Scrape license + metadata questions raised (see plan.md blockers) |

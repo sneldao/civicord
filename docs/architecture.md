@@ -82,6 +82,24 @@ REST/Realtime, since it's Postgres underneath).
 - **outputs** — static per-candidate timelines (GitHub Pages, like Campaign
   Lab's), plus bulk Parquet + CDX-style index exports.
 
+## Data sources
+
+| Source | What it gives us | Access | License/status |
+| --- | --- | --- | --- |
+| Campaign Lab candidate-website-scrape | April 2025 per-candidate scrape (per-section text + source URLs) | GitHub repo, public | ⚠️ No license file — clarify before public reuse |
+| Democracy Club Candidates (YNR) | Canonical roster: person IDs (stable across elections), party, constituency, results | Free downloads + API | Open (attribution) |
+| Wayback Machine (CDX API) | Historical snapshots incl. dead domains; `id_` suffix strips toolbar | Free API | Public |
+| UK Web Archive (British Library) | Election web collections (2024 access ⚠️ to verify) | Legal Deposit — mostly reading-room | Restricted |
+| Library of Congress US Elections Web Archive | CDX indexes + metadata.csv — schema template, not data | Bulk download | Public |
+| EDGI web-monitoring | Open-source crawl→version→diff pipeline | GitHub | Open source |
+| End of Term Web Archive | Seed-nomination + consortium operating model | eotarchive.org | Public |
+| British Election Study | 2024 results + candidate data (won/lost cross-check) | Free download | Academic |
+| TheyWorkForYou (mySociety) | MP activity/offices for candidate→MP joins | API | Open |
+| electionresults.uk / Electoral Commission | Result validation | CSV | Open (OGL) |
+
+Access per phase: Phase 0 = scrape + YNR (done) · Phase 1 = Wayback CDX ·
+Phase 2+ = own robots-aware, rate-limited crawler identifying as civicord.
+
 ## What we deliberately did NOT choose (v1)
 
 - **changedetection.io / n8n** — UI-centric products; awkward to drive
