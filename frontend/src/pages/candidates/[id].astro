@@ -1,0 +1,78 @@
+---
+import candidates from "../../data/candidates.json";
+
+export function getStaticPaths() {
+  return candidates.map((person) => ({ params: { id: person.id }, props: { person } }));
+}
+
+const { person } = Astro.props;
+const statusLabel: Record<string, string> = {
+  live: "Live",
+  http_error: "HTTP error",
+  dns_error: "Domain gone",
+  timeout: "Timed out",
+  ssl_error: "SSL error",
+  connection_error: "Connection failed",
+  other_error: "Error",
+};
+---
+
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{person.name} — Civicord</title>
+    <style is:global>
+      body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 1.5rem; color: #1a1a2e; }
+      .crumb { font-size: 0.85rem; } .crumb a { color: #2447d6; }
+      .chip { display: inline-block; background: #eef1fb; border-radius: 6px; padding: 0.15rem 0.6rem; margin: 0 0.3rem 0.3rem 0; font-size: 0.8rem; }
+      .site { border: 1px solid #e5e7ee; border-radius: 8px; padding: 0.9rem 1.1rem; margin: 0.8rem 0; }
+      .badge { padding: 0.15rem 0.55rem; border-radius: 99px; font-size: 0.75rem; font-weight: 600; color: #fff; }
+      .live { background: #1a7f37; } .dns_error, .http_error, .timeout, .ssl_error, .connection_error, .other_error { background: #b42318; }
+      .unknown { background: #6b7280; }
+      table { border-collapse: collapse; width: 100%; font-size: 0.85rem; margin-top: 0.5rem; }
+      th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #e5e7ee; }
+      .muted { color: #666; }
+      pre { background: #f6f7fa; padding: 0.6rem; border-radius: 6px; font-size: 0.8rem; white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <p class="crumb"><a href="/">← All candidates</a></p>
+    <h1>{person.name}</h1>
+    <p>
+      {person.websites.flatMap((w) => w.parties).map((p) => <span class="chip">{p}</span>)}
+      {person.websites.flatMap((w) => w.elections).map((e) => <span class="chip">{e}</span>)}
+    </p>
+
+    <h2>Websites</h2>
+    {person.websites.map((w) => (
+      <div class="site">
+        <span class={`badge ${w.audit?.statusClass ?? "unknown"}`}>{w.audit ? (statusLabel[w.audit.statusClass] ?? w.audit.statusClass) : "not audited"}</span>
+        <a href={w.url} rel="noopener noreferrer">{w.url}</a>
+        {w.audit?.redirected && w.audit.finalUrl && <p class="muted">Redirects to: {w.audit.finalUrl}</p>}
+        {w.audit?.nameFound !== null && w.audit?.nameFound !== undefined && (
+          <p class="muted">Candidate surname {w.audit.nameFound ? "found" : "NOT found"} on current page{w.audit.nameFound === false ? " — site may have been repurposed" : ""}</p>
+        )}
+        {w.audit?.statusCode && <p class="muted">HTTP {w.audit.statusCode}</p>}
+      </div>
+    ))}
+
+    {person.pages.length > 0 && (
+      <>
+        <h2>Archived scrape (April 2025, Campaign Lab)</h2>
+        <table>
+          <thead><tr><th>Page</th><th>Chars</th><th>Opening text</th></tr></thead>
+          <tbody>
+            {person.pages.map((p) => (
+              <tr>
+                <td title={p.key}>{p.key.split("/").pop()}</td>
+                <td>{p.chars.toLocaleString("en-GB")}</td>
+                <td><pre>{p.snippet}…</pre></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </>
+    )}
+  </body>
+</html>

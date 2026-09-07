@@ -1,0 +1,60 @@
+---
+import candidates from "../data/candidates.json";
+
+const websites = candidates.flatMap((c) => c.websites);
+const audited = websites.filter((w) => w.audit);
+const live = audited.filter((w) => w.audit?.statusClass === "live");
+const dead = audited.filter((w) => w.audit?.statusClass === "dns_error");
+const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
+---
+
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Civicord — UK candidate website tracker</title>
+    <style is:global>
+      body { font-family: system-ui, -apple-system, sans-serif; max-width: 1100px; margin: 0 auto; padding: 1.5rem; color: #1a1a2e; }
+      h1 { margin-bottom: 0.25rem; } .tagline { color: #555; margin-top: 0; }
+      .stats { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.25rem 0; }
+      .stat { background: #f4f5fb; border-radius: 8px; padding: 0.75rem 1.25rem; }
+      .stat b { display: block; font-size: 1.6rem; }
+      table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+      th, td { text-align: left; padding: 0.45rem 0.6rem; border-bottom: 1px solid #e5e7ee; }
+      .badge { padding: 0.15rem 0.55rem; border-radius: 99px; font-size: 0.75rem; font-weight: 600; color: #fff; }
+      .live { background: #1a7f37; } .dns_error, .http_error, .timeout, .ssl_error, .connection_error, .other_error { background: #b42318; }
+      .unknown { background: #6b7280; }
+      a { color: #2447d6; }
+    </style>
+  </head>
+  <body>
+    <h1>Civicord</h1>
+    <p class="tagline">Longitudinal tracker of UK political candidate websites · data: Campaign Lab scrape (Apr 2025) + Democracy Club</p>
+
+    <div class="stats">
+      <div class="stat"><b>{candidates.length}</b> candidates</div>
+      <div class="stat"><b>{websites.length}</b> websites</div>
+      <div class="stat"><b>{audited.length ? pct(live.length, audited.length) : "—"}%</b> live (of audited)</div>
+      <div class="stat"><b>{dead.length}</b> domains gone</div>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Candidate</th><th>Party</th><th>Election</th><th>Website</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {candidates.map((c) =>
+          c.websites.map((w) => (
+            <tr>
+              <td><a href={`/candidates/${c.id}`}>{c.name}</a></td>
+              <td>{w.parties.join(", ")}</td>
+              <td>{w.elections[0]}</td>
+              <td><a href={w.url} rel="noopener noreferrer">{w.url.replace(/^https?:\/\//, "").slice(0, 40)}</a></td>
+              <td><span class={`badge ${w.audit?.statusClass ?? "unknown"}`}>{w.audit?.statusClass ?? "not audited"}</span></td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </body>
+</html>

@@ -1,18 +1,19 @@
 # Roadmap
 
-## Phase 0 — Data audit (weeks 1–3) ← *we are here*
+## Phase 0 — Data audit ✅ (done 2026-09-07)
 
 Goal: find out what we actually have before building anything.
 
-- [ ] Ingest Campaign Lab scrape (`assets/json`, `assets/large_json`) into a tidy table
-      — note: scrape date is **April 2025**, not July 2024 as sometimes assumed.
-- [ ] Join against Democracy Club YNR export (person IDs, party, constituency, won/lost)
-      — use BES 2024 constituency+candidate dataset as cross-check.
-- [ ] Liveness pass: HEAD/GET every URL → report live / redirect / dead / repurposed.
-- [ ] Deliverable: **audit report + tidy CSV**. The liveness number alone is a
-      publishable finding and gates everything downstream.
+- [x] Ingest Campaign Lab scrape (`assets/json`) into tidy tables
+      (`civicord download` / `ingest`). Note: scrape date is **April 2025**, not
+      July 2024 as sometimes assumed. Homepage URLs came bundled in
+      `candidates.csv` — no separate YNR join needed for the MVP.
+- [x] Liveness pass: async httpx audit of all 2,375 URLs (HEAD → GET fallback,
+      redirects followed, optional surname content-check) → `data/out/audit_liveness.csv`.
+- [x] Deliverable: [audit report](../data/out/audit_report.md) + findings write-up
+      → **[docs/phase0-findings.md](phase0-findings.md)** — headline: **64% live**.
 
-## Phase 1 — Historical baseline (weeks 3–6)
+## Phase 1 — Historical baseline (weeks 3–6) ← *we are here*
 
 - [ ] Wayback CDX queries per URL (windows: April 2025 scrape ± 30 days; July 2024 GE)
 - [ ] Fetch snapshots with `id_` flag; sha256 + store; record source per snapshot
@@ -25,6 +26,8 @@ Goal: find out what we actually have before building anything.
 - [ ] Diff engine (text-level, significance heuristics)
 - [ ] Fixed policy taxonomy classification per section
 - [ ] Per-candidate change timelines as a static site (GitHub Pages)
+      — scaffold started early: Astro 7 in `frontend/`, reads `data/out/*.csv`
+      at build time; design direction pending sign-off
 - [ ] Bulk Parquet + CDX-style index exports (LoC-style data package)
 - [ ] License resolved (Campaign Lab scrape reuse terms — **open blocker**)
 

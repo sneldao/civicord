@@ -50,6 +50,7 @@ over time, and alerts for meaningful changes on candidate/MP websites.
 | [docs/roadmap.md](docs/roadmap.md) | Phased delivery plan (audit → MVP → monitoring) |
 | [docs/outreach.md](docs/outreach.md) | Partner strategy and draft outreach emails |
 | [docs/data-sources.md](docs/data-sources.md) | Every data source, access method, and license status |
+| [docs/phase0-findings.md](docs/phase0-findings.md) | Phase 0 audit results — the liveness baseline |
 
 ## Development
 
@@ -65,11 +66,41 @@ pre-commit install     # secrets scanning + linting on every commit
 - **Linting:** ruff (lint + format) via pre-commit.
 - **Search API:** Parallel Search (key in `.env` as `PARALLEL_AI_API_KEY`).
 
+### Phase 0 pipeline
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -e '.[dev]'
+civicord download --full         # Campaign Lab scrape → data/raw/
+civicord ingest                  # → data/out/{candidacies,websites,pages}.csv
+civicord audit --content-check   # liveness pass → data/out/audit_liveness.csv
+civicord report                  # → data/out/audit_report.md
+pytest                           # unit tests
+```
+
+### Frontend (early scaffold)
+
+```bash
+cd frontend
+npm install
+npm run dev    # builds src/data/candidates.json from ../data/out first
+```
+
+Astro 7, fully static — reads the pipeline's CSVs at build time, no backend.
+Currently wireframe-quality; the design direction is being finalised.
+
 ## Status
 
-Pre-code. Currently: research complete, architecture drafted, first partner
-conversations underway (Campaign Lab, Democracy Club, UK Web Archive, EDGI).
-First milestone: the **data audit** (see [docs/roadmap.md](docs/roadmap.md)).
+**Phase 0 complete (2026-09-07).** Full liveness audit of the Campaign Lab
+scrape: **1,512 of 2,375 candidate websites (64%) still live** ~17 months
+after the April 2025 scrape — 363 domains fully gone, 372 serving HTTP errors.
+Details and interpretation in
+[docs/phase0-findings.md](docs/phase0-findings.md).
+
+Next up: Phase 1 (Wayback CDX backfill, priority on the 863 non-live sites)
+and the frontend build (Astro scaffold in `frontend/`, design direction
+pending). Partner outreach underway; the scrape's reuse license remains the
+open blocker.
 
 ## License
 
