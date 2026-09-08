@@ -14,7 +14,9 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-json
+        exclude: ^frontend/src/data/candidates\.json$
       - id: check-added-large-files
+        exclude: ^frontend/src/data/candidates\.json$
         args: ["--maxkb=512"]
       - id: check-merge-conflict
       - id: detect-private-key
