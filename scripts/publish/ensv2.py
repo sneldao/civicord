@@ -54,27 +54,30 @@ def calldata(sig: str, *args) -> str:
 
 
 def blast_send(
-    rpc: str, pk: str, from_: str, to: str, sig: str, *args, nonce: int, gas_cache: dict
+    rpcs: list[str], pk: str, from_: str, to: str, sig: str, *args, nonce: int, gas_cache: dict
 ) -> str:
     """Sign offline and fire a raw tx without waiting for the receipt.
 
+    `rpcs` is a list of endpoints, rotated on transient failures.
     Returns the tx hash. Caller tracks nonces; mined in order per account.
     """
     data = calldata(sig, *args)
     key = f"{to}:{sig}"
     if key not in gas_cache:
         est = int(
-            _cast(["estimate", to, data, "--from", from_, "--rpc-url", rpc]).strip(),
+            _cast(["estimate", to, data, "--from", from_, "--rpc-url", rpcs[0]]).strip(),
             16,
         )
         gas_cache[key] = int(est * 1.3) + 20_000
-    for attempt in range(5):
+    last: Exception | None = None
+    for attempt in range(3 * len(rpcs)):
+        url = rpcs[attempt % len(rpcs)]
         try:
             raw = _cast(
                 [
                     "mktx",
                     "--rpc-url",
-                    rpc,
+                    url,
                     "--private-key",
                     pk,
                     "--nonce",
@@ -85,13 +88,21 @@ def blast_send(
                     data,
                 ]
             ).strip()
-            return _cast(["rpc", "eth_sendRawTransaction", raw, "--rpc-url", rpc]).strip()
+            return _cast(["rpc", "eth_sendRawTransaction", raw, "--rpc-url", url]).strip()
         except RuntimeError as e:
-            transient = "timed out" in str(e) or "sending request" in str(e)
-            if not transient or attempt == 4:
+            last = e
+            msg = str(e)
+            transient = (
+                "timed out" in msg
+                or "sending request" in msg
+                or "429" in msg
+                or "rate" in msg.lower()
+            )
+            if not transient or attempt == 3 * len(rpcs) - 1:
                 raise
-            print(f"    rpc hiccup, retry {attempt + 1}/4…", flush=True)
-            time.sleep(3 * (attempt + 1))
+            print(f"    rpc hiccup ({url.split('//')[1][:24]}), rotating…", flush=True)
+            time.sleep(1)
+    raise last  # pragma: no cover
 
 
 def namehash(name: str) -> bytes:

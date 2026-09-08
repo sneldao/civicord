@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -77,6 +78,7 @@ def main() -> None:
     args = ap.parse_args()
 
     rpc = env("RPC_URL")
+    rpcs = [rpc] + [u for u in os.environ.get("RPC_FALLBACKS", "").split(",") if u.strip()]
     pk = env("PK")
     state = json.loads(STATE_FILE.read_text())
     registry, resolver, deployer = state["registry"], state["resolver"], state["deployer"]
@@ -115,7 +117,7 @@ def main() -> None:
                     print("    already registered — refreshing records only", flush=True)
                 else:
                     blast_send(
-                        rpc,
+                        rpcs,
                         pk,
                         deployer,
                         registry,
@@ -153,7 +155,7 @@ def main() -> None:
             for key, value in records:
                 if args.blast:
                     blast_send(
-                        rpc,
+                        rpcs,
                         pk,
                         deployer,
                         resolver,
