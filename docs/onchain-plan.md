@@ -8,11 +8,38 @@ snapshot hashes, and liveness status as text records. All writes go through
 [ENSv2](https://docs.ens.domains/ensv2/overview) Enhanced Access Control — only the
 Civicord key can update a candidate's records.
 
+## Status (updated 2026-09-09)
+
+- **Live parent name: `civicordhq.eth`** (registered 2026-09-08 via the official
+  ETHRegistrar commit-reveal; ETHRegistry owner = deployer). Candidate names are
+  `p{person_id}.civicordhq.eth`. (`civicord.eth` was the original plan; take the
+  shorter alias later if we want it.)
+- **Proxies deployed** (Sepolia): UserRegistry `0x0895…2aa9`, PermissionedResolver
+  `0x340d…ee67` (per-account resolver serving every deployer-owned name).
+  Hierarchy wired: ETHRegistry `setSubregistry("civicordhq", UserRegistry)`.
+  Deployment state (addresses only, no keys) in `scripts/publish/.deployed.json`
+  (gitignored); ABIs cached in `scripts/publish/.abi-cache/`.
+- **Deployer EOA** `0xfa104deA24CbC347100adE461883403bdd79E0eC` — key lives
+  **outside the repo** at `~/.config/civicord/sepolia.key`.
+- **Minting**: blast-mode publisher (`publish.py --blast`) signs offline and fires
+  raw txs without waiting for receipts (~50× faster than sequential `cast send`).
+  Runs rotate across multiple RPCs (Alchemy primary + public fallbacks) and are
+  fully idempotent/resumable: registration skipped when `getResolver(label) != 0`,
+  records skipped when the on-chain `url` text already matches.
+- **Smoke test passed** 2026-09-08: p9/p15/p16 resolve with url + status +
+  `vnd.civicord.person_name` via `text()` reads against the resolver.
+- **Gas reality check** (measured on Sepolia): `register()` ≈ 1.20M gas,
+  `setText()` ≈ 0.30M gas → ~2.1M gas (~0.002 ETH @ ~1 gwei) per candidate for
+  register + 3 texts. Full 2,375 ≈ 4.5 ETH Sepolia. Run currently paused at
+  ~348/2,375 awaiting a deployer top-up — resume is one command and duplicate-free.
+- Manifest (ens_name, person_id, name, url, status, node) written to
+  `data/out/onchain_manifest.csv` at the end of each run.
+
 ## Architecture
 
 ```
-civicord.eth (parent .eth name on Sepolia, owned by deployer)
-  └─ ETHRegistry: setSubregistry("civicord", USER_REGISTRY_PROXY)
+civicordhq.eth (parent .eth name on Sepolia, owned by deployer)
+  └─ ETHRegistry: setSubregistry("civicordhq", USER_REGISTRY_PROXY)
        └── UserRegistry proxy (via VerifiableFactory.deployProxy)
              ├── {person-id}.civicord.eth   × 2,375 (register())
              └── PermissionedResolver proxy (via VerifiableFactory.deployProxy)
@@ -29,8 +56,8 @@ civicord.eth (parent .eth name on Sepolia, owned by deployer)
 
 ## Steps
 
-1. **Parent name** — register `civicord` on Sepolia via the ETHRegistrar (or reuse an
-   existing name owned by the deployer).
+1. **Parent name** — ✅ done: `civicordhq` registered via the ETHRegistrar
+   (commit-reveal), 2026-09-08.
 2. **Registry proxy** — `deployProxy(USER_REGISTRY_IMPL, salt, init)` with salt
    `keccak256(abi.encode("UserRegistry", namehash("civicord.eth"), 0))`; then
    `setSubregistry("civicord", proxy)` on the ETHRegistry.
