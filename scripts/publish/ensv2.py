@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import time
 import urllib.request
 from pathlib import Path
 
@@ -67,22 +68,30 @@ def blast_send(
             16,
         )
         gas_cache[key] = int(est * 1.3) + 20_000
-    raw = _cast(
-        [
-            "mktx",
-            "--rpc-url",
-            rpc,
-            "--private-key",
-            pk,
-            "--nonce",
-            str(nonce),
-            "--gas-limit",
-            str(gas_cache[key]),
-            to,
-            data,
-        ]
-    ).strip()
-    return _cast(["rpc", "eth_sendRawTransaction", raw, "--rpc-url", rpc]).strip()
+    for attempt in range(5):
+        try:
+            raw = _cast(
+                [
+                    "mktx",
+                    "--rpc-url",
+                    rpc,
+                    "--private-key",
+                    pk,
+                    "--nonce",
+                    str(nonce),
+                    "--gas-limit",
+                    str(gas_cache[key]),
+                    to,
+                    data,
+                ]
+            ).strip()
+            return _cast(["rpc", "eth_sendRawTransaction", raw, "--rpc-url", rpc]).strip()
+        except RuntimeError as e:
+            transient = "timed out" in str(e) or "sending request" in str(e)
+            if not transient or attempt == 4:
+                raise
+            print(f"    rpc hiccup, retry {attempt + 1}/4…", flush=True)
+            time.sleep(3 * (attempt + 1))
 
 
 def namehash(name: str) -> bytes:

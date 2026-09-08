@@ -53,6 +53,17 @@ def load_audit() -> list[dict]:
     return sorted(rows.values(), key=lambda e: int(e["person_id"]))
 
 
+def decode_string(hexdata: str) -> str:
+    """Decode an ABI-encoded dynamic `string` return value from cast call."""
+    raw = hexdata.removeprefix("0x")
+    if len(raw) < 192:
+        return ""
+    offset = int(raw[64:128], 16)
+    length = int(raw[128:192], 16)
+    start = (offset) * 2
+    return bytes.fromhex(raw[start : start + length * 2]).decode("utf-8", "replace")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--start", type=int, default=0)
@@ -126,6 +137,14 @@ def main() -> None:
                     else:
                         raise
         if c.get("status"):
+            if args.blast:
+                # resume support: skip if url record already matches
+                current = decode_string(
+                    call(resolver, "text(bytes32,string)", "0x" + node.hex(), "url")
+                )
+                if current == c["sites"][0]:
+                    print("    records already on-chain — skipping", flush=True)
+                    continue
             records = [
                 ("url", c["sites"][0]),
                 ("status", c["status"]),
