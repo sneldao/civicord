@@ -30,6 +30,7 @@ from ensv2 import (
 )
 
 ZERO = "0x0000000000000000000000000000000000000000"
+ZERO32 = "0x" + "00" * 32
 DURATION = str(365 * 24 * 3600)  # 1 year in seconds
 
 
@@ -54,9 +55,10 @@ def main() -> None:
     if int(balance) < 10**15:
         raise SystemExit("Wallet not funded — get Sepolia ETH from a faucet first.")
 
-    available = call(registrar, "isAvailable(string)", label)
+    available_raw = call(registrar, "isAvailable(string)", label)
+    available = int(available_raw, 16) == 1
     print(f"{label}.eth available: {available}")
-    if available.lower() != "true":
+    if not available:
         raise SystemExit(f"{label}.eth is taken — pick another PARENT_LABEL.")
 
     # Probe payment tokens
@@ -98,7 +100,7 @@ def main() -> None:
         ZERO,
         ZERO,
         DURATION,
-        ZERO,
+        ZERO32,
     )
     print(f"Commitment: {commitment}")
     send(rpc, pk, registrar, "commit(bytes32)", commitment)
@@ -118,7 +120,7 @@ def main() -> None:
         ZERO,
         DURATION,
         payment_token,
-        ZERO,
+        ZERO32,
     )
     print(f"Registered {label}.eth — owner should be {deployer}")
 

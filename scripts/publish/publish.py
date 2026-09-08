@@ -22,6 +22,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 from ensv2 import (
+    _cast,
+    blast_send,
+    call,
     env,
     namehash,
     send,
@@ -55,6 +58,11 @@ def main() -> None:
     ap.add_argument("--start", type=int, default=0)
     ap.add_argument("--limit", type=int, default=0, help="0 = no limit")
     ap.add_argument("--records-only", action="store_true")
+    ap.add_argument(
+        "--blast",
+        action="store_true",
+        help="fire raw signed txs without waiting for receipts (~50x faster)",
+    )
     args = ap.parse_args()
 
     rpc = env("RPC_URL")
@@ -70,53 +78,76 @@ def main() -> None:
         candidates = candidates[args.start :]
 
     manifest_rows = []
+    nonce = int(_cast(["nonce", deployer, "--rpc-url", rpc]).strip()) if args.blast else 0
+    gas_cache: dict = {}
     for i, c in enumerate(candidates, start=args.start + 1):
         label = f"p{c['person_id']}"  # ENS labels must start with a letter/digit-safe token
         full = f"{label}.{parent}"
         node = namehash(full)
-        print(f"[{i}] {full} ({c['name']}) status={c.get('status', 'unknown')}")
+        print(f"[{i}] {full} ({c['name']}) status={c.get('status', 'unknown')}", flush=True)
+
+        reg_sig = "register(string,address,address,address,uint256,uint64)"
+        reg_args = (
+            label,
+            deployer,
+            "0x0000000000000000000000000000000000000000",
+            resolver,
+            "0",
+            str(MAX_U64),
+        )
+        txt_sig = "setText(bytes32,string,string)"
 
         if not args.records_only:
-            send(
-                rpc,
-                pk,
-                registry,
-                "register(string,address,address,address,uint256,uint64)",
-                label,
-                deployer,
-                "0x0000000000000000000000000000000000000000",
-                resolver,
-                "0",
-                str(MAX_U64),
-            )
+            if args.blast:
+                # idempotent: skip if this label already has a resolver
+                if int(call(registry, "getResolver(string)", label), 16) != 0:
+                    print("    already registered — refreshing records only", flush=True)
+                else:
+                    blast_send(
+                        rpc,
+                        pk,
+                        deployer,
+                        registry,
+                        reg_sig,
+                        *reg_args,
+                        nonce=nonce,
+                        gas_cache=gas_cache,
+                    )
+                    nonce += 1
+            else:
+                try:
+                    send(rpc, pk, registry, reg_sig, *reg_args)
+                except RuntimeError as e:
+                    if "LabelAlreadyRegistered" in str(e):
+                        print(
+                            "    already registered — skipping registration, refreshing records",
+                            flush=True,
+                        )
+                    else:
+                        raise
         if c.get("status"):
-            send(
-                rpc,
-                pk,
-                resolver,
-                "setText(bytes32,string,string)",
-                "0x" + node.hex(),
-                "url",
-                c["sites"][0],
-            )
-            send(
-                rpc,
-                pk,
-                resolver,
-                "setText(bytes32,string,string)",
-                "0x" + node.hex(),
-                "status",
-                c["status"],
-            )
-            send(
-                rpc,
-                pk,
-                resolver,
-                "setText(bytes32,string,string)",
-                "0x" + node.hex(),
-                "vnd.civicord.person_name",
-                c["name"],
-            )
+            records = [
+                ("url", c["sites"][0]),
+                ("status", c["status"]),
+                ("vnd.civicord.person_name", c["name"]),
+            ]
+            for key, value in records:
+                if args.blast:
+                    blast_send(
+                        rpc,
+                        pk,
+                        deployer,
+                        resolver,
+                        txt_sig,
+                        "0x" + node.hex(),
+                        key,
+                        value,
+                        nonce=nonce,
+                        gas_cache=gas_cache,
+                    )
+                    nonce += 1
+                else:
+                    send(rpc, pk, resolver, txt_sig, "0x" + node.hex(), key, value)
         manifest_rows.append(
             {
                 "ens_name": full,

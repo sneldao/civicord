@@ -25,6 +25,8 @@ data/
 Thumbs.db
 .idea/
 .vscode/
-PUBLISH_/Users/udingethe/Dev/civicord/scripts/publish/.deployed.json
+# Sepolia deployer key lives OUTSIDE the repo at ~/.config/civicord/
+scripts/publish/.deployed.json
 
 # Sepolia deployer key (stored OUTSIDE repo at ~/.config/civicord/)
+scripts/publish/.abi-cache/
