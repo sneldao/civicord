@@ -1,5 +1,6 @@
 ---
 import candidates from "../data/candidates.json";
+import { ClientRouter } from "astro:transitions";
 import "../styles/global.css";
 
 const websites = candidates.flatMap((c) => c.websites);
@@ -39,8 +40,10 @@ const statusLabels: Record<string, string> = {
     <meta name="twitter:card" content="summary" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Civicord — a public record of UK candidate websites</title>
+    <ClientRouter />
   </head>
-  <body>
+  <body class="reveal-root">
+    <div class="progress" aria-hidden="true"><b id="progress-bar"></b></div>
     <header class="masthead">
       <h1 class="wordmark">Civicord<span class="dot">.</span></h1>
       <p class="lede">
@@ -113,11 +116,12 @@ const statusLabels: Record<string, string> = {
         <tr><th>Candidate</th><th>Party</th><th>Election</th><th>Website</th><th>Status</th></tr>
       </thead>
       <tbody>
-        {candidates.flatMap((c) =>
+        {candidates.flatMap((c, ci) =>
           c.websites.map((w) => {
             const st = w.audit?.statusClass ?? "not_audited";
             return (
               <tr
+                style={`--row-i:${ci % 14}`}
                 data-status={st}
                 data-haystack={`${c.name} ${w.parties.join(" ")} ${w.elections[0] ?? ""} ${w.url}`.toLowerCase()}
               >
@@ -169,6 +173,31 @@ const statusLabels: Record<string, string> = {
       q.addEventListener("input", apply);
       status.addEventListener("change", apply);
       apply();
+
+      // Scroll progress line
+      const bar = document.getElementById("progress-bar")!;
+      const onScroll = () => {
+        const max = document.documentElement.scrollHeight - innerHeight;
+        bar.style.width = `${max > 0 ? Math.min(100, (scrollY / max) * 100) : 0}%`;
+      };
+      addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+
+      // Stat count-up (skipped for reduced-motion users)
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        for (const el of document.querySelectorAll<HTMLElement>(".stat b")) {
+          const target = Number(el.textContent?.replace(/,/g, ""));
+          if (!Number.isFinite(target) || el.textContent?.includes("%")) continue;
+          const t0 = performance.now();
+          const tick = (t: number) => {
+            const p = Math.min(1, (t - t0) / 900);
+            const eased = 1 - Math.pow(1 - p, 3);
+            el.textContent = Math.round(target * eased).toLocaleString("en-GB");
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }
+      }
     </script>
   </body>
 </html>

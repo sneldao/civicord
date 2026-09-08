@@ -127,3 +127,27 @@ copy before chrome, verification one click away everywhere. Viral hook is the
 content itself ("which MP sites now sell insurance") — OG tags on every candidate
 page make each record individually shareable. Motion stays CSS-subtle; no JS
 frameworks added.
+
+## Frontend craft pass (Tue 9 late) — Astro primitives, Sylva discipline
+
+Applying the MengTo Skills/Sylva craft bar: staged entrances, one shared motion
+language, self-contained output, explicit reduced-motion path, zero runtime
+network requests. Translated to Astro's first-party primitives:
+
+- `<ClientRouter />` view transitions on both layouts — cross-page navigation
+  feels continuous instead of a hard reload.
+- `prefetch: true` — candidate links hydrate on hover; 2,375 static pages feel instant.
+- `@astrojs/sitemap` — `sitemap-index.xml` for all 2,376 pages (SEO/discovery primitive).
+- Entrance choreography: CSS-only staggered reveal (masthead -> stats -> how ->
+  ledger), first 14 ledger rows settle with a 24ms cascade; fully disabled under
+  `prefers-reduced-motion`.
+- Stat count-up with cubic ease-out; skipped entirely for reduced-motion users.
+- Scroll progress line over the ledger (fixed 2px recording-red rule).
+- Print stylesheet — a public record must survive being printed; chrome hidden,
+  rows kept whole.
+- `::selection` in recording red; OG/Twitter cards already per-page.
+
+Constraints kept: no JS frameworks, no client JS beyond the existing filter +
+three small vanilla scripts, no runtime data fetching. The site remains fully
+static — the Sylva lesson is craft through choreography and typography, not
+dependencies.

@@ -1,5 +1,6 @@
 ---
 import candidates from "../../data/candidates.json";
+import { ClientRouter } from "astro:transitions";
 import "../../styles/global.css";
 
 export function getStaticPaths() {
@@ -37,8 +38,9 @@ const resolverUrl =
     <meta name="twitter:card" content="summary" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{person.name} — Civicord</title>
+    <ClientRouter />
   </head>
-  <body>
+  <body class="reveal-root">
     <p class="crumb"><a href="/">← Public record index</a></p>
 
     <header class="record-head">
