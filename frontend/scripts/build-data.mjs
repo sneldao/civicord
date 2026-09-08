@@ -41,11 +41,29 @@ const pages = readCsv("pages.csv", { required: false });
 
 const auditByUrl = new Map(auditRows.map((r) => [r.url, r]));
 
+// Keep the "Archived scrape" evidence table sane: the raw scrape has ~72k
+// pages (154M chars). Committing/rendering all of them would bloat the repo
+// (~29MB JSON) and the built HTML (~40MB dist). Cap at the 8 most substantial
+// pages per candidate, 120-char snippets — enough to evidence the capture.
+const MAX_PAGES_PER_PERSON = 8;
+const SNIPPET_CHARS = 120;
+
+// Slice without splitting UTF-16 surrogate pairs (emoji) — a lone surrogate
+// would be escaped into the JSON and break Vite's JSON parse at build time.
+const clip = (s, n) =>
+  s
+    .slice(0, n)
+    .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, "");
+
 const pagesByPerson = new Map();
 for (const p of pages) {
   const list = pagesByPerson.get(p.person_id) ?? [];
-  list.push({ key: p.page_key, chars: Number(p.char_count), snippet: (p.text || "").slice(0, 240) });
+  list.push({ key: p.page_key, chars: Number(p.char_count), snippet: clip(p.text || "", SNIPPET_CHARS) });
   pagesByPerson.set(p.person_id, list);
+}
+for (const [pid, list] of pagesByPerson) {
+  list.sort((a, b) => b.chars - a.chars);
+  pagesByPerson.set(pid, list.slice(0, MAX_PAGES_PER_PERSON));
 }
 
 const persons = new Map();
