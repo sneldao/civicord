@@ -60,7 +60,7 @@ Substreams is blockchain ETL; web-archive data can't flow through it.
 | Day | Deliverable |
 | --- | --- |
 | Mon 8 | ✅ Frontend restyle — "Public Record" direction (pending sign-off) — the demo surface |
-| Tue 9 | 🔄 ENSv2 registry + subname mint + `civicord publish` — parent `civicordhq.eth` live, proxies deployed, blast-mode publisher shipped, 348/2,375 minted; paused on deployer gas top-up |
+| Tue 9 | 🔄 ENSv2 registry + subname mint + `civicord publish` — parent `civicord.eth` live (civicordhq alias), proxies deployed, blast-mode publisher shipped, 348/2,375 minted; paused on deployer gas top-up |
 | Wed 10 | Subgraph in Subgraph Studio + MCP agent demo (go/no-go vs fallback) |
 | Thu 11 | Bazantic gateway + Recipe |
 | Fri 12 | Demo video (2–4 min), FEEDBACK.md per sponsor, AI-attribution pass |

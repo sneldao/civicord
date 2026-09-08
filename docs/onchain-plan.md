@@ -10,10 +10,13 @@ Civicord key can update a candidate's records.
 
 ## Status (updated 2026-09-09)
 
-- **Live parent name: `civicordhq.eth`** (registered 2026-09-08 via the official
-  ETHRegistrar commit-reveal; ETHRegistry owner = deployer). Candidate names are
-  `p{person_id}.civicordhq.eth`. (`civicord.eth` was the original plan; take the
-  shorter alias later if we want it.)
+- **Live parent name: `civicord.eth`** (registered 2026-09-09 via the official
+  ETHRegistrar commit-reveal; `civicordhq.eth` was registered 2026-09-08 during a
+  first-pass — both labels point at the same UserRegistry, so candidate labels
+  resolve under both trees). Candidate names are `p{person_id}.civicord.eth`.
+  Text records are keyed by full node, so records published under the old
+  `civicordhq` nodes are being refreshed under `civicord` nodes as the run
+  resumes.
 - **Proxies deployed** (Sepolia): UserRegistry `0x0895…2aa9`, PermissionedResolver
   `0x340d…ee67` (per-account resolver serving every deployer-owned name).
   Hierarchy wired: ETHRegistry `setSubregistry("civicordhq", UserRegistry)`.
@@ -31,15 +34,15 @@ Civicord key can update a candidate's records.
 - **Gas reality check** (measured on Sepolia): `register()` ≈ 1.20M gas,
   `setText()` ≈ 0.30M gas → ~2.1M gas (~0.002 ETH @ ~1 gwei) per candidate for
   register + 3 texts. Full 2,375 ≈ 4.5 ETH Sepolia. Run currently paused at
-  ~348/2,375 awaiting a deployer top-up — resume is one command and duplicate-free.
+  ~348/2,375 awaiting more faucet ETH — resume is one command and duplicate-free.
 - Manifest (ens_name, person_id, name, url, status, node) written to
   `data/out/onchain_manifest.csv` at the end of each run.
 
 ## Architecture
 
 ```
-civicordhq.eth (parent .eth name on Sepolia, owned by deployer)
-  └─ ETHRegistry: setSubregistry("civicordhq", USER_REGISTRY_PROXY)
+civicord.eth (parent .eth name on Sepolia, owned by deployer; civicordhq.eth aliased)
+  └─ ETHRegistry: setSubregistry("civicord", USER_REGISTRY_PROXY)
        └── UserRegistry proxy (via VerifiableFactory.deployProxy)
              ├── {person-id}.civicord.eth   × 2,375 (register())
              └── PermissionedResolver proxy (via VerifiableFactory.deployProxy)
@@ -56,8 +59,9 @@ civicordhq.eth (parent .eth name on Sepolia, owned by deployer)
 
 ## Steps
 
-1. **Parent name** — ✅ done: `civicordhq` registered via the ETHRegistrar
-   (commit-reveal), 2026-09-08.
+1. **Parent name** — ✅ done: `civicord.eth` registered via the ETHRegistrar
+   (commit-reveal), 2026-09-09 — canonical. `civicordhq.eth` (2026-09-08) kept
+   as an alias pointing at the same UserRegistry.
 2. **Registry proxy** — `deployProxy(USER_REGISTRY_IMPL, salt, init)` with salt
    `keccak256(abi.encode("UserRegistry", namehash("civicord.eth"), 0))`; then
    `setSubregistry("civicord", proxy)` on the ETHRegistry.

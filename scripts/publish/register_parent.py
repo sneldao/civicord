@@ -130,8 +130,18 @@ def main() -> None:
         state = json.loads(state_file.read_text())
         registry_proxy = state.get("registry")
         if registry_proxy:
-            send(rpc, pk, eth_registry, "setSubregistry(string,address)", label, registry_proxy)
-            print(f"setSubregistry('{label}', {registry_proxy}) done — hierarchy wired.")
+            # ETHRegistry only exposes setSubregistry(uint256,address) — resolve
+            # the label's token id first (the string overload reverts).
+            token_id = call(eth_registry, "findTokenId(string)", label)
+            send(
+                rpc,
+                pk,
+                eth_registry,
+                "setSubregistry(uint256,address)",
+                token_id,
+                registry_proxy,
+            )
+            print(f"setSubregistry({label} -> {registry_proxy}) done — hierarchy wired.")
     else:
         print("NOTE: deploy.py not run yet — run it, then setSubregistry as printed there.")
 
