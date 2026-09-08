@@ -10,6 +10,19 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.resolve(here, "../../data/out");
 const outDir = path.resolve(here, "../src/data");
 
+// Deploy environments (e.g. Vercel) have no pipeline outputs — the pipeline is
+// Python-only and `data/` is gitignored. If a committed candidates.json exists,
+// deploy with that instead of failing.
+if (!existsSync(dataDir)) {
+  const committed = path.join(outDir, "candidates.json");
+  if (existsSync(committed)) {
+    console.log("No data/out CSVs — deploying with the committed src/data/candidates.json");
+    process.exit(0);
+  }
+  console.error(`Missing ${dataDir}. From the repo root run: .venv/bin/civicord ingest`);
+  process.exit(1);
+}
+
 function readCsv(name, { required = true } = {}) {
   const file = path.join(dataDir, name);
   if (!existsSync(file)) {

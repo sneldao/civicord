@@ -39,9 +39,10 @@ pytest
 cd frontend && npm install && npm run dev
 ```
 
-Note: the frontend build reads `data/out/*.csv` produced by the pipeline, so a
-fresh clone needs `download --full` + `ingest` (+ `audit` for status badges)
-before `npm run build`/`dev` will succeed.
+The frontend works out of the box on a fresh clone: a prebuilt
+`frontend/src/data/candidates.json` snapshot is committed and used whenever
+`data/out/*.csv` is absent (e.g. Vercel deploys). Run the pipeline first if you
+want the frontend rebuilt from your own audit outputs.
 
 ## Documentation
 
