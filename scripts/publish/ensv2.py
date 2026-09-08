@@ -168,8 +168,15 @@ def fetch_deployment(json_name: str) -> dict:
 
 
 def call(to: str, signature: str, *args: str) -> str:
-    rpc = os.environ.get("RPC_URL", "https://ethereum-sepolia-rpc.publicnode.com")
-    return _cast(["call", to, signature, *args, "--rpc-url", rpc])
+    endpoints = [os.environ.get("RPC_URL", "https://ethereum-sepolia-rpc.publicnode.com")]
+    endpoints += [u for u in os.environ.get("RPC_FALLBACKS", "").split(",") if u.strip()]
+    last: Exception | None = None
+    for url in endpoints:
+        try:
+            return _cast(["call", to, signature, *args, "--rpc-url", url])
+        except RuntimeError as e:
+            last = e
+    raise last  # pragma: no cover
 
 
 def send(rpc: str, pk: str, to: str, signature: str, *args: str, async_tx: bool = False) -> str:
