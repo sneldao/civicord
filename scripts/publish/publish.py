@@ -139,6 +139,7 @@ def main() -> None:
                     else:
                         raise
         if c.get("status"):
+            already_onchain = False
             if args.blast:
                 # resume support: skip if url record already matches
                 current = decode_string(
@@ -146,29 +147,33 @@ def main() -> None:
                 )
                 if current == c["sites"][0]:
                     print("    records already on-chain — skipping", flush=True)
-                    continue
+                    already_onchain = True
             records = [
                 ("url", c["sites"][0]),
                 ("status", c["status"]),
                 ("vnd.civicord.person_name", c["name"]),
             ]
-            for key, value in records:
-                if args.blast:
-                    blast_send(
-                        rpcs,
-                        pk,
-                        deployer,
-                        resolver,
-                        txt_sig,
-                        "0x" + node.hex(),
-                        key,
-                        value,
-                        nonce=nonce,
-                        gas_cache=gas_cache,
-                    )
-                    nonce += 1
-                else:
-                    send(rpc, pk, resolver, txt_sig, "0x" + node.hex(), key, value)
+            # NOTE: manifest rows are written for every candidate, including
+            # resume-skipped ones — the frontend's Public Record blocks are
+            # manifest-driven, so skipped candidates must still appear.
+            if not already_onchain:
+                for key, value in records:
+                    if args.blast:
+                        blast_send(
+                            rpcs,
+                            pk,
+                            deployer,
+                            resolver,
+                            txt_sig,
+                            "0x" + node.hex(),
+                            key,
+                            value,
+                            nonce=nonce,
+                            gas_cache=gas_cache,
+                        )
+                        nonce += 1
+                    else:
+                        send(rpc, pk, resolver, txt_sig, "0x" + node.hex(), key, value)
         manifest_rows.append(
             {
                 "ens_name": full,
