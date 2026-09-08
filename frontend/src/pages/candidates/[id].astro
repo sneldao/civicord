@@ -1,12 +1,13 @@
 ---
 import candidates from "../../data/candidates.json";
+import "../../styles/global.css";
 
 export function getStaticPaths() {
   return candidates.map((person) => ({ params: { id: person.id }, props: { person } }));
 }
 
 const { person } = Astro.props;
-const statusLabel: Record<string, string> = {
+const statusLabels: Record<string, string> = {
   live: "Live",
   http_error: "HTTP error",
   dns_error: "Domain gone",
@@ -15,53 +16,68 @@ const statusLabel: Record<string, string> = {
   connection_error: "Connection failed",
   other_error: "Error",
 };
+const parties = [...new Set(person.websites.flatMap((w) => w.parties))];
+const elections = [...new Set(person.websites.flatMap((w) => w.elections))];
 ---
 
 <html lang="en-GB">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content={`Civicord record for candidate ${person.name}: website status, redirects, and the archived April 2025 Campaign Lab scrape.`}
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{person.name} — Civicord</title>
-    <style is:global>
-      body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 1.5rem; color: #1a1a2e; }
-      .crumb { font-size: 0.85rem; } .crumb a { color: #2447d6; }
-      .chip { display: inline-block; background: #eef1fb; border-radius: 6px; padding: 0.15rem 0.6rem; margin: 0 0.3rem 0.3rem 0; font-size: 0.8rem; }
-      .site { border: 1px solid #e5e7ee; border-radius: 8px; padding: 0.9rem 1.1rem; margin: 0.8rem 0; }
-      .badge { padding: 0.15rem 0.55rem; border-radius: 99px; font-size: 0.75rem; font-weight: 600; color: #fff; }
-      .live { background: #1a7f37; } .dns_error, .http_error, .timeout, .ssl_error, .connection_error, .other_error { background: #b42318; }
-      .unknown { background: #6b7280; }
-      table { border-collapse: collapse; width: 100%; font-size: 0.85rem; margin-top: 0.5rem; }
-      th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #e5e7ee; }
-      .muted { color: #666; }
-      pre { background: #f6f7fa; padding: 0.6rem; border-radius: 6px; font-size: 0.8rem; white-space: pre-wrap; }
-    </style>
   </head>
   <body>
-    <p class="crumb"><a href="/">← All candidates</a></p>
-    <h1>{person.name}</h1>
-    <p>
-      {person.websites.flatMap((w) => w.parties).map((p) => <span class="chip">{p}</span>)}
-      {person.websites.flatMap((w) => w.elections).map((e) => <span class="chip">{e}</span>)}
-    </p>
+    <p class="crumb"><a href="/">← Public record index</a></p>
 
-    <h2>Websites</h2>
-    {person.websites.map((w) => (
-      <div class="site">
-        <span class={`badge ${w.audit?.statusClass ?? "unknown"}`}>{w.audit ? (statusLabel[w.audit.statusClass] ?? w.audit.statusClass) : "not audited"}</span>
-        <a href={w.url} rel="noopener noreferrer">{w.url}</a>
-        {w.audit?.redirected && w.audit.finalUrl && <p class="muted">Redirects to: {w.audit.finalUrl}</p>}
-        {w.audit?.nameFound !== null && w.audit?.nameFound !== undefined && (
-          <p class="muted">Candidate surname {w.audit.nameFound ? "found" : "NOT found"} on current page{w.audit.nameFound === false ? " — site may have been repurposed" : ""}</p>
-        )}
-        {w.audit?.statusCode && <p class="muted">HTTP {w.audit.statusCode}</p>}
-      </div>
-    ))}
+    <header class="record-head">
+      <h1>{person.name}</h1>
+      <ul class="chips">
+        {parties.map((p) => <li>{p}</li>)}
+        {elections.map((e) => <li>{e}</li>)}
+      </ul>
+    </header>
+
+    <section class="entries">
+      <h2>Websites</h2>
+      {person.websites.map((w) => {
+        const st = w.audit?.statusClass ?? "unknown";
+        return (
+          <article class={`entry st-${st}`}>
+            <header>
+              <span class={`badge ${st}`}>
+                {w.audit ? (statusLabels[w.audit.statusClass] ?? w.audit.statusClass) : "Not audited"}
+              </span>
+              <a class="site-url" href={w.url} rel="noopener noreferrer">{w.url}</a>
+            </header>
+            <ul class="facts">
+              {w.audit?.statusCode && <li>HTTP {w.audit.statusCode} on 2026-09-07</li>}
+              {w.audit?.redirected && w.audit.finalUrl && (
+                <li class="fact-redir">
+                  ↳ now redirects to <a href={w.audit.finalUrl} rel="noopener noreferrer">{w.audit.finalUrl}</a>
+                </li>
+              )}
+              {w.audit?.nameFound === true && <li>Candidate surname still present on the current page</li>}
+              {w.audit?.nameFound === false && (
+                <li class="fact-warn">Surname absent from the current page — site may have been repurposed</li>
+              )}
+            </ul>
+          </article>
+        );
+      })}
+    </section>
 
     {person.pages.length > 0 && (
-      <>
-        <h2>Archived scrape (April 2025, Campaign Lab)</h2>
+      <section class="specimens">
+        <h2>Archived scrape — April 2025 (Campaign Lab)</h2>
         <table>
-          <thead><tr><th>Page</th><th>Chars</th><th>Opening text</th></tr></thead>
+          <thead>
+            <tr><th>Page</th><th>Chars</th><th>Opening text</th></tr>
+          </thead>
           <tbody>
             {person.pages.map((p) => (
               <tr>
@@ -72,7 +88,14 @@ const statusLabel: Record<string, string> = {
             ))}
           </tbody>
         </table>
-      </>
+      </section>
     )}
+
+    <footer>
+      <p>
+        Civicord record · snapshots and hashes to be published onchain via ENSv2 ·
+        <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
+      </p>
+    </footer>
   </body>
 </html>
