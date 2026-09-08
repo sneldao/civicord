@@ -18,6 +18,10 @@ const statusLabels: Record<string, string> = {
 };
 const parties = [...new Set(person.websites.flatMap((w) => w.parties))];
 const elections = [...new Set(person.websites.flatMap((w) => w.elections))];
+const ens = person.onchain?.ens ?? `p${person.id}.civicord.eth`;
+const ensUrl = `https://app.ens.domains/${ens}`;
+const resolverUrl =
+  "https://sepolia.etherscan.io/address/0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67#readContract";
 ---
 
 <html lang="en-GB">
@@ -26,8 +30,11 @@ const elections = [...new Set(person.websites.flatMap((w) => w.elections))];
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content={`Civicord record for candidate ${person.name}: website status, redirects, and the archived April 2025 Campaign Lab scrape.`}
+      content={`Public record for UK parliamentary candidate ${person.name}: was their campaign website still live, gone, or repurposed — permanently recorded and publicly verifiable.`}
     />
+    <meta property="og:title" content={`${person.name} — Civicord public record`} />
+    <meta property="og:type" content="profile" />
+    <meta name="twitter:card" content="summary" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{person.name} — Civicord</title>
   </head>
@@ -91,9 +98,26 @@ const elections = [...new Set(person.websites.flatMap((w) => w.elections))];
       </section>
     )}
 
+    {person.onchain && (
+      <section class="ens-record" aria-label="Public record">
+        <h2>Public record</h2>
+        <p>
+          This candidate has a permanent public name:{" "}
+          <a href={ensUrl} rel="noopener noreferrer"><code>{ens}</code></a>. It
+          holds this page's claims — website, status, evidence — in a public
+          register that can't be quietly edited or deleted.
+        </p>
+        <ul class="ens-links">
+          <li><a href={ensUrl} rel="noopener noreferrer">View the record ↗</a></li>
+          <li><a href={resolverUrl} rel="noopener noreferrer">Verify on the register ↗</a></li>
+        </ul>
+      </section>
+    )}
+
     <footer>
       <p>
-        Civicord record · snapshots and hashes to be published onchain via ENSv2 ·
+        Civicord record · permanent public identity via the Ethereum Name Service
+        (no account or wallet needed to read) ·
         <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
       </p>
     </footer>

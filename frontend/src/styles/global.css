@@ -66,6 +66,91 @@ a:hover { text-decoration-color: var(--accent); color: var(--accent); }
   font-size: 1.05rem;
   margin: 0.6rem 0 0;
 }
+.lede {
+  max-width: 34em;
+  font-family: var(--serif);
+  font-size: clamp(1.15rem, 2.6vw, 1.45rem);
+  line-height: 1.4;
+  margin: 0.8rem 0 0;
+}
+
+/* How it works */
+.how {
+  margin: 1.6rem 0 0.4rem;
+  border-top: 2px solid var(--ink);
+  padding-top: 0.9rem;
+}
+.how h2 {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  margin: 0 0 0.5rem;
+}
+.how ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+.how li {
+  font-size: 0.86rem;
+  color: var(--muted);
+  border-left: 3px solid var(--rule);
+  padding-left: 0.7rem;
+  counter-increment: step;
+}
+.how li b { color: var(--ink); display: block; }
+.how li code {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+}
+.how { counter-reset: step; }
+
+.ens-note {
+  margin: 0.4rem 0 1.2rem;
+  font-size: 0.88rem;
+}
+.ens-note b { font-variant-numeric: tabular-nums; }
+
+/* Candidate page: public-record section */
+.ens-record {
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+  padding: 0.9rem 1.1rem;
+  margin: 1.8rem 0 0;
+  background: var(--paper-deep);
+}
+.ens-record h2 {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  margin: 0 0 0.4rem;
+}
+.ens-record p { margin: 0 0 0.5rem; font-size: 0.9rem; color: var(--muted); }
+.ens-record code {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+.ens-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.4rem;
+  font-size: 0.88rem;
+}
+.ens-links a { color: var(--accent); font-weight: 600; }
+
+/* Mobile: ledger tables scroll sideways instead of crushing */
+@media (max-width: 640px) {
+  body { font-size: 14px; }
+  .filterbar { gap: 0.5rem; }
+  .table-wrap { overflow-x: auto; }
+  .specimens pre { max-height: 10rem; overflow-y: auto; }
+}
 
 /* Stat ledger */
 .stats {

@@ -58,8 +58,17 @@ for (const w of websites) {
       : null,
   });
 }
+// On-chain ENS records (optional — written at the end of a publish run)
+const manifestRows = readCsv("onchain_manifest.csv", { required: false });
+const onchainByPerson = new Map();
+for (const r of manifestRows) {
+  if (r.person_id && r.ens_name) {
+    onchainByPerson.set(r.person_id, { ens: r.ens_name, status: r.status || null });
+  }
+}
 for (const person of persons.values()) {
   person.pages = pagesByPerson.get(person.id) ?? [];
+  person.onchain = onchainByPerson.get(person.id) ?? null;
 }
 
 const data = [...persons.values()].sort((a, b) => a.name.localeCompare(b.name));

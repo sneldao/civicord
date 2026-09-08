@@ -93,3 +93,37 @@ Substreams is blockchain ETL; web-archive data can't flow through it.
 | UKWA content is reading-room-only (Legal Deposit) | Verify 2024 election collection access model (outreach in progress) |
 | GDPR on raw HTML | Publish derived text/diffs only; raw HTML stays access-controlled |
 | Long-term maintenance burden | Partner-first; design for batch + static outputs |
+
+## Stakeholders & delivery (added Tue 9 evening)
+
+Audience-first framing for all frontend content, in priority order:
+
+1. **Researchers & journalists** — need *proof*, not a dashboard: every claim links
+   to the tamper-evident public record (ENS name + register link). Screenshot-grade
+   evidence, citable.
+2. **Candidates & parties** — represented neutrally: "recorded", never judged.
+   The PermissionedResolver write roles already allow a candidate to later claim
+   and correct their own name.
+3. **Civic-tech adopters** (mySociety, Democracy Club, Campaign Lab) — reusable
+   identifiers (Democracy Club person IDs) and an open pipeline, not a one-off demo.
+4. **Sponsors** — ENS as identity infrastructure; same surface as #1.
+5. **General public** — one glanceable idea; they never need to see the mechanics.
+
+Language rules: ban "blockchain/web3/mint" in user-facing copy — say "permanent
+record", "public register", "verify". Reading requires no wallet or account.
+
+Delivered (frontend):
+- Homepage: why-it-exists lede, three-step "How it works" (Collect / Record /
+  Verify), live "N of 2,375 on record" counter, OG/twitter meta for shares.
+- Candidate pages (2,375 static pages): "Public record" block with the candidate's
+  `p{id}.civicord.eth`, link to the record on app.ens.domains, and a verify link
+  to the resolver's read contract on Etherscan. Shown only once minted (manifest-driven).
+- `build-data.mjs` ingests `data/out/onchain_manifest.csv` (optional) into
+  `candidates.json` as `person.onchain {ens,status}`.
+- Mobile: ledger tables scroll, filter bar tightens, snippets clamp.
+
+Delivery/UX principles going forward: static-first (build-time data, no backend),
+copy before chrome, verification one click away everywhere. Viral hook is the
+content itself ("which MP sites now sell insurance") — OG tags on every candidate
+page make each record individually shareable. Motion stays CSS-subtle; no JS
+frameworks added.

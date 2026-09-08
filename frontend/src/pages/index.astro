@@ -7,6 +7,7 @@ const audited = websites.filter((w) => w.audit);
 const live = audited.filter((w) => w.audit?.statusClass === "live");
 const dead = audited.filter((w) => w.audit?.statusClass === "dns_error");
 const redirected = audited.filter((w) => w.audit?.redirected);
+const onchain = candidates.filter((c) => c.onchain);
 const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
 
 const statusLabels: Record<string, string> = {
@@ -27,18 +28,29 @@ const statusLabels: Record<string, string> = {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Civicord — an open, longitudinal public record of UK candidate websites: which are still live, which are gone, and what happened to them."
+      content="When the election ended, candidate websites began to disappear. Civicord gives each UK parliamentary candidate a permanent, publicly verifiable record — who they were, what they published, and whether it's still there."
     />
+    <meta property="og:title" content="Civicord — the public record candidates can't delete" />
+    <meta
+      property="og:description"
+      content="A permanent, verifiable record of UK parliamentary candidate websites. What they published, and what happened to it."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Civicord — a public record of UK candidate websites</title>
   </head>
   <body>
     <header class="masthead">
       <h1 class="wordmark">Civicord<span class="dot">.</span></h1>
+      <p class="lede">
+        When the election ended, candidate websites began to disappear. Civicord
+        gives every UK parliamentary candidate a permanent, publicly verifiable
+        record — who they were, what they published, and whether it's still there.
+      </p>
       <p class="tagline">
-        An open, longitudinal record of UK parliamentary candidate websites — which still
-        exist, which are gone, and what they said. Built on Campaign Lab's April 2025
-        scrape, keyed on Democracy Club person IDs.
+        Built on Campaign Lab's April 2025 scrape of 2,375 candidates, keyed on
+        Democracy Club person IDs, recorded as names on the Ethereum Name Service.
       </p>
     </header>
 
@@ -50,12 +62,41 @@ const statusLabels: Record<string, string> = {
       <div class="stat"><b>{redirected.length.toLocaleString("en-GB")}</b><span>Redirected</span></div>
     </section>
 
+    <section class="how" aria-label="How Civicord works">
+      <h2>How it works</h2>
+      <ol>
+        <li>
+          <b>Collect.</b> Campaign Lab scraped every candidate's campaign website in
+          April 2025. We've re-checked them all: some are live, some have vanished,
+          some now sell insurance.
+        </li>
+        <li>
+          <b>Record.</b> Each candidate gets a permanent public name —
+          <code>p1234.civicord.eth</code> — holding their website, status, and
+          archived evidence. Once written, records can't be quietly edited or deleted.
+        </li>
+        <li>
+          <b>Verify.</b> You don't need an account, a wallet, or our permission.
+          Every claim on this site links to the public record behind it — check it
+          yourself, any time, forever.
+        </li>
+      </ol>
+    </section>
+
     <p class="method">
       Liveness audited 2026-09-07, ~17 months after the scrape — 36% of sites are already
       gone or broken. “Live” means responding <em>and</em> still mentioning the candidate;
       ↳ marks URLs that now redirect elsewhere.
       <a href="https://github.com/sneldao/civicord">Method &amp; data ↗</a>
     </p>
+
+    {onchain.length > 0 && (
+      <p class="ens-note">
+        <b>{onchain.length.toLocaleString("en-GB")} of {candidates.length.toLocaleString("en-GB")}</b>
+        candidates already have a permanent public name. Look for
+        <span class="badge live">On record</span> in the list.
+      </p>
+    )}
 
     <div class="filterbar">
       <input id="q" type="search" placeholder="Filter by candidate, party, website…" autocomplete="off" />
