@@ -1,6 +1,8 @@
 # Plan
 
-Delivery phases, the current sprint, and risks. Last updated 2026-09-09.
+Delivery phases, the current sprint, and risks. Last updated 2026-09-08.
+(Day-of-week note: 2026-09-08 is a **Tuesday**; earlier drafts of this file
+labelled it Monday — all day labels below use the corrected mapping.)
 
 ## Where we are
 
@@ -59,8 +61,8 @@ Substreams is blockchain ETL; web-archive data can't flow through it.
 
 | Day | Deliverable |
 | --- | --- |
-| Mon 8 | ✅ Frontend restyle — "Public Record" direction (pending sign-off) — the demo surface |
-| Tue 9 | 🔄 ENSv2 registry + subname mint + `civicord publish` — parent `civicord.eth` live (civicordhq alias), proxies deployed, blast-mode publisher shipped, 348/2,375 minted; paused on deployer gas top-up |
+| Tue 8 | ✅ Frontend restyle — "Public Record" direction (pending sign-off) — the demo surface |
+| Wed 9 | 🔄 ENSv2 registry + subname mint + `civicord publish` — parent `civicord.eth` live (civicordhq alias), proxies deployed, blast-mode publisher shipped, 348/2,375 minted; paused on deployer gas top-up |
 | Wed 10 | Subgraph in Subgraph Studio + MCP agent demo (go/no-go vs fallback) |
 | Thu 11 | Bazantic gateway + Recipe |
 | Fri 12 | Demo video (2–4 min), FEEDBACK.md per sponsor, AI-attribution pass |
@@ -94,7 +96,7 @@ Substreams is blockchain ETL; web-archive data can't flow through it.
 | GDPR on raw HTML | Publish derived text/diffs only; raw HTML stays access-controlled |
 | Long-term maintenance burden | Partner-first; design for batch + static outputs |
 
-## Stakeholders & delivery (added Tue 9 evening)
+## Stakeholders & delivery (added Wed 9 evening)
 
 Audience-first framing for all frontend content, in priority order:
 
@@ -128,7 +130,7 @@ content itself ("which MP sites now sell insurance") — OG tags on every candid
 page make each record individually shareable. Motion stays CSS-subtle; no JS
 frameworks added.
 
-## Frontend craft pass (Tue 9 late) — Astro primitives, Sylva discipline
+## Frontend craft pass (Wed 9 late) — Astro primitives, Sylva discipline
 
 Applying the MengTo Skills/Sylva craft bar: staged entrances, one shared motion
 language, self-contained output, explicit reduced-motion path, zero runtime

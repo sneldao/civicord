@@ -8,9 +8,9 @@ snapshot hashes, and liveness status as text records. All writes go through
 [ENSv2](https://docs.ens.domains/ensv2/overview) Enhanced Access Control — only the
 Civicord key can update a candidate's records.
 
-## Status (updated 2026-09-09)
+## Status (updated 2026-09-08)
 
-- **Live parent name: `civicord.eth`** (registered 2026-09-09 via the official
+- **Live parent name: `civicord.eth`** (registered 2026-09-08 via the official
   ETHRegistrar commit-reveal; `civicordhq.eth` was registered 2026-09-08 during a
   first-pass — both labels point at the same UserRegistry, so candidate labels
   resolve under both trees). Candidate names are `p{person_id}.civicord.eth`.
@@ -60,7 +60,7 @@ civicord.eth (parent .eth name on Sepolia, owned by deployer; civicordhq.eth ali
 ## Steps
 
 1. **Parent name** — ✅ done: `civicord.eth` registered via the ETHRegistrar
-   (commit-reveal), 2026-09-09 — canonical. `civicordhq.eth` (2026-09-08) kept
+   (commit-reveal), 2026-09-08 — canonical. `civicordhq.eth` (2026-09-08) kept
    as an alias pointing at the same UserRegistry.
 2. **Registry proxy** — `deployProxy(USER_REGISTRY_IMPL, salt, init)` with salt
    `keccak256(abi.encode("UserRegistry", namehash("civicord.eth"), 0))`; then

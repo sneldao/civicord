@@ -1,5 +1,13 @@
 # Publishing the audit onchain (ENSv2 on Sepolia)
 
+## Prerequisites
+
+- [Foundry](https://book.getfoundry.sh/) — all chain access goes through the
+  `cast` CLI (no web3.py dependency)
+- Python deps from the repo root (`pip install -e '.[dev]'`); `certifi` is
+  used for TLS if present, with a `curl` fallback otherwise
+- A funded Sepolia deployer key in `PK` (kept **outside** the repo)
+
 ## What this does
 
 Reads `data/out/websites.csv` + `data/out/audit_liveness.csv`, then writes one ENSv2
@@ -30,15 +38,21 @@ python scripts/publish/publish.py
 
 ## Text record schema
 
+Written today by `publish.py`:
+
 | Key | Value |
 |---|---|
 | `url` | Candidate website URL as scraped |
 | `status` | Audit status class (live/http_error/dns_error/...) |
+| `vnd.civicord.person_name` | Candidate name |
+
+Planned (not yet written by the script):
+
+| Key | Value |
+|---|---|
 | `snapshot_sha256` | SHA-256 of the candidate's scraped page text, if ingested |
- hashes |  ...
 | `last_audited` | Audit date (ISO) |
 | `vnd.civicord.person_id` | Democracy Club person ID (also the ENS label itself) |
-| `vnd.civicord.person_name` | Candidate name |
 
 ## Salts (deterministic, idempotent re-runs)
 
