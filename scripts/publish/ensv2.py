@@ -29,10 +29,38 @@ ALL_ROLES = int("1" * 64, 16)
 
 
 def env(name: str) -> str:
+    """Read config from env, with .env file support (repo root).
+
+    Set either RPC_URL/RPC_FALLBACKS directly, or ALCHEMY_KEY (plus optional
+    ALCHEMY_NETWORK, default sepolia) to build the Alchemy endpoint.
+    """
     val = os.environ.get(name)
+    if not val:
+        _load_dotenv()
+        val = os.environ.get(name)
+    if not val and name == "RPC_URL":
+        key = os.environ.get("ALCHEMY_KEY", "")
+        net = os.environ.get("ALCHEMY_NETWORK", "sepolia")
+        if key:
+            # Alchemy dashboard keys look like `...:alch_...` — take the part after the last colon.
+            token = key.rsplit(":", 1)[-1]
+            val = f"https://eth-{net}.g.alchemy.com/v2/{token}"
     if not val:
         raise SystemExit(f"Missing environment variable: {name}")
     return val
+
+
+def _load_dotenv() -> None:
+    """Load KEY=VALUE lines from the repo-root .env into os.environ (no overrides)."""
+    dotenv = Path(__file__).parent.parent.parent / ".env"
+    if not dotenv.exists():
+        return
+    for line in dotenv.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        os.environ.setdefault(key.strip(), value.strip())
 
 
 def _cast(args: list[str], stdin: str | None = None) -> str:

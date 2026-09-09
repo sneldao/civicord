@@ -23,6 +23,18 @@ export interface CohortStats {
   onchain: number;
   parties: PartyRow[];
   elections: Array<{ election: string; sites: number; live: number; livePct: number }>;
+  // Overall live-share, for "candidate vs average" compare lines.
+  liveShare: number;
+}
+
+export interface StatusCohort {
+  slug: "live" | "gone" | "redirected";
+  title: string;
+  lede: string;
+  sites: number;
+  share: number; // of all audited sites
+  // Top redirect destinations (redirected cohort only).
+  destinations: Array<{ url: string; count: number }>;
 }
 
 const GONE = new Set(["dns_error", "connection_error"]);
@@ -82,5 +94,69 @@ export async function cohortStats(): Promise<CohortStats> {
   return {
     persons: candidates.length, sites: websites.length,
     live, gone, redirected, onchain, parties, elections,
+    liveShare: websites.length ? live / websites.length : 0,
   };
+}
+
+const REDIRECT_HOST = (u: string) => {
+  try {
+    return new URL(u).hostname.replace(/^www\./, "");
+  } catch {
+    return u;
+  }
+};
+
+/** Status cohort pages: the graveyard, the redirects, the survivors. */
+export async function statusCohorts(): Promise<StatusCohort[]> {
+  const entries = await getCollection("candidates");
+  const websites = entries.flatMap((e) => e.data.websites);
+  const audited = websites.filter((w) => w.audit);
+  const share = (n: number) => (audited.length ? Math.round((n / audited.length) * 100) : 0);
+
+  const liveRows = audited.filter((w) => w.audit?.statusClass === "live");
+  const goneRows = audited.filter((w) => GONE.has(w.audit?.statusClass ?? ""));
+  const redirRows = audited.filter((w) => w.audit?.redirected && w.audit?.finalUrl);
+
+  const destCount = new Map<string, number>();
+  for (const w of redirRows) {
+    const host = REDIRECT_HOST(w.audit!.finalUrl!);
+    destCount.set(host, (destCount.get(host) ?? 0) + 1);
+  }
+  const destinations = [...destCount.entries()]
+    .map(([url, count]) => ({ url, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 12);
+
+  return [
+    {
+      slug: "gone",
+      title: "The graveyard",
+      lede: "Every campaign site that no longer resolves — the domains that died with the campaign.",
+      sites: goneRows.length,
+      share: share(goneRows.length),
+      destinations: [],
+    },
+    {
+      slug: "redirected",
+      title: "Where dead sites go",
+      lede: "Campaign URLs that now send visitors somewhere else — party pages, new ventures, and domain squatters.",
+      sites: redirRows.length,
+      share: share(redirRows.length),
+      destinations,
+    },
+    {
+      slug: "live",
+      title: "Still standing",
+      lede: "Campaign sites that respond and still mention their candidate — the survivors.",
+      sites: liveRows.length,
+      share: share(liveRows.length),
+      destinations: [],
+    },
+  ];
+}
+
+/** Per-party live-share lookup for "candidate vs average" compare lines. */
+export async function partyLiveShare(): Promise<Map<string, number>> {
+  const stats = await cohortStats();
+  return new Map(stats.parties.map((p) => [p.party, p.sites ? p.live / p.sites : 0]));
 }

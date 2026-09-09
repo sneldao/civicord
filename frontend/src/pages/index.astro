@@ -261,6 +261,18 @@ const groupLetterOf = (name: string) => {
       // to this page via a view transition. The DOM is swapped fresh each
       // time, so re-running the setup is correct (no stale listeners).
       document.addEventListener("astro:page-load", () => {
+        // Tiny subsequence fuzzy matcher (no dependency): every query char must
+        // appear in order; exact-substring hits score a bonus and short-circuit.
+        // "farrage" still finds "Farage".
+        const fuzzyMatch = (hay: string, needle: string): boolean => {
+          if (hay.includes(needle)) return true;
+          if (needle.length > 40) return false;
+          let j = 0;
+          for (let i = 0; i < hay.length && j < needle.length; i++) {
+            if (hay[i] === needle[j]) j++;
+          }
+          return j === needle.length;
+        };
         const q = document.getElementById("q") as HTMLInputElement;
         const status = document.getElementById("status") as HTMLSelectElement;
         const party = document.getElementById("party") as HTMLSelectElement | null;
@@ -279,9 +291,9 @@ const groupLetterOf = (name: string) => {
           let shownLive = 0;
           for (const tr of rows) {
             const show =
-              (!needle || tr.dataset.haystack!.includes(needle)) &&
-              (want === "all" || tr.dataset.status === want) &&
               (wantParty === "all" || (tr.dataset.party ?? "").split(" ").includes(wantParty)) &&
+              (!needle || fuzzyMatch(tr.dataset.haystack!, needle)) &&
+              (want === "all" || tr.dataset.status === want) &&
               (!legendClasses || legendClasses.includes(tr.dataset.status!));
             tr.hidden = !show;
             if (show) {

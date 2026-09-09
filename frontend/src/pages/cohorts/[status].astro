@@ -1,0 +1,103 @@
+---
+import { getCollection } from "astro:content";
+import { ClientRouter } from "astro:transitions";
+import { statusCohorts, type StatusCohort } from "../../lib/cohorts";
+import "../../styles/global.css";
+
+export async function getStaticPaths() {
+  const cohorts = await statusCohorts();
+  return cohorts.map((cohort) => ({ params: { status: cohort.slug }, props: { cohort } }));
+}
+
+interface Props {
+  cohort: StatusCohort;
+}
+const { cohort } = Astro.props;
+
+const STATUS_FILTER: Record<StatusCohort["slug"], string> = {
+  live: "live",
+  gone: "gone",
+  redirected: "redirected",
+};
+
+// Link back into the index with the matching preset filter applied.
+const indexLink =
+  cohort.slug === "live"
+    ? "/?status=live"
+    : cohort.slug === "gone"
+      ? "/?status=dns_error"
+      : "/";
+
+const blurb: Record<StatusCohort["slug"], string> = {
+  live: "These sites respond today and still mention their candidate by name. Everything else on this site is measured against them.",
+  gone: "DNS failures and refused connections — the domain itself is gone. For these candidates the April 2025 scrape may be the only surviving record.",
+  redirected: "The URL resolves, but somewhere else. Some moved home to a party page; others now sell insurance, host domain-parking ads, or belong to someone new entirely.",
+};
+---
+
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={`${cohort.title} — ${cohort.sites.toLocaleString("en-GB")} UK candidate websites (${cohort.share}% of those audited). ${cohort.lede}`} />
+    <meta property="og:title" content={`${cohort.title} — Civicord`} />
+    <meta property="og:description" content={`${cohort.sites.toLocaleString("en-GB")} campaign sites, ${cohort.share}% of the audit. ${cohort.lede}`} />
+    <meta property="og:type" content="article" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{cohort.title} — Civicord</title>
+    <ClientRouter />
+  </head>
+  <body class="reveal-root">
+    <p class="crumb">
+      <a href="/">Public record index</a> / <b>{cohort.title}</b>
+    </p>
+
+    <header class="masthead">
+      <h1 class="wordmark">{cohort.title}<span class="dot">.</span></h1>
+      <p class="lede">{cohort.lede}</p>
+    </header>
+
+    <section class="stats" aria-label="Cohort in numbers">
+      <div class="stat"><b>{cohort.sites.toLocaleString("en-GB")}</b><span>sites</span></div>
+      <div class="stat"><b>{cohort.share}%</b><span>of audited sites</span></div>
+    </section>
+
+    <section class="method">
+      <article>
+        <p>{blurb[cohort.slug]}</p>
+      </article>
+    </section>
+
+    {cohort.destinations.length > 0 && (
+      <section aria-label="Top redirect destinations">
+        <h2>Top destinations</h2>
+        <p class="muted">Where dead campaign URLs most often land today.</p>
+        <table>
+          <thead><tr><th>Destination</th><th>Sites</th></tr></thead>
+          <tbody>
+            {cohort.destinations.map((d) => (
+              <tr>
+                <td class="url">{d.url}</td>
+                <td>{d.count.toLocaleString("en-GB")}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    )}
+
+    <p class="cohort-cta">
+      <a href={indexLink}>Browse these sites in the full ledger ↗</a>
+    </p>
+    <p class="cohort-cta muted">
+      <a href="/methodology">How the audit works ↗</a>
+    </p>
+
+    <footer>
+      <p>
+        Civicord record · <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
+      </p>
+    </footer>
+  </body>
+</html>

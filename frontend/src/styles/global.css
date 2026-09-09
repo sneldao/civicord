@@ -473,6 +473,39 @@ a.url:hover { color: var(--accent); }
 .verdict.v-live { border-left-color: var(--live); }
 .verdict.v-gone { border-left-color: var(--gone); }
 .verdict.v-mixed { border-left-color: var(--warn); }
+
+/* Compare line: candidate vs party average */
+.compare-line {
+  margin: 0.6rem 0 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.compare-line b { color: var(--ink); }
+
+/* Timeline strip: scraped → audited → recorded */
+.timeline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.7rem;
+  margin: 1rem 0 0;
+  padding: 0.55rem 0.9rem;
+  list-style: none;
+  border: 1.5px solid var(--rule);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.4);
+}
+.timeline li { display: flex; flex-direction: column; line-height: 1.3; }
+.timeline li b { font-size: 0.85rem; }
+.timeline li span { font-size: 0.72rem; color: var(--muted); }
+.timeline li.tick { color: var(--muted); font-size: 0.85rem; }
+.timeline li.pending b { color: var(--warn); }
+
+/* Cohort pages */
+.cohort-cta { margin: 1.2rem 0 0; }
+.cohort-cta a { color: var(--accent); font-weight: 600; }
+
+/* Candidate record page */
 .record-head { border-top: 3px solid var(--ink); padding-top: 1rem; }
 .record-head h1 {
   font-family: var(--serif);

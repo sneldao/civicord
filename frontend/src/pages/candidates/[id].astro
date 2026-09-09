@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
+import { partyLiveShare } from "../../lib/cohorts";
 import "../../styles/global.css";
 
 export async function getStaticPaths() {
@@ -52,6 +53,27 @@ const ids = (await getCollection("candidates")).map((e) => e.data.id).sort();
 const at = ids.indexOf(person.id);
 const prevId = at > 0 ? ids[at - 1] : null;
 const nextId = at >= 0 && at < ids.length - 1 ? ids[at + 1] : null;
+
+// Comparative context: this person's party vs the site-wide average.
+// Turns a record into insight ("Labour avg 64% live; this candidate: gone").
+// Falls back: exact party → any party containing its first word ("Labour" matches
+// "Labour Party", "Labour and Co-operative Party") → nothing (line hidden).
+const shareByParty = await partyLiveShare();
+const personShare =
+  person.websites.length > 0
+    ? person.websites.filter((w) => w.audit?.statusClass === "live").length / person.websites.length
+    : null;
+const findPartyShare = (name: string): [string, number] | null => {
+  if (shareByParty.has(name)) return [name, shareByParty.get(name)!];
+  const first = name.split(/\s+/)[0].toLowerCase();
+  for (const [key, share] of shareByParty) {
+    if (key.toLowerCase().split(/\s+/).includes(first)) return [key, share];
+  }
+  return null;
+};
+const compareFound = parties.map(findPartyShare).find((x) => x !== null) ?? null;
+const compareParty = compareFound?.[0] ?? null;
+const compareAvg = compareFound?.[1] ?? null;
 ---
 
 <html lang="en-GB">
@@ -91,6 +113,24 @@ const nextId = at >= 0 && at < ids.length - 1 ? ids[at + 1] : null;
     <p class={`verdict v-${verdict}`} role="status">
       <b>{verdictCopy[verdict][0]}</b> — {verdictCopy[verdict][1]}
     </p>
+
+    {compareAvg !== null && personShare !== null && (
+      <p class="compare-line">
+        {compareParty}: <b>{Math.round(compareAvg * 100)}% of sites live</b> across the party ·{" "}
+        this candidate: <b>{personShare >= 1 ? "live" : personShare <= 0 ? "gone" : `${Math.round(personShare * 100)}% live`}</b>.{" "}
+        <a href={`/?party=${encodeURIComponent(compareParty.toLowerCase())}`}>See the cohort ↗</a>
+      </p>
+    )}
+
+    <ol class="timeline" aria-label="Record history">
+      <li><b>Apr 2025</b><span>scraped</span></li>
+      <li aria-hidden="true" class="tick">→</li>
+      <li><b>Sep 2026</b><span>audited</span></li>
+      <li aria-hidden="true" class="tick">→</li>
+      <li class={person.onchain ? "" : "pending"}>
+        <b>{person.onchain ? "Recorded" : "Pending"}</b><span>on-chain</span>
+      </li>
+    </ol>
 
     <section class="entries">
       <h2>Websites</h2>

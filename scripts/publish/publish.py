@@ -161,24 +161,37 @@ def main() -> None:
             # NOTE: manifest rows are written for every candidate, including
             # resume-skipped ones — the frontend's Public Record blocks are
             # manifest-driven, so skipped candidates must still appear.
+            # Atomic per-candidate: nonce advances only for ACCEPTED txs. On
+            # failure we rewind to this candidate's first nonce so the next
+            # pass re-signs identical txs and converges with any mempool copy
+            # (no nonce gaps); the loop continues instead of dying on one bad
+            # nonce and the 12-attempt wrapper eventually converges.
             if not already_onchain:
-                for key, value in records:
-                    if args.blast:
-                        blast_send(
-                            rpcs,
-                            pk,
-                            deployer,
-                            resolver,
-                            txt_sig,
-                            "0x" + node.hex(),
-                            key,
-                            value,
-                            nonce=nonce,
-                            gas_cache=gas_cache,
-                        )
-                        nonce += 1
-                    else:
-                        send(rpc, pk, resolver, txt_sig, "0x" + node.hex(), key, value)
+                start_nonce = nonce
+                try:
+                    for key, value in records:
+                        if args.blast:
+                            blast_send(
+                                rpcs,
+                                pk,
+                                deployer,
+                                resolver,
+                                txt_sig,
+                                "0x" + node.hex(),
+                                key,
+                                value,
+                                nonce=nonce,
+                                gas_cache=gas_cache,
+                            )
+                            nonce += 1
+                        else:
+                            send(rpc, pk, resolver, txt_sig, "0x" + node.hex(), key, value)
+                except Exception:  # noqa: BLE001 - rewind nonce on any transient failure, runner retries
+                    nonce = start_nonce
+                    print(
+                        f"    transient failure on {full} — rewound nonce to {nonce}, continuing",
+                        flush=True,
+                    )
         manifest_rows.append(
             {
                 "ens_name": full,
