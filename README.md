@@ -41,14 +41,18 @@ cd frontend && npm install && npm run dev
 
 The frontend works out of the box on a fresh clone: a prebuilt
 `frontend/src/data/candidates.json` snapshot is committed and used whenever
-`data/out/*.csv` is absent (e.g. Vercel deploys). Run the pipeline first if you
-want the frontend rebuilt from your own audit outputs.
+`data/out/*.csv` is absent. Run the pipeline first if you want the frontend
+rebuilt from your own audit outputs.
+
+Deployed via Cloudflare Pages (https://civicord.pages.dev); see
+[docs/ops.md](docs/ops.md) for the deploy/data-refresh runbook.
 
 ## Documentation
 
 | Doc | Purpose |
 | --- | --- |
 | [docs/plan.md](docs/plan.md) | Delivery plan, current sprint, risks & blockers |
+| [docs/ops.md](docs/ops.md) | Internal runbook: Cloudflare accounts, deploys, data snapshots, gotchas |
 | [docs/architecture.md](docs/architecture.md) | System design, data model, data sources, pipeline |
 | [docs/phase0-findings.md](docs/phase0-findings.md) | Phase 0 liveness-audit baseline (64% live) |
 | [docs/outreach.md](docs/outreach.md) | Partner strategy and draft outreach emails |
