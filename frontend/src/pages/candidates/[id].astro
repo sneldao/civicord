@@ -19,6 +19,11 @@ const statusLabels: Record<string, string> = {
 };
 const parties = [...new Set(person.websites.flatMap((w) => w.parties))];
 const elections = [...new Set(person.websites.flatMap((w) => w.elections))];
+const firstStatus = person.websites[0]?.audit?.statusClass;
+const siteWord =
+  firstStatus === "live" ? "still live"
+  : firstStatus === "dns_error" ? "taken offline"
+  : firstStatus ? `flagged: ${statusLabels[firstStatus] ?? firstStatus}` : "archived";
 const ens = person.onchain?.ens ?? `p${person.id}.civicord.eth`;
 const ensUrl = `https://app.ens.domains/${ens}`;
 const resolverUrl =
@@ -29,12 +34,13 @@ const resolverUrl =
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content={`Public record for UK parliamentary candidate ${person.name}: was their campaign website still live, gone, or repurposed — permanently recorded and publicly verifiable.`}
-    />
+    <meta name="description" content={`Public record for UK parliamentary candidate ${person.name}: was their campaign website still live, gone, or repurposed — permanently recorded and publicly verifiable.`} />
     <meta property="og:title" content={`${person.name} — Civicord public record`} />
     <meta property="og:type" content="profile" />
+    <meta
+      property="og:description"
+      content={`${person.name} stood for ${parties.join(", ") || "Parliament"}. Their campaign site was ${siteWord}. Civicord holds this permanently on-chain — see the record.`}
+    />
     <meta name="twitter:card" content="summary" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{person.name} — Civicord</title>
@@ -102,11 +108,12 @@ const resolverUrl =
 
     {person.onchain && (
       <section class="ens-record" aria-label="Public record">
-        <h2>Public record</h2>
+        <h2>Public record <span class="onchain-chip">On-chain ✓</span></h2>
         <p>
-          This candidate has a permanent public name:{" "}
-          <a href={ensUrl} rel="noopener noreferrer"><code>{ens}</code></a>. It
-          holds this page's claims — website, status, evidence — in a public
+          Permanent public name:{" "}
+          <a href={ensUrl} rel="noopener noreferrer"><code>{ens}</code></a>.
+          {person.onchain.status && <> Recorded status: <b>{person.onchain.status}</b>. </>}
+          It holds this page's claims — website, status, evidence — in a public
           register that can't be quietly edited or deleted.
         </p>
         <ul class="ens-links">

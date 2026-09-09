@@ -21,6 +21,11 @@ const statusLabels: Record<string, string> = {
   other_error: "Error",
   not_audited: "Not audited",
 };
+
+// Parties sorted by website count (most first) for the filter dropdown.
+const partyCounts = new Map<string, number>();
+for (const w of websites) for (const p of w.parties) partyCounts.set(p, (partyCounts.get(p) ?? 0) + 1);
+const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p]) => p);
 ---
 
 <html lang="en-GB">
@@ -90,14 +95,14 @@ const statusLabels: Record<string, string> = {
       Liveness audited 2026-09-07, ~17 months after the scrape — 36% of sites are already
       gone or broken. “Live” means responding <em>and</em> still mentioning the candidate;
       ↳ marks URLs that now redirect elsewhere.
-      <a href="https://github.com/sneldao/civicord">Method &amp; data ↗</a>
+      <a href="/methodology">Methodology ↗</a>
     </p>
 
     {onchain.length > 0 && (
       <p class="ens-note">
         <b>{onchain.length.toLocaleString("en-GB")} of {candidates.length.toLocaleString("en-GB")}</b>
         candidates already have a permanent public name. Look for
-        <span class="badge live">On record</span> in the list.
+        <span class="onchain-chip">On-chain ✓</span> next to their name.
       </p>
     )}
 
@@ -107,6 +112,11 @@ const statusLabels: Record<string, string> = {
       <select id="status">
         <option value="all">All statuses</option>
         {Object.entries(statusLabels).map(([value, label]) => <option value={value}>{label}</option>)}
+      </select>
+      <label class="visually-hidden" for="party">Filter by party</label>
+      <select id="party">
+        <option value="all">All parties</option>
+        {parties.map((p) => <option value={p.toLowerCase()}>{p}</option>)}
       </select>
       <span id="count" class="count"></span>
     </div>
@@ -123,9 +133,13 @@ const statusLabels: Record<string, string> = {
               <tr
                 style={`--row-i:${ci % 14}`}
                 data-status={st}
+                data-party={w.parties.map((p) => p.toLowerCase()).join(" ")}
                 data-haystack={`${c.name} ${w.parties.join(" ")} ${w.elections[0] ?? ""} ${w.url}`.toLowerCase()}
               >
-                <td><a href={`/candidates/${c.id}`}>{c.name}</a></td>
+                <td>
+                  <a href={`/candidates/${c.id}`}>{c.name}</a>
+                  {c.onchain && <span class="onchain-chip" title={`${c.onchain.ens} — permanent public record`}>On-chain ✓</span>}
+                </td>
                 <td class="muted">{w.parties.join(", ")}</td>
                 <td class="muted">{w.elections[0]}</td>
                 <td class="url">
@@ -161,16 +175,19 @@ const statusLabels: Record<string, string> = {
       document.addEventListener("astro:page-load", () => {
         const q = document.getElementById("q") as HTMLInputElement;
         const status = document.getElementById("status") as HTMLSelectElement;
+        const party = document.getElementById("party") as HTMLSelectElement | null;
         const count = document.getElementById("count")!;
         const rows = [...document.querySelectorAll<HTMLTableRowElement>("tbody tr")];
         const apply = () => {
           const needle = q.value.trim().toLowerCase();
           const want = status.value;
+          const wantParty = party?.value ?? "all";
           let shown = 0;
           for (const tr of rows) {
             const show =
               (!needle || tr.dataset.haystack!.includes(needle)) &&
-              (want === "all" || tr.dataset.status === want);
+              (want === "all" || tr.dataset.status === want) &&
+              (wantParty === "all" || (tr.dataset.party ?? "").split(" ").includes(wantParty));
             tr.hidden = !show;
             if (show) shown++;
           }
@@ -178,6 +195,7 @@ const statusLabels: Record<string, string> = {
         };
         q.addEventListener("input", apply);
         status.addEventListener("change", apply);
+        party?.addEventListener("change", apply);
         apply();
 
         // Scroll progress line
