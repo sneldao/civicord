@@ -1,8 +1,11 @@
 ---
-import candidates from "../data/candidates.json";
+import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import "../styles/global.css";
 
+// Validated at build time by src/content.config.ts.
+const all = await getCollection("candidates");
+const candidates = all.map((e) => e.data);
 const websites = candidates.flatMap((c) => c.websites);
 const audited = websites.filter((w) => w.audit);
 const live = audited.filter((w) => w.audit?.statusClass === "live");

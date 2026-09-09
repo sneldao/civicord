@@ -7,5 +7,8 @@ export default defineConfig({
   output: "static",
   site: process.env.SITE_URL || "https://civicord.pages.dev",
   integrations: [sitemap()],
-  prefetch: true,
+  // Viewport-scoped prefetch: links prefetch when they near the viewport
+  // instead of just on hover — keeps the 2,375-row ledger from becoming a
+  // bandwidth footgun while prev/next + candidate links still feel instant.
+  prefetch: { prefetchAll: false, defaultStrategy: "viewport" },
 });

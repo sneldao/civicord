@@ -1,10 +1,11 @@
 ---
-import candidates from "../../data/candidates.json";
+import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import "../../styles/global.css";
 
-export function getStaticPaths() {
-  return candidates.map((person) => ({ params: { id: person.id }, props: { person } }));
+export async function getStaticPaths() {
+  const all = await getCollection("candidates");
+  return all.map((entry) => ({ params: { id: entry.data.id }, props: { person: entry.data } }));
 }
 
 const { person } = Astro.props;
@@ -47,7 +48,7 @@ const party = parties[0] ?? "Candidate";
 const seat = person.websites[0]?.posts?.[0] ?? elections[0] ?? "";
 
 // Prev / next by id order for the "poking around" loop.
-const ids = [...(candidates as Array<{ id: string }>)].map((c) => c.id).sort();
+const ids = (await getCollection("candidates")).map((e) => e.data.id).sort();
 const at = ids.indexOf(person.id);
 const prevId = at > 0 ? ids[at - 1] : null;
 const nextId = at >= 0 && at < ids.length - 1 ? ids[at + 1] : null;
