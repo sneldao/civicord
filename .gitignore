@@ -31,3 +31,6 @@ Thumbs.db
 # at ~/.config/civicord/sepolia.key
 scripts/publish/.deployed.json
 scripts/publish/.abi-cache/
+
+# Cloudflare wrangler state
+.wrangler/
