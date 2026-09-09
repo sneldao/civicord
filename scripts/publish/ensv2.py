@@ -197,9 +197,44 @@ def fetch_deployment(json_name: str) -> dict:
         return json.loads(out)
 
 
+def _resolve_rpc_endpoints() -> list[str]:
+    """Resolve primary + fallbacks honoring .env + ALCHEMY_KEY."""
+    try:
+        primary = env("RPC_URL")
+    except SystemExit:
+        primary = "https://ethereum-sepolia-rpc.publicnode.com"
+    fallbacks_raw = os.environ.get("RPC_FALLBACKS", "")
+    # Default fallback: when Alchemy is primary, keep publicnode as backup.
+    if not fallbacks_raw and "alchemy.com" in primary:
+        fallbacks_raw = "https://ethereum-sepolia-rpc.publicnode.com"
+    endpoints = [primary]
+    for u in fallbacks_raw.split(","):
+        u = u.strip()
+        if u and u not in endpoints:
+            endpoints.append(u)
+    return endpoints
+
+
+def get_pending_nonce(address: str, rpc: str) -> int:
+    """Return the next usable nonce (pending pool), not just mined tip."""
+    # `cast nonce --block pending` exists; fall back to eth_getTransactionCount.
+    try:
+        raw = _cast(["nonce", address, "--block", "pending", "--rpc-url", rpc]).strip()
+        # `cast nonce` prints decimal even for pending.
+        return int(raw)
+    except Exception:  # noqa: BLE001, S110 - probe fallback; next path is canonical
+        pass
+    raw = _cast(["rpc", "eth_getTransactionCount", address, "pending", "--rpc-url", rpc]).strip()
+    # `cast rpc` wraps the hex in JSON quotes: "0x..."
+    try:
+        hex_str = json.loads(raw)
+    except json.JSONDecodeError:
+        hex_str = raw.strip('"')
+    return int(hex_str, 16)
+
+
 def call(to: str, signature: str, *args: str) -> str:
-    endpoints = [os.environ.get("RPC_URL", "https://ethereum-sepolia-rpc.publicnode.com")]
-    endpoints += [u for u in os.environ.get("RPC_FALLBACKS", "").split(",") if u.strip()]
+    endpoints = _resolve_rpc_endpoints()
     last: Exception | None = None
     for url in endpoints:
         try:

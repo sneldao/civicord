@@ -15,7 +15,6 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -27,6 +26,7 @@ from ensv2 import (
     blast_send,
     call,
     env,
+    get_pending_nonce,
     namehash,
     send,
 )
@@ -57,12 +57,14 @@ def load_audit() -> list[dict]:
 def decode_string(hexdata: str) -> str:
     """Decode an ABI-encoded dynamic `string` return value from cast call."""
     raw = hexdata.removeprefix("0x")
-    if len(raw) < 192:
+    if len(raw) < 128:
         return ""
-    offset = int(raw[64:128], 16)
-    length = int(raw[128:192], 16)
-    start = (offset) * 2
-    return bytes.fromhex(raw[start : start + length * 2]).decode("utf-8", "replace")
+    # ABI: offset (32) | length (32) | data (padded). cast returns 0x + those.
+    length = int(raw[64:128], 16)
+    hex_data = raw[128 : 128 + length * 2]
+    if len(hex_data) < length * 2:
+        return ""
+    return bytes.fromhex(hex_data).decode("utf-8", "replace")
 
 
 def main() -> None:
@@ -83,7 +85,14 @@ def main() -> None:
     args = ap.parse_args()
 
     rpc = env("RPC_URL")
-    rpcs = [rpc] + [u for u in os.environ.get("RPC_FALLBACKS", "").split(",") if u.strip()]
+    # Keep publish's blast rotation in sync with ensv2._resolve_rpc_endpoints()
+    # (Alchemy primary → publicnode fallback), even when RPC_FALLBACKS is unset.
+    from ensv2 import _resolve_rpc_endpoints  # local import to avoid cycle at top
+
+    rpcs = _resolve_rpc_endpoints()
+    # _resolve_rpc_endpoints already includes rpc as its first entry
+    if rpcs[0] != rpc:
+        rpc = rpcs[0]
     pk = env("PK")
     state = json.loads(STATE_FILE.read_text())
     registry, resolver, deployer = state["registry"], state["resolver"], state["deployer"]
@@ -96,8 +105,24 @@ def main() -> None:
         candidates = candidates[args.start :]
 
     manifest_rows = []
-    nonce = int(_cast(["nonce", deployer, "--rpc-url", rpc]).strip()) if args.blast else 0
+    if args.blast:
+        nonce = get_pending_nonce(deployer, rpc)
+        pending_check = nonce
+        # Sanity: if we used `latest` fallback and there are still pending
+        # txs on a different endpoint, surface it early rather than silently
+        # producing replacement-underpriced spam.
+        try:
+            latest = int(_cast(["nonce", deployer, "--rpc-url", rpc]).strip())
+            if pending_check < latest:
+                pending_check = latest
+                nonce = latest
+        except Exception:  # noqa: BLE001, S110 - nonce probe is best-effort; blast_send surfaces real errors
+            pass
+        print(f"blast nonce: pending={nonce} (rpc {rpc.split('//')[1][:24]})", flush=True)
+    else:
+        nonce = 0
     gas_cache: dict = {}
+    failed = 0
     for i, c in enumerate(candidates, start=args.start + 1):
         label = f"p{c['person_id']}"  # ENS labels must start with a letter/digit-safe token
         full = f"{label}.{parent}"
@@ -167,7 +192,6 @@ def main() -> None:
             # (no nonce gaps); the loop continues instead of dying on one bad
             # nonce and the 12-attempt wrapper eventually converges.
             if not already_onchain:
-                start_nonce = nonce
                 try:
                     for key, value in records:
                         if args.blast:
@@ -186,12 +210,23 @@ def main() -> None:
                             nonce += 1
                         else:
                             send(rpc, pk, resolver, txt_sig, "0x" + node.hex(), key, value)
-                except Exception:  # noqa: BLE001 - rewind nonce on any transient failure, runner retries
-                    nonce = start_nonce
+                except Exception as e:  # noqa: BLE001 - transient; wrapper retries after drain
+                    failed += 1
+                    msg = str(e).strip().splitlines()[-1][:180]
                     print(
-                        f"    transient failure on {full} — rewound nonce to {nonce}, continuing",
+                        f"    transient failure on {full} — nonce {nonce} ({msg}), continuing",
                         flush=True,
                     )
+                    # Resync to pending pool so the next candidate doesn't
+                    # reuse a nonce already pending/mined after a partial write
+                    # (avoids replacement-underpriced storms).
+                    try:
+                        fresh = get_pending_nonce(deployer, rpc)
+                        if fresh > nonce:
+                            print(f"    resync nonce {nonce} -> {fresh}", flush=True)
+                            nonce = fresh
+                    except Exception:  # noqa: BLE001, S110 - best-effort resync
+                        pass
         manifest_rows.append(
             {
                 "ens_name": full,
@@ -212,7 +247,17 @@ def main() -> None:
         if new_file:
             w.writeheader()
         w.writerows(manifest_rows)
-    print(f"Wrote {len(manifest_rows)} rows to {MANIFEST}")
+    print(
+        f"Wrote {len(manifest_rows)} rows to {MANIFEST} (records failures in run: {failed})",
+        flush=True,
+    )
+    if failed:
+        # Any batch failed — manifest is still written for frontend wiring,
+        # but the runner must not report success or partial on-chain state
+        # would be treated as complete. Wrapper will drain + retry with a
+        # fresh pending nonce; already-mined records will be skipped via the
+        # on-chain url check.
+        raise SystemExit(f"{failed} record batch(es) failed — not marking DONE")
 
 
 if __name__ == "__main__":
