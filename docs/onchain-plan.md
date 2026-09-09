@@ -8,7 +8,7 @@ snapshot hashes, and liveness status as text records. All writes go through
 [ENSv2](https://docs.ens.domains/ensv2/overview) Enhanced Access Control — only the
 Civicord key can update a candidate's records.
 
-## Status (updated 2026-09-08)
+## Status (updated 2026-09-09 21:30 BST — Alchemy + pending + decode fixes)
 
 - **Live parent name: `civicord.eth`** (registered 2026-09-08 via the official
   ETHRegistrar commit-reveal; `civicordhq.eth` was registered 2026-09-08 during a
@@ -26,31 +26,44 @@ Civicord key can update a candidate's records.
   key lives **outside the repo** (location deliberately undocumented).
 - **Minting**: blast-mode publisher (`publish.py --blast`) signs offline and fires
   raw txs without waiting for receipts (~50× faster than sequential `cast send`).
-  Runs rotate across multiple RPCs (Alchemy primary + public fallbacks) and are
+  Now on **Alchemy primary** (`eth-sepolia.g.alchemy.com` derived from
+  repo-root `.env:ALCHEMY_KEY` via `ensv2._resolve_rpc_endpoints()`, publicnode
+  as fallback). `call()` and `blast_send()` share that resolution — previously
+  `call()` hardcoded publicnode only, so the `--records-only` resume check
+  always missed and every pass rewrote all ~7k `setText` txs. Runs are
   fully idempotent/resumable: registration skipped when `getResolver(label) != 0`,
-  records skipped when the on-chain `url` text already matches.
+  records skipped when the on-chain `url` text already matches (fixed tonight —
+  `decode_string` was reading the wrong ABI word, so skip never fired).
 - **Smoke test passed** 2026-09-08: p9/p15/p16 resolve with url + status +
   `vnd.civicord.person_name` via `text()` reads against the resolver.
 - **Gas reality check** (measured on Sepolia): `register()` ≈ 1.20M gas,
   `setText()` ≈ 0.30M gas → ~2.1M gas (~0.002 ETH @ ~1 gwei) per candidate for
   register + 3 texts.
-  **On-chain state audited 2026-09-09** (via `getResolver(label)` reads over
-  the 2,375 manifest person-IDs — note labels are `p<person_id>`, i.e. raw
-  dataset IDs like `p122389`, NOT a 1..N index; audits must iterate manifest IDs):
-  - **~2,284 / 2,375 labels registered** before the final run (register phase
-    skipped 1,164 already-registered names and sent ~1,020 register txs; the
-    last ~91 high-ID persons from the newest scrape batch were registered by
-    the final blast run).
-  - **4 / 2,375 had full text records** on the canonical `civicord.eth` nodes
-    (p9, p15, p16, p20 — the smoke tests). The 2026-09-09 blast run (retry
-    wrapper `/tmp/blastloop.sh`, log `/tmp/blastloop.log`) is refreshing
-    url/status/name records across all names — resume-safe, skips names whose
-    on-chain `url` already matches the manifest.
-  - Deployer wallet `0xfa10…E0eC`: topped up to **~2.27 ETH** (was 0.9055).
-    Actual record burn ≈ 0.01 ETH per ~60 candidates (~0.5 ETH for all 2,375),
-    well under the naive 3×0.3M-gas estimate — comfortably funded.
+  **On-chain state audited 2026-09-09 21:30 BST** (via `getResolver(label)` + `text(node,url)` reads;
+  labels are `p<person_id>`, i.e. raw dataset IDs like `p122389`, NOT a 1..N index):
+  - **~2,375 / 2,375 labels registered** — all labels now resolve (Alchemy reads confirmed).
+  - **~50% of `url` text records on the canonical `civicord.eth` nodes** (every-50th and
+    every-100th samples both ~50% match before tonight's `decode_string` fix; post-fix the
+    resume check honestly skips ~1,180 already-written candidates, so the in-flight
+    `records-only` pass should write only the remaining ~1,195 × 3 texts). Earlier
+    reports of `4 / 2,375` were the smoke-test subset; the register phase had already
+    topped up the registry before the evening blast runs.
+  - **Wrapper:** `/tmp/recordsloop.sh` (12 attempts, Alchemy primary, `PK` from
+    `$HOME/.config/civicord/sepolia.key`, drains `pending == latest` between attempts).
+    `publish.py` now starts from `get_pending_nonce()` (pending pool, not `latest`) and
+    resyncs to the pending pool after any partial failure within a candidate (replaces
+    the old `rewind-to-start_nonce` loop that caused `nonce too low` storms). Also
+    fails fast if any batch fails — previously it printed `Wrote 2375 rows` + `RECORDS
+    DONE` with 0 successful writes and exited 0.
+  - Deployer wallet `0xfa10…E0eC`: **~2.15 ETH** (was 2.27 before the evening retries,
+    was 0.9055 before the Sepolia top-up). Actual record burn ≈ 0.01 ETH per ~60
+    candidates; comfortably funded for the remaining ~1.2k records.
 - Manifest (ens_name, person_id, name, url, status, node) written to
-  `data/out/onchain_manifest.csv` at the end of each run.
+  `data/out/onchain_manifest.csv` at the end of each run. Committed
+  `frontend/src/data/candidates.json` (2,514,165 bytes, 2,375 candidates) is
+  manifest-driven and already shows `onchain 2375` — the on-chain *content*
+  (the `text` records themselves) is still catching up in the in-flight pass
+  above; the JSON will be re-uploaded to R2 after the tail verifies.
 
 ## Architecture
 

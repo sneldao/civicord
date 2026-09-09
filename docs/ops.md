@@ -4,7 +4,7 @@ Infrastructure and deployment notes for Civicord. This doc is **internal** —
 it's safe to commit (no secrets), but unlike `architecture.md` /
 `onchain-plan.md` it documents *how we run* the project rather than what it is.
 
-Last updated: 2026-09-09.
+Last updated: 2026-09-09 (evening — Alchemy primary + pending-nonce + decode fixes).
 
 ## Hosting topology
 
@@ -54,37 +54,81 @@ REST listings of the e738 bucket. Verified with round-trip probes.
 
 ## ENS publish runbook (two-phase resume)
 
-State as of 2026-09-09: 1,921/2,375 registered, 4 with records, deployer at
-0.9055 ETH (see `docs/onchain-plan.md` for the audited detail).
+State as of 2026-09-09 21:30 BST: **registers ~2,375/2,375** (all labels now
+resolve — audited via `getResolver(label)` over the manifest), **records
+~50% on-chain before the evening fixes** (every-50th sample: 50% `url` match
+before `decode_string` was corrected; post-fix the resume check now honestly
+skips ~1,180 already-written candidates). Deployer at **~2.15 ETH** (Alchemy
+primary, pending pool drained, `0xfa10…E0eC` — see `docs/onchain-plan.md` for
+the full audit and tonight's bugfixes).
 
 **Top-up address (deployer/gas payer):** `0xfa104deA24CbC347100adE461883403bdd79E0eC`
 (the matching private key lives **outside this repo** — its location is
 deliberately not documented here; see the operator's local secret store).
 
+**RPC setup (updated tonight):** `scripts/publish/ensv2.py` now derives
+`RPC_URL` from repo-root `.env:ALCHEMY_KEY` (with `publicnode` as fallback)
+via `_resolve_rpc_endpoints()`. `call()` and `blast_send()` share that
+resolution — no more `call()` silently hitting publicnode while writes go to
+Alchemy. Pre-commit blocks real keys: `.env` is `chmod 600` + gitignored, only
+a `your-alchemy-api-key-here` placeholder lives in `.env.example`. The wrapper
+**must** run with `RPC_URL`/`RPC_FALLBACKS` unset so `.env` is the source of
+truth.
+
 **Phase 1 — registers (~0.55 ETH @ 1 gwei; run when balance ≥ 0.7 ETH):**
 ```bash
-cd /Users/udingethe/Dev/civicord
-export PK="$DEPLOYER_SEPOLIA_PK"   # load from your local secret store, not the repo
-export RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
+cd /Users/udingethe/dev/civicord   # not Dev — lowercase on this host
+unset RPC_URL RPC_FALLBACKS        # force .env:ALCHEMY_KEY -> eth-sepolia.g.alchemy.com
+# export PK from your local secret store; never from the repo
+# PK=$(cat $HOME/.config/civicord/sepolia.key)  # example location
 nohup python scripts/publish/publish.py --blast --register-only \
-  > /tmp/publish-register.log 2>&1 &
+  >> /tmp/records-blast.log 2>&1 &
 ```
 
 **Phase 2 — records for all 2,375 (~2.1 Ggas ≈ 2.1 ETH @ 1 gwei; run when
 balance ≥ 2.5 ETH, or wait for gas < 0.3 gwei):**
 ```bash
-nohup python scripts/publish/publish.py --blast > /tmp/publish-records.log 2>&1 &
+unset RPC_URL RPC_FALLBACKS
+export PK="$DEPLOYER_SEPOLIA_PK"
+nohup python scripts/publish/publish.py --blast --records-only \
+  >> /tmp/records-blast.log 2>&1 &
+# wrapper with 12 attempts + drain: /tmp/recordsloop.sh (see below)
 ```
+
 Fully idempotent: registers skip when `getResolver(label) != 0`, records skip
-when the on-chain `url` already matches. Manifest rows are written for every
-candidate (including skips) — the frontend's Public Record blocks read from it.
+when the on-chain `url` already matches (fixed tonight — `decode_string` was
+reading the wrong ABI word, so every pass re-wrote all 7k `setText` txs).
+Manifest rows are written for every candidate (including skips) — the frontend's
+Public Record blocks read from it. **Critical fix:** the run now fails fast if
+*any* batch fails (previously it printed `Wrote 2375 rows` + `RECORDS DONE`
+with 0 successful writes and exited 0).
+
+**Current wrapper (`/tmp/recordsloop.sh`):** unsets `RPC_URL`, reads
+`$HOME/.config/civicord/sepolia.key`, loops 12× `publish.py --blast
+--records-only`, and drains the mempool (`pending == latest`) between attempts
+so the next pass starts from a fresh `pending` nonce instead of replaying a
+stale `latest` nonce and spamming `replacement underpriced` / `nonce too low`.
+`publish.py` itself starts from `get_pending_nonce()` and resyncs to the
+pending pool after any partial failure within a candidate (replaces the old
+`rewind-to-start_nonce` loop).
 
 **Monitor:**
 ```bash
-tail -f /tmp/publish-register.log          # or publish-records.log
-# balance + pending check:
-cast balance 0xfa104deA24CbC347100adE461883403bdd79E0eC --rpc-url $RPC_URL
-cast nonce 0xfa104deA24CbC347100adE461883403bdd79E0eC --rpc-url $RPC_URL
+tail -f /tmp/records-blast.log
+# Alchemy-aware balance + pending check (pending pool, not just tip):
+python3 - <<'PY'
+import os, sys
+for line in open('.env'):
+    if '=' in line and not line.strip().startswith('#'):
+        k,v=line.strip().split('=',1); os.environ.setdefault(k,v)
+sys.path.insert(0,'scripts/publish')
+from ensv2 import env, _cast, get_pending_nonce
+import json
+s=json.loads(open('scripts/publish/.deployed.json').read());rpc=env('RPC_URL');a=s['deployer']
+print(f"pending {get_pending_nonce(a,rpc)} latest {int(_cast(['nonce',a,'--rpc-url',rpc]).strip())} bal {int(_cast(['balance',a,'--rpc-url',rpc]).strip())/1e18:.6f} ETH")
+PY
+# quick on-chain spot check:
+# cast call $RESOLVER 'text(bytes32,string)' $NODE url --rpc-url $RPC_URL
 ```
 
 **After phase 2 completes:** regenerate + re-upload the frontend data snapshot
@@ -103,7 +147,10 @@ cast nonce 0xfa104deA24CbC347100adE461883403bdd79E0eC --rpc-url $RPC_URL
 
 ```bash
 cd frontend && npm run build
-npx wrangler pages deploy dist --project-name civicord
+# CLOUDFLARE_API_KEY in the shell (AI key ff315ddd) breaks Pages auth — unset it:
+env -u CLOUDFLARE_API_KEY -u CLOUDFLARE_ACCOUNT_ID -u CLOUDFLARE_BASE_URL \
+  npx wrangler pages deploy frontend/dist --project-name civicord --commit-dirty=true
+# deploys to https://<hash>.civicord.pages.dev (civicord.pages.dev alias follows)
 ```
 
 Verify after deploy:
@@ -132,7 +179,23 @@ excluded from the large-file/JSON pre-commit hooks — see
 
 Data resolution order in `build-data.mjs`: pipeline CSVs in `data/out/` →
 R2 snapshot at `https://civicord.pages.dev/data/candidates.json` → committed
-`src/data/candidates.json`.
+`src/data/candidates.json`. R2 snapshot: ~2.5 MB (`candidates.json`), alias at
+`civicord.pages.dev/data/candidates.json`.
+
+## Frontend deploy state (2026-09-09 21:25 BST)
+
+- **Built:** `frontend/dist` 2,380 pages (2,375 candidates + `cohorts/{live,gone,redirected}` + `methodology` + `index` + sitemap) — 2.94 s.
+- **Pages deploy:** `https://61492fcf.civicord.pages.dev` (verified 200), smoke-tested:
+  `cohorts/gone` → *The graveyard*, `cohorts/redirected` → *Top destinations*,
+  `/candidates/3454` + `/candidates/9` → `compare-line` + `timeline` present.
+- **R2 snapshot:** `frontend/src/data/candidates.json` (2,514,165 bytes) uploaded via
+  `scripts/upload_snapshot.sh` to `civicord-data/candidates.json` — `https://civicord.pages.dev/data/candidates.json`
+  returns 200; `candidates 2375 onchain 2375` in committed JSON (manifest-driven
+  — on-chain record *content* is still catching up, see ENS section above).
+- **Gotcha already hit tonight:** `npx --prefix frontend wrangler pages deploy dist` fails
+  (`ENOENT dist`); deploy from repo root as `frontend/dist`. And any
+  `CLOUDFLARE_API_KEY`/`ACCOUNT_ID`/`BASE_URL` in the shell (the Workers AI key from a prior `.zshrc`
+  export) causes `Authentication error [code: 10000]` — the `env -u` prefix above is required.
 
 ## Sizes to keep an eye on
 
@@ -146,4 +209,5 @@ R2 snapshot at `https://civicord.pages.dev/data/candidates.json` → committed
 
 - ENS deployer key lives **outside** the repo (see `docs/onchain-plan.md`).
 - `.env`, `.deployed.json`, `.abi-cache/`, `.wrangler/` are gitignored.
-- gitleaks runs in pre-commit.
+- gitleaks + `detect-private-key` run in pre-commit; `.env` is `chmod 600`.
+- Alchemy key in `.env` is read by the deployer; only a placeholder lives in `.env.example`.
