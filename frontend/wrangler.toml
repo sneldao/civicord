@@ -1,0 +1,10 @@
+name = "civicord"
+compatibility_date = "2026-09-01"
+pages_build_output_dir = "dist"
+
+# R2 bucket holding pipeline data snapshots (candidates.json etc.), served at
+# /data/* by public/_worker.js. Upload new snapshots with:
+#   npx wrangler r2 object put civicord-data/candidates.json --file src/data/candidates.json
+[[r2_buckets]]
+binding = "DATA"
+bucket_name = "civicord-data"

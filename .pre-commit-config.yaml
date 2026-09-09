@@ -11,7 +11,9 @@ repos:
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^frontend/src/data/candidates\.json$
       - id: end-of-file-fixer
+        exclude: ^frontend/src/data/candidates\.json$
       - id: check-yaml
       - id: check-json
         exclude: ^frontend/src/data/candidates\.json$

@@ -17,7 +17,7 @@ const outDir = path.resolve(here, "../src/data");
 //      pipeline after each run: `wrangler r2 object put ...`)
 //   3. a committed src/data/candidates.json (last resort)
 const R2_SNAPSHOT_URL =
-  process.env.DATA_SNAPSHOT_URL || "https://data.famile.xyz/candidates.json";
+  process.env.DATA_SNAPSHOT_URL || "https://civicord.pages.dev/data/candidates.json";
 
 if (!existsSync(dataDir)) {
   const committed = path.join(outDir, "candidates.json");
