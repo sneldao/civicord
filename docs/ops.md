@@ -52,6 +52,52 @@ REST listings of the e738 bucket. Verified with round-trip probes.
    stray `pin-test-3.txt` probe object) — delete from the dashboard when
    convenient.
 
+## ENS publish runbook (two-phase resume)
+
+State as of 2026-09-09: 1,921/2,375 registered, 4 with records, deployer at
+0.9055 ETH (see `docs/onchain-plan.md` for the audited detail).
+
+**Top-up address (deployer/gas payer):** `0xfa104deA24CbC347100adE461883403bdd79E0eC`
+(key at `~/.config/civicord/sepolia.key`, never in the repo).
+
+**Phase 1 — registers (~0.55 ETH @ 1 gwei; run when balance ≥ 0.7 ETH):**
+```bash
+cd /Users/udingethe/Dev/civicord
+export PK=$(cat ~/.config/civicord/sepolia.key)
+export RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
+nohup python scripts/publish/publish.py --blast --register-only \
+  > /tmp/publish-register.log 2>&1 &
+```
+
+**Phase 2 — records for all 2,375 (~2.1 Ggas ≈ 2.1 ETH @ 1 gwei; run when
+balance ≥ 2.5 ETH, or wait for gas < 0.3 gwei):**
+```bash
+nohup python scripts/publish/publish.py --blast > /tmp/publish-records.log 2>&1 &
+```
+Fully idempotent: registers skip when `getResolver(label) != 0`, records skip
+when the on-chain `url` already matches. Manifest rows are written for every
+candidate (including skips) — the frontend's Public Record blocks read from it.
+
+**Monitor:**
+```bash
+tail -f /tmp/publish-register.log          # or publish-records.log
+# balance + pending check:
+cast balance 0xfa104deA24CbC347100adE461883403bdd79E0eC --rpc-url $RPC_URL
+cast nonce 0xfa104deA24CbC347100adE461883403bdd79E0eC --rpc-url $RPC_URL
+```
+
+**After phase 2 completes:** regenerate + re-upload the frontend data snapshot
+(see "Refreshing the data snapshot" above) so Public Record blocks go live.
+
+**Optimisations applied / considered:**
+- `--register-only` added so phases can be funded/run separately.
+- `blast_send` fires without receipts (~50× faster); nonces tracked locally.
+- Considered and rejected: skipping `vnd.civicord.person_name` records
+  (frontend uses the manifest for names, but the onchain record is part of the
+  product story — keep unless gas stays > 1 gwei for days).
+- Considered and rejected: multicall batching (ENSv2 PermissionedResolver has
+  no multicall entrypoint).
+
 ## Deploying the frontend
 
 ```bash

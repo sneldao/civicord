@@ -75,6 +75,11 @@ def main() -> None:
         action="store_true",
         help="fire raw signed txs without waiting for receipts (~50x faster)",
     )
+    ap.add_argument(
+        "--register-only",
+        action="store_true",
+        help="skip text records entirely (phase 1 of a two-phase run: register now, records later)",
+    )
     args = ap.parse_args()
 
     rpc = env("RPC_URL")
@@ -138,7 +143,7 @@ def main() -> None:
                         )
                     else:
                         raise
-        if c.get("status"):
+        if c.get("status") and not args.register_only:
             already_onchain = False
             if args.blast:
                 # resume support: skip if url record already matches
