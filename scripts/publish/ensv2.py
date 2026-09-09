@@ -97,6 +97,8 @@ def blast_send(
                 or "sending request" in msg
                 or "429" in msg
                 or "rate" in msg.lower()
+                or "replacement transaction underpriced" in msg
+                or "already known" in msg
             )
             if not transient or attempt == 3 * len(rpcs) - 1:
                 raise
