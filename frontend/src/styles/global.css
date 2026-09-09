@@ -374,6 +374,34 @@ a.url:hover { color: var(--accent); }
 .badge.timeout, .badge.connection_error, .badge.ssl_error, .badge.other_error, .badge.warn { color: var(--warn); }
 .badge.unknown, .badge.not_audited { color: var(--unknown); }
 
+/* Cohort layer: party survival leaderboard */
+.cohorts { margin: 1.6rem 0 0.4rem; border-top: 2px solid var(--ink); padding-top: 0.9rem; }
+.cohorts h2 { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.2rem; }
+.cohorts .muted { font-size: 0.84rem; margin: 0 0 0.7rem; }
+.board { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.15rem; }
+.board a {
+  display: grid;
+  grid-template-columns: minmax(10em, 16em) 1fr minmax(9em, auto);
+  gap: 0.8rem;
+  align-items: center;
+  padding: 0.32rem 0.5rem;
+  border-radius: 4px;
+  text-decoration: none;
+}
+.board a:hover { background: rgba(199, 58, 29, 0.06); }
+.board-party { font-weight: 600; font-size: 0.88rem; }
+.board-bar { display: block; height: 0.55em; background: var(--rule); border-radius: 999px; overflow: hidden; }
+.board-bar b { display: block; height: 100%; border-radius: 999px; }
+.board-bar b.ok { background: var(--live); }
+.board-bar b.mid { background: var(--warn); }
+.board-bar b.low { background: var(--gone); }
+.board-num { font-size: 0.8rem; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.board-num b { color: var(--ink); }
+@media (max-width: 640px) {
+  .board a { grid-template-columns: 1fr auto; }
+  .board-bar { display: none; }
+}
+
 /* Clickable status legend with live counts */
 .legend {
   display: flex;

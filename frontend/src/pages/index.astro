@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
+import { cohortStats } from "../lib/cohorts";
 import "../styles/global.css";
 
 // Validated at build time by src/content.config.ts — malformed pipeline
@@ -14,6 +15,22 @@ const dead = audited.filter((w) => w.audit?.statusClass === "dns_error");
 const redirected = audited.filter((w) => w.audit?.redirected);
 const onchain = candidates.filter((c) => c.onchain);
 const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
+
+// Cohort layer: party survival leaderboard (top 8 by site count).
+const stats = await cohortStats();
+const board = stats.parties.slice(0, 8);
+const maxBoard = Math.max(...board.map((r) => r.sites), 1);
+
+// Deep-linkable cohort presets (?party=…&status=…). Serialized once so the
+// client filter can boot from the URL — zero new pages, journalist-friendly.
+const VALID_STATUSES = new Set([
+  "live", "http_error", "dns_error", "connection_error",
+  "timeout", "ssl_error", "other_error", "not_audited",
+]);
+const validParties = new Set(
+  candidates.flatMap((c) => c.websites.flatMap((w) => w.parties)).map((p) => p.toLowerCase())
+);
+const cohortBoot = { statuses: [...VALID_STATUSES], parties: [...validParties] };
 
 const statusLabels: Record<string, string> = {
   live: "Live",
@@ -109,6 +126,24 @@ const groupLetterOf = (name: string) => {
           Every claim on this site links to the public record behind it — check it
           yourself, any time, forever.
         </li>
+      </ol>
+    </section>
+
+    <section class="cohorts" aria-label="Survival by party">
+      <h2>Which parties' sites survived?</h2>
+      <p class="muted">Share of each party's campaign sites still live — click a row to see its candidates.</p>
+      <ol class="board">
+        {board.map((r) => (
+          <li>
+            <a href={`/?party=${encodeURIComponent(r.party.toLowerCase())}`} data-party-link={r.party.toLowerCase()}>
+              <span class="board-party">{r.party}</span>
+              <span class="board-bar" aria-hidden="true">
+                <b style={`width:${Math.round((r.sites / maxBoard) * 100)}%`} class={r.livePct >= 60 ? "ok" : r.livePct >= 40 ? "mid" : "low"}></b>
+              </span>
+              <span class="board-num"><b>{r.livePct}%</b> live · {r.sites.toLocaleString("en-GB")} sites</span>
+            </a>
+          </li>
+        ))}
       </ol>
     </section>
 
@@ -216,7 +251,10 @@ const groupLetterOf = (name: string) => {
       </p>
     </footer>
 
-    <script>
+    <script define:vars={{ statuses: cohortBoot.statuses, parties: cohortBoot.parties }}>
+      // Serialized allow-lists for deep-link boot (see cohortBoot in frontmatter).
+      window.__COHORT_STATUSES = statuses;
+      window.__COHORT_PARTIES = parties;
       // astro:page-load fires on first load and after every <ClientRouter />
       // view-transition swap — hoisted module scripts otherwise run only once,
       // which would leave the filter/progress/count-up dead after returning
@@ -274,9 +312,9 @@ const groupLetterOf = (name: string) => {
           }
           noresults.hidden = shown !== 0;
         };
-        q.addEventListener("input", apply);
-        status.addEventListener("change", apply);
-        party?.addEventListener("change", apply);
+        q.addEventListener("input", () => { syncUrl(); apply(); });
+        status.addEventListener("change", () => { syncUrl(); apply(); });
+        party?.addEventListener("change", () => { syncUrl(); apply(); });
         legend.forEach((btn) =>
           btn.addEventListener("click", () => {
             const classes = btn.dataset.classes!.split(",");
@@ -289,6 +327,7 @@ const groupLetterOf = (name: string) => {
               legendClasses = classes;
               status.value = "all";
             }
+            syncUrl();
             apply();
           })
         );
@@ -298,9 +337,31 @@ const groupLetterOf = (name: string) => {
           if (party) party.value = "all";
           legendClasses = null;
           legend.forEach((b) => b.setAttribute("aria-pressed", "false"));
+          syncUrl();
           apply();
           q.focus();
         });
+        // Boot from deep-link cohort params (?party=…&status=…&q=…). Unknown
+        // values are ignored; the board links + shared URLs just work.
+        // syncUrl keeps the address bar in sync so every filter state is
+        // itself a shareable cohort link — no new pages needed.
+        const params = new URLSearchParams(location.search);
+        const bootStatuses = (window as any).__COHORT_STATUSES as string[];
+        const bootParties = (window as any).__COHORT_PARTIES as string[];
+        const qp = (params.get("party") ?? "").toLowerCase();
+        const qs = params.get("status") ?? "";
+        const qq = params.get("q") ?? "";
+        if (party && qp && bootParties.includes(qp)) party.value = qp;
+        if (qs && bootStatuses.includes(qs)) status.value = qs;
+        if (qq) q.value = qq.slice(0, 120);
+        const syncUrl = () => {
+          const out = new URLSearchParams();
+          if (q.value.trim()) out.set("q", q.value.trim().slice(0, 120));
+          if (status.value !== "all") out.set("status", status.value);
+          if ((party?.value ?? "all") !== "all") out.set("party", party!.value);
+          const next = out.toString();
+          history.replaceState(null, "", next ? `?${next}` : location.pathname);
+        };
         apply();
 
         // Scroll progress line
