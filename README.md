@@ -13,11 +13,11 @@ web-monitoring and the Library of Congress's Elections Web Archive — see
 
 ## Status
 
-**2026-09-07 · Phase 0 complete.** Liveness audit of all 2,375 scraped candidate
+**2026-09-09 · Phase 0 + progressive disclosure split complete.** Liveness audit of all 2,375 scraped candidate
 websites: **64% still live ~17 months after the scrape** — 363 domains gone
-entirely, 372 serving HTTP errors, 659 URLs redirect elsewhere. Findings and
-interpretation: [docs/phase0-findings.md](docs/phase0-findings.md). What's
-next: [docs/plan.md](docs/plan.md).
+entirely, 372 serving HTTP errors, 659 URLs redirect elsewhere ([docs/phase0-findings.md](docs/phase0-findings.md)). Homepage is now narrative-only with cohort cards and hero search →
+`/browse` (paginated ledger, 50/page, deep-linkable filters); the 2,375-row wall is gone. Disclosure stack:
+`summary → cohort → filtered ledger → record → archived pages`. What's next: [docs/plan.md](docs/plan.md).
 
 ## Development
 

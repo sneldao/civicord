@@ -1,6 +1,6 @@
 # Plan
 
-Delivery phases, the current sprint, and risks. Last updated 2026-09-08.
+Delivery phases, the current sprint, and risks. Last updated 2026-09-09 23:35 BST.
 (Day-of-week note: 2026-09-08 is a **Tuesday**; earlier drafts of this file
 labelled it Monday — all day labels below use the corrected mapping.)
 
@@ -114,15 +114,12 @@ Audience-first framing for all frontend content, in priority order:
 Language rules: ban "blockchain/web3/mint" in user-facing copy — say "permanent
 record", "public register", "verify". Reading requires no wallet or account.
 
-Delivered (frontend):
-- Homepage: why-it-exists lede, three-step "How it works" (Collect / Record /
-  Verify), live "N of 2,375 on record" counter, OG/twitter meta for shares.
-- Candidate pages (2,375 static pages): "Public record" block with the candidate's
-  `p{id}.civicord.eth`, link to the record on app.ens.domains, and a verify link
-  to the resolver's read contract on Etherscan. Shown only once minted (manifest-driven).
-- `build-data.mjs` ingests `data/out/onchain_manifest.csv` (optional) into
-  `candidates.json` as `person.onchain {ens,status}`.
-- Mobile: ledger tables scroll, filter bar tightens, snippets clamp.
+Delivered (frontend — 2,381 static pages at 23:35):
+- Homepage: narrative-only (no 2,375-row wall) — why-it-exists lede, 3-step "How it works" (Collect / Record / Verify), stats + 3 cohort feature cards (Gone/Redirected/Live → `/cohorts/[status]`), party survival board retargeted to `/browse?party=…`, hero search (`“Farage” / “Leeds Central” → Enter` pushes to `/browse?q=…`), primary `Browse full ledger — 2,375 entries` CTA. OG/twitter meta per page.
+- New `/browse` paginated ledger: the full database lives here — 50/page (`?page=`, windowed `1 2 3 … 48`, Prev/Next), fuzzy `farrage→Farage` subsequence matcher, `?q` + `?party` + `?status` + virtual `gone`/`redirected` deep-links, legend counts, ↳ flag, party filter fixed tonight (`data-party` joined on `|` not space — `?party=labour%20party` was returning 0 rows). Live deep-links verified: `farage→115`, `gone→441`, `labour→522`, `reform→154`.
+- Cohort pages (`/cohorts/{live,gone,redirected}`) + candidate pages (2,375) keep "Public record" block with `p{id}.civicord.eth`, `app.ens.domains` + Etherscan verify links (manifest-driven: `person.onchain {ens,status}`). `compare-line` + `timeline` on `/candidates/3454` + `/candidates/9`.
+- `build-data.mjs` ingests `data/out/onchain_manifest.csv` (optional) into `candidates.json` as `person.onchain {ens,status}`; R2 snapshot `frontend/src/data/candidates.json` committed as fallback (`DATA_SNAPSHOT_URL`).
+- Mobile: browse rows become cards `<640px` (thead hidden, `data-label` via `::before`), feature grid stacks, search-hero stacks; methodology/specimen tables keep normal layout.
 
 Delivery/UX principles going forward: static-first (build-time data, no backend),
 copy before chrome, verification one click away everywhere. Viral hook is the
@@ -139,7 +136,7 @@ network requests. Translated to Astro's first-party primitives:
 - `<ClientRouter />` view transitions on both layouts — cross-page navigation
   feels continuous instead of a hard reload.
 - `prefetch: true` — candidate links hydrate on hover; 2,375 static pages feel instant.
-- `@astrojs/sitemap` — `sitemap-index.xml` for all 2,376 pages (SEO/discovery primitive).
+- `@astrojs/sitemap` — `sitemap-index.xml` for all 2,381 pages (SEO/discovery primitive).
 - Entrance choreography: CSS-only staggered reveal (masthead -> stats -> how ->
   ledger), first 14 ledger rows settle with a 24ms cascade; fully disabled under
   `prefers-reduced-motion`.
