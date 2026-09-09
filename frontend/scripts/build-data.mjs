@@ -10,37 +10,45 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.resolve(here, "../../data/out");
 const outDir = path.resolve(here, "../src/data");
 
-// Deploy environments (e.g. Cloudflare Pages) have no pipeline outputs — the
-// pipeline is Python-only and `data/` is gitignored. Fallback order:
-//   1. pipeline CSVs in ../data/out (freshest)
+// Deploy environments (e.g. Cloudflare Pages, Vercel) have no pipeline outputs —
+// the pipeline is Python-only and `data/` is gitignored (except a stray
+// committed report). Fallback order:
+//   1. pipeline CSVs in ../data/out (freshest — requires websites.csv)
 //   2. the published snapshot on R2 (set DATA_SNAPSHOT_URL; updated by the
-//      pipeline after each run: `wrangler r2 object put ...`)
+//      pipeline after each run: `scripts/upload_snapshot.sh`)
 //   3. a committed src/data/candidates.json (last resort)
 const R2_SNAPSHOT_URL =
   process.env.DATA_SNAPSHOT_URL || "https://civicord.pages.dev/data/candidates.json";
 
-if (!existsSync(dataDir)) {
+const websitesCsv = path.join(dataDir, "websites.csv");
+
+function useCommittedFallback(reason) {
   const committed = path.join(outDir, "candidates.json");
-  if (existsSync(committed) || process.env.DATA_SNAPSHOT_URL) {
-    try {
-      const res = await fetch(R2_SNAPSHOT_URL);
+  if (!existsSync(committed) && !process.env.DATA_SNAPSHOT_URL) {
+    console.error(`Missing ${websitesCsv} (${reason}). From the repo root run: .venv/bin/civicord ingest`);
+    process.exit(1);
+  }
+  return fetch(R2_SNAPSHOT_URL)
+    .then(async (res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const buf = Buffer.from(await res.arrayBuffer());
       mkdirSync(outDir, { recursive: true });
       writeFileSync(committed, buf);
-      console.log(`No data/out CSVs — fetched snapshot from ${R2_SNAPSHOT_URL} (${(buf.length / 1e6).toFixed(1)}MB)`);
-      process.exit(0);
-    } catch (err) {
+      console.log(`No usable pipeline CSVs (${reason}) — fetched snapshot from ${R2_SNAPSHOT_URL} (${(buf.length / 1e6).toFixed(1)}MB)`);
+    })
+    .catch((err) => {
       if (!existsSync(committed)) {
         console.error(`Snapshot fetch failed (${err.message}) and no committed fallback exists.`);
         process.exit(1);
       }
-      console.log(`Snapshot fetch failed (${err.message}) — falling back to committed src/data/candidates.json`);
-    }
-    process.exit(0);
-  }
-  console.error(`Missing ${dataDir}. From the repo root run: .venv/bin/civicord ingest`);
-  process.exit(1);
+      console.log(`Snapshot fetch failed (${err.message}) — using committed src/data/candidates.json`);
+    })
+    .then(() => process.exit(0));
+}
+
+// NOTE: top-level await so this works as a prebuild script.
+if (!existsSync(websitesCsv)) {
+  await useCommittedFallback(existsSync(dataDir) ? "websites.csv absent" : "data/out absent");
 }
 
 function readCsv(name, { required = true } = {}) {
