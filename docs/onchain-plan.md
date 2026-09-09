@@ -22,8 +22,8 @@ Civicord key can update a candidate's records.
   Hierarchy wired: ETHRegistry `setSubregistry("civicordhq", UserRegistry)`.
   Deployment state (addresses only, no keys) in `scripts/publish/.deployed.json`
   (gitignored); ABIs cached in `scripts/publish/.abi-cache/`.
-- **Deployer EOA** `0xfa104deA24CbC347100adE461883403bdd79E0eC` — key lives
-  **outside the repo** at `~/.config/civicord/sepolia.key`.
+- **Deployer EOA** `0xfa104deA24CbC347100adE461883403bdd79E0eC` — the private
+  key lives **outside the repo** (location deliberately undocumented).
 - **Minting**: blast-mode publisher (`publish.py --blast`) signs offline and fires
   raw txs without waiting for receipts (~50× faster than sequential `cast send`).
   Runs rotate across multiple RPCs (Alchemy primary + public fallbacks) and are

@@ -58,12 +58,13 @@ State as of 2026-09-09: 1,921/2,375 registered, 4 with records, deployer at
 0.9055 ETH (see `docs/onchain-plan.md` for the audited detail).
 
 **Top-up address (deployer/gas payer):** `0xfa104deA24CbC347100adE461883403bdd79E0eC`
-(key at `~/.config/civicord/sepolia.key`, never in the repo).
+(the matching private key lives **outside this repo** — its location is
+deliberately not documented here; see the operator's local secret store).
 
 **Phase 1 — registers (~0.55 ETH @ 1 gwei; run when balance ≥ 0.7 ETH):**
 ```bash
 cd /Users/udingethe/Dev/civicord
-export PK=$(cat ~/.config/civicord/sepolia.key)
+export PK="$DEPLOYER_SEPOLIA_PK"   # load from your local secret store, not the repo
 export RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
 nohup python scripts/publish/publish.py --blast --register-only \
   > /tmp/publish-register.log 2>&1 &
