@@ -28,6 +28,29 @@ const ens = person.onchain?.ens ?? `p${person.id}.civicord.eth`;
 const ensUrl = `https://app.ens.domains/${ens}`;
 const resolverUrl =
   "https://sepolia.etherscan.io/address/0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67#readContract";
+
+// Verdict banner (verdict-first page): overall status across the websites.
+const verdict =
+  person.websites.every((w) => w.audit?.statusClass === "live") ? "live"
+  : person.websites.some((w) => w.audit?.statusClass === "live") ? "mixed"
+  : person.websites.every((w) => ["dns_error", "connection_error"].includes(w.audit?.statusClass ?? ""))
+    ? "gone" : "unknown";
+const verdictCopy: Record<string, [string, string]> = {
+  live: ["Still live ✓", `${person.name}'s campaign site responds and still mentions them — checked September 2026.`],
+  mixed: ["Partly live ~", `Some of ${person.name}'s recorded sites are live, others are gone or broken — checked September 2026.`],
+  gone: ["Gone ✕", `${person.name}'s recorded campaign sites no longer resolve — checked September 2026.`],
+  unknown: ["Archived record", `Civicord holds what ${person.name} published — scraped April 2025, permanence recorded on-chain.`],
+};
+
+// Cold-arrival context line + breadcrumb: party / first constituency.
+const party = parties[0] ?? "Candidate";
+const seat = person.websites[0]?.posts?.[0] ?? elections[0] ?? "";
+
+// Prev / next by id order for the "poking around" loop.
+const ids = [...(candidates as Array<{ id: string }>)].map((c) => c.id).sort();
+const at = ids.indexOf(person.id);
+const prevId = at > 0 ? ids[at - 1] : null;
+const nextId = at >= 0 && at < ids.length - 1 ? ids[at + 1] : null;
 ---
 
 <html lang="en-GB">
@@ -47,7 +70,14 @@ const resolverUrl =
     <ClientRouter />
   </head>
   <body class="reveal-root">
-    <p class="crumb"><a href="/">← Public record index</a></p>
+    <p class="crumb">
+      <a href="/">Public record index</a> / {party}{seat && <> / {seat}</>} / <b>{person.name}</b>
+    </p>
+
+    <p class="context-line">
+      Campaign site{person.websites.length > 1 ? "s" : ""} for {person.name} ({party}{seat && ` — ${seat}`}),
+      scraped April 2025, audited September 2026.
+    </p>
 
     <header class="record-head">
       <h1>{person.name}</h1>
@@ -56,6 +86,10 @@ const resolverUrl =
         {elections.map((e) => <li>{e}</li>)}
       </ul>
     </header>
+
+    <p class={`verdict v-${verdict}`} role="status">
+      <b>{verdictCopy[verdict][0]}</b> — {verdictCopy[verdict][1]}
+    </p>
 
     <section class="entries">
       <h2>Websites</h2>
@@ -87,8 +121,8 @@ const resolverUrl =
     </section>
 
     {person.pages.length > 0 && (
-      <section class="specimens">
-        <h2>Archived scrape — April 2025 (Campaign Lab)</h2>
+      <details class="specimens">
+        <summary>Archived scrape — April 2025 (Campaign Lab) · {person.pages.length} pages</summary>
         <table>
           <thead>
             <tr><th>Page</th><th>Chars</th><th>Opening text</th></tr>
@@ -103,7 +137,7 @@ const resolverUrl =
             ))}
           </tbody>
         </table>
-      </section>
+      </details>
     )}
 
     {person.onchain && (
@@ -111,8 +145,11 @@ const resolverUrl =
         <h2>Public record <span class="onchain-chip">On-chain ✓</span></h2>
         <p>
           Permanent public name:{" "}
-          <a href={ensUrl} rel="noopener noreferrer"><code>{ens}</code></a>.
-          {person.onchain.status && <> Recorded status: <b>{person.onchain.status}</b>. </>}
+          <button type="button" class="ens-copy" data-copy={ens} title="Copy the ENS name">
+            <code>{ens}</code>
+          </button>
+          .{" "}
+          {person.onchain.status && <>Recorded status: <b>{person.onchain.status}</b>. </>}
           It holds this page's claims — website, status, evidence — in a public
           register that can't be quietly edited or deleted.
         </p>
@@ -123,6 +160,12 @@ const resolverUrl =
       </section>
     )}
 
+    <nav class="prevnext" aria-label="More candidates">
+      {prevId ? <a href={`/candidates/${prevId}`}>← Previous candidate</a> : <span />}
+      <a href="/">All candidates</a>
+      {nextId ? <a href={`/candidates/${nextId}`}>Next candidate →</a> : <span />}
+    </nav>
+
     <footer>
       <p>
         Civicord record · permanent public identity via the Ethereum Name Service
@@ -130,5 +173,26 @@ const resolverUrl =
         <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
       </p>
     </footer>
+
+    <script>
+      // Copy the ENS name on click (progressive enhancement; view-transition safe).
+      document.addEventListener("astro:page-load", () => {
+        const btn = document.querySelector<HTMLButtonElement>(".ens-copy");
+        btn?.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(btn.dataset.copy!);
+          } catch {
+            const ta = document.createElement("textarea");
+            ta.value = btn.dataset.copy!;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            ta.remove();
+          }
+          btn.classList.add("copied");
+          setTimeout(() => btn.classList.remove("copied"), 1200);
+        });
+      });
+    </script>
   </body>
 </html>

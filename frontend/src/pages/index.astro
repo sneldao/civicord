@@ -22,10 +22,27 @@ const statusLabels: Record<string, string> = {
   not_audited: "Not audited",
 };
 
+// Status groups for the clickable legend: dot class → [label, statusClasses].
+const legendGroups: Array<[string, string, string[]]> = [
+  ["g-live", "Live", ["live"]],
+  ["g-gone", "Gone", ["dns_error", "connection_error"]],
+  ["g-error", "Errors", ["http_error", "timeout", "ssl_error", "other_error"]],
+  ["g-unknown", "Not audited", ["not_audited"]],
+];
+const legendCount = (classes: string[]) =>
+  websites.filter((w) => classes.includes(w.audit?.statusClass ?? "not_audited")).length;
+
 // Parties sorted by website count (most first) for the filter dropdown.
 const partyCounts = new Map<string, number>();
 for (const w of websites) for (const p of w.parties) partyCounts.set(p, (partyCounts.get(p) ?? 0) + 1);
 const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p]) => p);
+
+// Alphabetical group headers (by surname-ish: last word of the display name).
+const surnameOf = (name: string) => name.trim().split(/\s+/).pop()!.toUpperCase();
+const groupLetterOf = (name: string) => {
+  const ch = surnameOf(name).replace(/^[^A-Z]+/, "").charAt(0);
+  return ch >= "A" && ch <= "Z" ? ch : "#";
+};
 ---
 
 <html lang="en-GB">
@@ -118,7 +135,17 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
         <option value="all">All parties</option>
         {parties.map((p) => <option value={p.toLowerCase()}>{p}</option>)}
       </select>
-      <span id="count" class="count"></span>
+      <span id="count" class="count" role="status" aria-live="polite"></span>
+    </div>
+
+    <div class="legend" role="group" aria-label="Filter by status group">
+      {legendGroups.map(([dot, label, classes]) => (
+        <button type="button" class="legend-item" data-classes={classes.join(",")} aria-pressed="false">
+          <span class={`dot ${dot}`} aria-hidden="true"></span>
+          {label} <b>{legendCount(classes).toLocaleString("en-GB")}</b>
+        </button>
+      ))}
+      <span class="legend-hint">click to filter</span>
     </div>
 
     <table>
@@ -126,37 +153,56 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
         <tr><th>Candidate</th><th>Party</th><th>Election</th><th>Website</th><th>Status</th></tr>
       </thead>
       <tbody>
-        {candidates.flatMap((c, ci) =>
-          c.websites.map((w) => {
-            const st = w.audit?.statusClass ?? "not_audited";
-            return (
-              <tr
-                style={`--row-i:${ci % 14}`}
-                data-status={st}
-                data-party={w.parties.map((p) => p.toLowerCase()).join(" ")}
-                data-haystack={`${c.name} ${w.parties.join(" ")} ${w.elections[0] ?? ""} ${w.url}`.toLowerCase()}
-              >
-                <td>
-                  <a href={`/candidates/${c.id}`}>{c.name}</a>
-                  {c.onchain && <span class="onchain-chip" title={`${c.onchain.ens} — permanent public record`}>On-chain ✓</span>}
-                </td>
-                <td class="muted">{w.parties.join(", ")}</td>
-                <td class="muted">{w.elections[0]}</td>
-                <td class="url">
-                  <a class="url" href={w.url} rel="noopener noreferrer" title={w.url}>
-                    {w.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                  </a>
-                </td>
-                <td>
-                  <span class={`badge ${st}`}>{statusLabels[st]}</span>
-                  {w.audit?.redirected && <span class="redir" title={w.audit.finalUrl ?? ""}> ↳</span>}
-                </td>
-              </tr>
-            );
-          })
-        )}
+        {(() => {
+          let lastLetter = "";
+          return candidates.flatMap((c) =>
+            c.websites.flatMap((w, wi) => {
+              const letter = wi === 0 ? groupLetterOf(c.name) : "";
+              const showHeader = letter !== "" && letter !== lastLetter;
+              if (letter !== "") lastLetter = letter;
+              const st = w.audit?.statusClass ?? "not_audited";
+              return (
+                <>
+                  {showHeader && (
+                    <tr class="group" data-group={letter} aria-hidden="true">
+                      <td colspan={5}>{letter}</td>
+                    </tr>
+                  )}
+                  <tr
+                    class={`row-st-${st}`}
+                    style={`--row-i:${(c.websites.length + wi) % 14}`}
+                    data-status={st}
+                    data-party={w.parties.map((p) => p.toLowerCase()).join(" ")}
+                    data-haystack={`${c.name} ${w.parties.join(" ")} ${w.elections[0] ?? ""} ${w.url}`.toLowerCase()}
+                  >
+                    <td class="who">
+                      <a class="who-name" href={`/candidates/${c.id}`}>{c.name}</a>
+                      {c.onchain && <span class="onchain-chip" title={`${c.onchain.ens} — permanent public record`}>On-chain ✓</span>}
+                    </td>
+                    <td class="muted">{w.parties.join(", ")}</td>
+                    <td class="muted">{w.elections[0]}</td>
+                    <td class="url">
+                      <a class="url" href={w.url} rel="noopener noreferrer" title={w.url}>
+                        {w.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                      </a>
+                    </td>
+                    <td>
+                      <span class={`badge ${st}`}>{statusLabels[st]}</span>
+                      {w.audit?.redirected && <span class="redir" title={w.audit.finalUrl ?? ""}> ↳</span>}
+                    </td>
+                  </tr>
+                </>
+              );
+            })
+          );
+        })()}
       </tbody>
     </table>
+
+    <p id="noresults" class="noresults" hidden>
+      No candidates match those filters.{" "}
+      <button type="button" id="clear">Clear filters</button>
+    </p>
 
     <footer>
       <p>
@@ -177,25 +223,80 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
         const status = document.getElementById("status") as HTMLSelectElement;
         const party = document.getElementById("party") as HTMLSelectElement | null;
         const count = document.getElementById("count")!;
-        const rows = [...document.querySelectorAll<HTMLTableRowElement>("tbody tr")];
+        const noresults = document.getElementById("noresults")!;
+        const clear = document.getElementById("clear")!;
+        const legend = [...document.querySelectorAll<HTMLButtonElement>(".legend-item")];
+        let legendClasses: string[] | null = null; // null = no legend filter
+        const rows = [...document.querySelectorAll<HTMLTableRowElement>("tbody tr:not(.group)")];
         const apply = () => {
           const needle = q.value.trim().toLowerCase();
           const want = status.value;
           const wantParty = party?.value ?? "all";
+          const isDefault = !needle && want === "all" && wantParty === "all" && !legendClasses;
           let shown = 0;
+          let shownLive = 0;
           for (const tr of rows) {
             const show =
               (!needle || tr.dataset.haystack!.includes(needle)) &&
               (want === "all" || tr.dataset.status === want) &&
-              (wantParty === "all" || (tr.dataset.party ?? "").split(" ").includes(wantParty));
+              (wantParty === "all" || (tr.dataset.party ?? "").split(" ").includes(wantParty)) &&
+              (!legendClasses || legendClasses.includes(tr.dataset.status!));
             tr.hidden = !show;
-            if (show) shown++;
+            if (show) {
+              shown++;
+              if (tr.dataset.status === "live") shownLive++;
+            }
           }
-          count.textContent = `${shown.toLocaleString("en-GB")} of ${rows.length.toLocaleString("en-GB")} entries`;
+          // Group headers follow their section: walking backwards, a header is
+          // visible iff at least one row below it (before the next header) is.
+          let visibleBelow = false;
+          const all = [...document.querySelectorAll<HTMLTableRowElement>("tbody tr")];
+          for (let i = all.length - 1; i >= 0; i--) {
+            const tr = all[i];
+            if (tr.classList.contains("group")) {
+              tr.hidden = !visibleBelow;
+              visibleBelow = false;
+            } else if (!tr.hidden) {
+              visibleBelow = true;
+            }
+          }
+          if (isDefault) {
+            count.textContent = `${shown.toLocaleString("en-GB")} entries`;
+          } else if (shown === 0) {
+            count.textContent = `no matches`;
+          } else {
+            const pctLive = Math.round((shownLive / shown) * 100);
+            count.textContent = `${shown.toLocaleString("en-GB")} shown · ${pctLive}% live`;
+          }
+          noresults.hidden = shown !== 0;
         };
         q.addEventListener("input", apply);
         status.addEventListener("change", apply);
         party?.addEventListener("change", apply);
+        legend.forEach((btn) =>
+          btn.addEventListener("click", () => {
+            const classes = btn.dataset.classes!.split(",");
+            const active = btn.getAttribute("aria-pressed") === "true";
+            legend.forEach((b) => b.setAttribute("aria-pressed", "false"));
+            if (active) {
+              legendClasses = null;
+            } else {
+              btn.setAttribute("aria-pressed", "true");
+              legendClasses = classes;
+              status.value = "all";
+            }
+            apply();
+          })
+        );
+        clear.addEventListener("click", () => {
+          q.value = "";
+          status.value = "all";
+          if (party) party.value = "all";
+          legendClasses = null;
+          legend.forEach((b) => b.setAttribute("aria-pressed", "false"));
+          apply();
+          q.focus();
+        });
         apply();
 
         // Scroll progress line

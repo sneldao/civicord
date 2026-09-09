@@ -161,6 +161,59 @@ a:hover { text-decoration-color: var(--accent); color: var(--accent); }
 }
 .ens-record h2 .onchain-chip { margin-left: 0.3rem; }
 
+/* Rubber-stamp moment on the trust chip */
+.onchain-chip { transition: transform 0.15s ease; }
+a .onchain-chip:hover, .ens-record h2 .onchain-chip:hover {
+  transform: rotate(-2deg) scale(1.05);
+}
+
+/* Click-to-copy ENS name */
+.ens-copy {
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: copy;
+  border-bottom: 1px dashed rgba(199, 58, 29, 0.55);
+}
+.ens-copy:hover { border-bottom-style: solid; }
+.ens-copy.copied { position: relative; }
+.ens-copy.copied::after {
+  content: "copied ✓";
+  position: absolute;
+  left: 100%;
+  top: -0.4em;
+  margin-left: 0.5em;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--live);
+  white-space: nowrap;
+}
+
+/* Collapsed scrape specimens */
+details.specimens { margin: 1.6rem 0 0; }
+details.specimens > summary {
+  cursor: pointer;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  padding: 0.4rem 0;
+}
+details.specimens > summary:hover { color: var(--accent); }
+
+/* Prev / next candidate loop */
+.prevnext {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin: 2rem 0 0;
+  padding-top: 0.9rem;
+  border-top: 2px solid var(--ink);
+  font-size: 0.88rem;
+}
+
 /* Methodology page */
 .method article { max-width: 44em; }
 .method h2 { font-family: var(--serif); font-size: 1.2rem; margin: 1.8rem 0 0.4rem; }
@@ -206,13 +259,18 @@ a:hover { text-decoration-color: var(--accent); color: var(--accent); }
 .method { color: var(--muted); font-size: 0.85rem; max-width: 52em; margin: 0.2rem 0 1.4rem; }
 .method a { color: var(--accent); }
 
-/* Filter bar */
+/* Filter bar — sticky so the main navigation tool survives long scrolls */
 .filterbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: flex;
   flex-wrap: wrap;
   gap: 0.9rem;
   align-items: center;
-  margin: 0 0 0.9rem;
+  margin: 0 0 0.4rem;
+  padding: 0.6rem 0;
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
 }
 .filterbar input[type="search"] {
   flex: 1 1 240px;
@@ -254,9 +312,37 @@ tbody td {
   padding: 0.48rem 0.6rem;
   border-bottom: 1px solid var(--rule);
   font-variant-numeric: tabular-nums;
-  vertical-align: top;
+  vertical-align: baseline;
 }
-tbody tr:hover { background: var(--paper-deep); }
+tbody tr:hover td { background: rgba(199, 58, 29, 0.045); }
+tbody tr[hidden] { display: none; }
+
+/* Status row tinting — scrolling reads as colour rhythm, not text */
+tbody tr[class*="row-st-"] td:first-child { box-shadow: inset 3px 0 0 transparent; }
+tbody tr.row-st-live td:first-child { box-shadow: inset 3px 0 0 var(--live); }
+tbody tr.row-st-dns_error td:first-child,
+tbody tr.row-st-connection_error td:first-child { box-shadow: inset 3px 0 0 var(--gone); }
+tbody tr.row-st-http_error td:first-child,
+tbody tr.row-st-timeout td:first-child,
+tbody tr.row-st-ssl_error td:first-child,
+tbody tr.row-st-other_error td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
+
+/* Name is the primary eye-path; URL secondary */
+td.who { min-width: 10em; }
+.who-name { font-family: var(--serif); font-size: 1.02rem; font-weight: 600; }
+
+/* Alphabetical group dividers */
+tbody tr.group td {
+  background: var(--paper-deep);
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  padding: 0.55rem 0.6rem 0.3rem;
+  border-bottom: 2px solid var(--ink);
+}
+tbody tr.group[hidden] { display: none; }
 td.url, a.url {
   max-width: 230px;
   overflow: hidden;
@@ -288,8 +374,77 @@ a.url:hover { color: var(--accent); }
 .badge.timeout, .badge.connection_error, .badge.ssl_error, .badge.other_error, .badge.warn { color: var(--warn); }
 .badge.unknown, .badge.not_audited { color: var(--unknown); }
 
+/* Clickable status legend with live counts */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.9rem;
+  margin: 0 0 0.6rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.legend-item {
+  font: inherit;
+  color: var(--ink);
+  background: transparent;
+  border: 1.5px solid var(--rule);
+  border-radius: 999px;
+  padding: 0.15rem 0.7rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.legend-item:hover { border-color: var(--ink); }
+.legend-item[aria-pressed="true"] { border-color: var(--ink); background: var(--paper-deep); }
+.legend-item .dot { width: 0.6em; height: 0.6em; border-radius: 50%; }
+.legend-item .dot.g-live { background: var(--live); }
+.legend-item .dot.g-gone { background: var(--gone); }
+.legend-item .dot.g-error { background: var(--warn); }
+.legend-item .dot.g-unknown { background: var(--unknown); }
+.legend-item b { font-variant-numeric: tabular-nums; }
+.legend-hint { font-size: 0.72rem; }
+
+/* Empty-filter state */
+.noresults {
+  margin: 1.5rem 0;
+  padding: 1rem 1.2rem;
+  border: 1.5px dashed var(--rule);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.noresults button {
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* Candidate record page */
 .crumb { font-size: 0.82rem; color: var(--muted); margin: 0 0 0.4rem; }
+.crumb b { color: var(--ink); font-weight: 600; }
+.context-line { font-size: 0.86rem; color: var(--muted); margin: 0 0 0.8rem; }
+
+/* Verdict banner — the 3-second answer */
+.verdict {
+  border-left: 4px solid var(--unknown);
+  border-radius: 4px;
+  padding: 0.7rem 1rem;
+  margin: 1.1rem 0 0;
+  background: rgba(255, 255, 255, 0.45);
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+.verdict b { color: var(--ink); }
+.verdict.v-live { border-left-color: var(--live); }
+.verdict.v-gone { border-left-color: var(--gone); }
+.verdict.v-mixed { border-left-color: var(--warn); }
 .record-head { border-top: 3px solid var(--ink); padding-top: 1rem; }
 .record-head h1 {
   font-family: var(--serif);
