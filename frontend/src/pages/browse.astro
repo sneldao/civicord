@@ -119,7 +119,7 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
                   class={`row-st-${st}`}
                   data-status={st}
                   data-redirected={w.audit?.redirected ? "1" : "0"}
-                  data-party={w.parties.map((p) => p.toLowerCase()).join(" ")}
+                  data-party={w.parties.map((p) => p.toLowerCase()).join("|")}
                   data-haystack={`${c.name} ${w.parties.join(" ")} ${w.elections[0] ?? ""} ${w.url}`.toLowerCase()}
                 >
                   <td class="who">
@@ -279,7 +279,7 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
               : wantGone ? isGone
               : tr.dataset.status === want;
             const matches =
-              (wantParty === "all" || (tr.dataset.party ?? "").split(" ").includes(wantParty)) &&
+              (wantParty === "all" || (tr.dataset.party ?? "").split("|").includes(wantParty)) &&
               (!needle || fuzzyMatch(tr.dataset.haystack, needle)) &&
               statusMatches &&
               (!legendClasses || legendClasses.includes(tr.dataset.status));
