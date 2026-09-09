@@ -45,6 +45,9 @@ const legendCount = (classes: string[]) =>
 const partyCounts = new Map<string, number>();
 for (const w of websites) for (const p of w.parties) partyCounts.set(p, (partyCounts.get(p) ?? 0) + 1);
 const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p]) => p);
+const randomIds = candidates.map((c) => c.id);
+const goneCount = websites.filter((w) => ["dns_error","connection_error"].includes(w.audit?.statusClass ?? "")).length;
+const liveCount = live.length;
 ---
 
 <html lang="en-GB">
@@ -81,7 +84,7 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
     </header>
 
     <div class="filterbar" role="search" aria-label="Filter candidates">
-      <input id="q" type="search" placeholder="Filter by candidate, party, website…" autocomplete="off" aria-label="Search" />
+      <input id="q" type="search" placeholder="Filter by candidate, party, website… — try “farrage”" autocomplete="off" aria-label="Search" />
       <label class="visually-hidden" for="status">Filter by status</label>
       <select id="status" aria-label="Filter by status">
         <option value="all">All statuses</option>
@@ -103,6 +106,13 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
         </button>
       ))}
       <span class="legend-hint">click to filter</span>
+    </div>
+
+    <div class="browse-toolbar">
+      <button type="button" id="random-browse" class="btn-ghost btn-sm">Surprise me — random record 🎲</button>
+      <button type="button" id="copy-link" class="btn-ghost btn-sm">Copy filtered link</button>
+      <span id="copy-toast" class="copy-toast" hidden role="status" aria-live="polite"></span>
+      <span class="toolbar-hint muted">Press <kbd>/</kbd> to search, <kbd>Esc</kbd> to clear</span>
     </div>
 
     <div class="table-wrap">
@@ -145,10 +155,16 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
       </table>
     </div>
 
-    <p id="noresults" class="noresults" hidden>
-      No candidates match those filters.{" "}
-      <button type="button" id="clear">Clear filters</button>
-    </p>
+    <div id="noresults" class="noresults" hidden>
+      <p><b>No matches</b><span id="noresults-query"></span> — try a different spelling or filter.</p>
+      <p id="noresults-suggest" class="muted" hidden></p>
+      <div class="noresults-actions">
+        <button type="button" id="clear" class="btn-primary btn-sm">Clear filters</button>
+        <a href="/browse?status=gone" class="btn-ghost btn-sm">Browse Gone ({goneCount.toLocaleString("en-GB")})</a>
+        <a href="/browse?status=live" class="btn-ghost btn-sm">Browse Live ({liveCount.toLocaleString("en-GB")})</a>
+        <a href="/browse" class="btn-ghost btn-sm">Show all 2,375</a>
+      </div>
+    </div>
 
     <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
 
@@ -159,9 +175,10 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
       </p>
     </footer>
 
-    <script define:vars={{ statuses: cohortBoot.statuses, parties: cohortBoot.parties }}>
+    <script define:vars={{ statuses: cohortBoot.statuses, parties: cohortBoot.parties, randomIds, goneCount, liveCount }}>
       window.__COHORT_STATUSES = statuses;
       window.__COHORT_PARTIES = parties;
+      const BROWSE_IDS = randomIds;
       document.addEventListener("astro:page-load", () => {
         const PAGE_SIZE = 50;
 
@@ -175,15 +192,31 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
           return j === needle.length;
         };
 
+        const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const escapeHtml = (s) => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
         const q = document.getElementById("q");
         const status = document.getElementById("status");
         const party = document.getElementById("party");
         const count = document.getElementById("count");
         const noresults = document.getElementById("noresults");
+        const noresultsQuery = document.getElementById("noresults-query");
+        const noresultsSuggest = document.getElementById("noresults-suggest");
         const clear = document.getElementById("clear");
         const legend = [...document.querySelectorAll(".legend-item")];
         const rows = [...document.querySelectorAll("#ledger-body tr")];
         const pagination = document.getElementById("pagination");
+        const copyBtn = document.getElementById("copy-link");
+        const copyToast = document.getElementById("copy-toast");
+        const randomBtn = document.getElementById("random-browse");
+
+        // store originals for highlight restore
+        for (const tr of rows) {
+          const nameEl = tr.querySelector(".who-name");
+          if (nameEl) nameEl.dataset.orig = nameEl.innerHTML;
+          const urlEl = tr.querySelector("a.url");
+          if (urlEl) urlEl.dataset.orig = urlEl.innerHTML;
+        }
 
         let legendClasses = null;
         let currentPage = 1;
@@ -260,6 +293,18 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
           pagination.appendChild(info);
         };
 
+        const highlight = (el, needle) => {
+          const orig = el.dataset.orig ?? el.textContent;
+          if (!needle || !el.textContent.toLowerCase().includes(needle)) {
+            el.innerHTML = orig;
+            return;
+          }
+          const re = new RegExp(`(${escapeRegExp(needle)})`, "ig");
+          // work from textContent to avoid double-escaping, but preserve orig escaping
+          const text = el.textContent;
+          el.innerHTML = escapeHtml(text).replace(re, "<mark>$1</mark>");
+        };
+
         const apply = () => {
           const needle = q.value.trim().toLowerCase();
           const want = status.value;
@@ -295,17 +340,69 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
           if (currentPage > totalPages) currentPage = totalPages;
           if (currentPage < 1) currentPage = 1;
 
-          // hide all, then show slice
-          for (const tr of rows) tr.hidden = true;
+          // hide all, then show slice — with highlight on visible slice
+          for (const tr of rows) {
+            tr.hidden = true;
+            // reset highlights for hidden rows immediately
+            const nameEl = tr.querySelector(".who-name");
+            const urlEl = tr.querySelector("a.url");
+            if (nameEl) nameEl.innerHTML = nameEl.dataset.orig ?? nameEl.textContent;
+            if (urlEl) urlEl.innerHTML = urlEl.dataset.orig ?? urlEl.textContent;
+          }
           if (total > 0) {
             const start = (currentPage - 1) * PAGE_SIZE;
             const slice = filtered.slice(start, start + PAGE_SIZE);
-            for (const tr of slice) tr.hidden = false;
+            for (const tr of slice) {
+              tr.hidden = false;
+              if (needle) {
+                const hay = tr.dataset.haystack ?? "";
+                if (hay.includes(needle)) {
+                  const nameEl = tr.querySelector(".who-name");
+                  const urlEl = tr.querySelector("a.url");
+                  if (nameEl) highlight(nameEl, needle);
+                  if (urlEl && urlEl.textContent.toLowerCase().includes(needle)) highlight(urlEl, needle);
+                  // also highlight party cell if it contains needle — secondary
+                  const partyCell = tr.querySelector('td[data-label="Party"]');
+                  if (partyCell && partyCell.textContent.toLowerCase().includes(needle)) {
+                    if (!partyCell.dataset.orig) partyCell.dataset.orig = partyCell.innerHTML;
+                    highlight(partyCell, needle);
+                  } else if (partyCell && partyCell.dataset.orig) {
+                    partyCell.innerHTML = partyCell.dataset.orig;
+                  }
+                }
+              } else {
+                const partyCell = tr.querySelector('td[data-label="Party"]');
+                if (partyCell && partyCell.dataset.orig) partyCell.innerHTML = partyCell.dataset.orig;
+              }
+            }
           }
 
           const isDefault = !needle && want === "all" && wantParty === "all" && !legendClasses;
           if (total === 0) {
             count.textContent = "no matches";
+            if (noresultsQuery) noresultsQuery.textContent = needle ? ` for “${q.value.trim().slice(0,40)}”` : "";
+            // suggest closest party if needle looks like a party typo
+            if (noresultsSuggest && needle.length >= 3) {
+              const candidates = window.__COHORT_PARTIES ?? [];
+              let best = null; let bestScore = 0;
+              for (const p of candidates) {
+                if (p.includes(needle) || needle.includes(p.slice(0, 5))) { best = p; break; }
+                // quick subsequence score
+                let j=0; for (let i=0;i<p.length&&j<needle.length;i++) if (p[i]===needle[j]) j++;
+                const score = j/needle.length;
+                if (score > 0.8 && score > bestScore) { best = p; bestScore = score; }
+              }
+              if (best) {
+                noresultsSuggest.hidden = false;
+                noresultsSuggest.innerHTML = `Did you mean <button type="button" class="link-inline" data-suggest-party="${best}">${best}</button>?`;
+                noresultsSuggest.querySelector("[data-suggest-party]")?.addEventListener("click", (e) => {
+                  const v = e.currentTarget.dataset.suggestParty;
+                  if (party && window.__COHORT_PARTIES.includes(v)) { party.value = v; q.value = ""; legendClasses=null; legend.forEach((b)=>b.setAttribute("aria-pressed","false")); currentPage=1; syncUrl(); apply(); }
+                });
+              } else {
+                noresultsSuggest.hidden = true;
+              }
+            }
           } else if (isDefault) {
             const pctLive = Math.round((filteredLive / total) * 100);
             count.textContent = `${total.toLocaleString("en-GB")} entries · ${pctLive}% live · page ${currentPage} of ${totalPages}`;
@@ -349,6 +446,55 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
           q.focus();
         });
 
+        // Copy filtered link
+        let toastTimer = null;
+        const showToast = (msg) => {
+          if (!copyToast) return;
+          copyToast.textContent = msg;
+          copyToast.hidden = false;
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => { copyToast.hidden = true; }, 2200);
+        };
+        copyBtn?.addEventListener("click", async () => {
+          syncUrl();
+          const url = location.href;
+          try {
+            await navigator.clipboard.writeText(url);
+            showToast("Copied ✓ — share this view");
+            copyBtn.textContent = "Copied ✓";
+            setTimeout(() => { copyBtn.textContent = "Copy filtered link"; }, 1800);
+          } catch {
+            // fallback: select + prompt
+            prompt("Copy this link:", url);
+          }
+        });
+
+        // Surprise me
+        randomBtn?.addEventListener("click", () => {
+          const id = BROWSE_IDS[Math.floor(Math.random() * BROWSE_IDS.length)];
+          location.href = `/candidates/${id}`;
+        });
+
+        // Keyboard: / focuses search, Esc clears
+        document.addEventListener("keydown", (e) => {
+          const tag = (document.activeElement?.tagName ?? "").toLowerCase();
+          const typing = tag === "input" || tag === "textarea" || tag === "select" || (document.activeElement?.isContentEditable);
+          if (e.key === "/" && !typing) {
+            e.preventDefault();
+            q.focus();
+          }
+          if (e.key === "Escape" && typing && document.activeElement === q) {
+            if (q.value) {
+              q.value = "";
+              currentPage = 1;
+              syncUrl();
+              apply();
+            } else {
+              q.blur();
+            }
+          }
+        });
+
         // boot from URL
         const params = getParams();
         const bootStatuses = window.__COHORT_STATUSES;
@@ -362,20 +508,16 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
         if (qq) q.value = qq.slice(0, 120);
         if (Number.isFinite(qpage) && qpage > 1) currentPage = Math.min(qpage, 500);
 
-        // honor legend-style status groups that don't map 1:1? gone = dns+connection handled via legend, not select
-        // but if ?status=gone arrives from old link, map to legend
         // virtual statuses that map to filtered views (cohort deeplinks)
         if (qs === "gone" || qs === "redirected") {
-          // keep the virtual value visible in the select if present, else show All
           const hasOption = [...status.options].some((o) => o.value === qs);
           if (hasOption) status.value = qs;
-          else status.value = qs; // select will show the value even if not in list via JS; fallback to "all" visually
-          // gone also highlights the Gone legend for affordance
+          else status.value = qs;
           if (qs === "gone") {
             legend.forEach((b) => {
               if (b.dataset.classes === "dns_error,connection_error") b.setAttribute("aria-pressed", "true");
             });
-            legendClasses = null; // status filter already handles it — don't double-filter
+            legendClasses = null;
           }
         }
 
