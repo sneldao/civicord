@@ -33,19 +33,22 @@ Civicord key can update a candidate's records.
   `vnd.civicord.person_name` via `text()` reads against the resolver.
 - **Gas reality check** (measured on Sepolia): `register()` ≈ 1.20M gas,
   `setText()` ≈ 0.30M gas → ~2.1M gas (~0.002 ETH @ ~1 gwei) per candidate for
-  register + 3 texts. Run paused awaiting more faucet ETH.
-  **On-chain state audited 2026-09-09** (via `getResolver(label)` + `text()` reads):
-  - **1,921 / 2,375 labels registered** — the entire 501–2,375 range plus 46
-    sparse IDs in 1–500 (smoke tests + start of a blast run); 454 remain, all
-    within 1–500.
-  - **4 / 2,375 have full text records** on the canonical `civicord.eth` nodes
-    (p9, p15, p16, p20 — the smoke tests). The bulk registrations from 501+
-    have resolvers but no url/status/name records yet — those are the
-    `--records-only` refresh work.
-  - Deployer wallet `0xfa10…E0eC`: **0.9055 ETH**, nonce 8,726, nothing pending.
-    Remaining work ≈ 454×1.2M + ~2,321×3×0.3M ≈ **2.6 Ggas** — ~2.6 ETH at
-    1 gwei (tight vs balance) but well within budget at Sepolia's usual
-    sub-0.1-gwei gas. Top up from a faucet if gas spikes.
+  register + 3 texts.
+  **On-chain state audited 2026-09-09** (via `getResolver(label)` reads over
+  the 2,375 manifest person-IDs — note labels are `p<person_id>`, i.e. raw
+  dataset IDs like `p122389`, NOT a 1..N index; audits must iterate manifest IDs):
+  - **~2,284 / 2,375 labels registered** before the final run (register phase
+    skipped 1,164 already-registered names and sent ~1,020 register txs; the
+    last ~91 high-ID persons from the newest scrape batch were registered by
+    the final blast run).
+  - **4 / 2,375 had full text records** on the canonical `civicord.eth` nodes
+    (p9, p15, p16, p20 — the smoke tests). The 2026-09-09 blast run (retry
+    wrapper `/tmp/blastloop.sh`, log `/tmp/blastloop.log`) is refreshing
+    url/status/name records across all names — resume-safe, skips names whose
+    on-chain `url` already matches the manifest.
+  - Deployer wallet `0xfa10…E0eC`: topped up to **~2.27 ETH** (was 0.9055).
+    Actual record burn ≈ 0.01 ETH per ~60 candidates (~0.5 ETH for all 2,375),
+    well under the naive 3×0.3M-gas estimate — comfortably funded.
 - Manifest (ens_name, person_id, name, url, status, node) written to
   `data/out/onchain_manifest.csv` at the end of each run.
 
