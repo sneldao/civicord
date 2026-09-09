@@ -20,13 +20,13 @@ const STATUS_FILTER: Record<StatusCohort["slug"], string> = {
   redirected: "redirected",
 };
 
-// Link back into the index with the matching preset filter applied.
+// Link into the paginated ledger with the matching preset filter applied.
 const indexLink =
   cohort.slug === "live"
-    ? "/?status=live"
+    ? "/browse?status=live"
     : cohort.slug === "gone"
-      ? "/?status=dns_error"
-      : "/";
+      ? "/browse?status=gone"
+      : "/browse";
 
 const blurb: Record<StatusCohort["slug"], string> = {
   live: "These sites respond today and still mention their candidate by name. Everything else on this site is measured against them.",

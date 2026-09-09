@@ -1,0 +1,397 @@
+---
+import { getCollection } from "astro:content";
+import { ClientRouter } from "astro:transitions";
+import "../styles/global.css";
+
+// Validated at build time by src/content.config.ts
+const all = await getCollection("candidates");
+const candidates = all.map((e) => e.data).sort((a, b) => a.name.localeCompare(b.name));
+const websites = candidates.flatMap((c) => c.websites);
+const live = websites.filter((w) => w.audit?.statusClass === "live");
+const dead = websites.filter((w) => w.audit?.statusClass === "dns_error");
+
+const VALID_STATUSES = new Set([
+  "live", "gone", "redirected",
+  "http_error", "dns_error", "connection_error",
+  "timeout", "ssl_error", "other_error", "not_audited",
+]);
+const validParties = new Set(
+  candidates.flatMap((c) => c.websites.flatMap((w) => w.parties)).map((p) => p.toLowerCase())
+);
+const cohortBoot = { statuses: [...VALID_STATUSES], parties: [...validParties] };
+
+const statusLabels: Record<string, string> = {
+  live: "Live",
+  gone: "Gone",
+  redirected: "Redirected ↳",
+  http_error: "HTTP error",
+  dns_error: "Domain gone",
+  connection_error: "Conn. failed",
+  timeout: "Timed out",
+  ssl_error: "SSL error",
+  other_error: "Error",
+  not_audited: "Not audited",
+};
+
+const legendGroups: Array<[string, string, string[]]> = [
+  ["g-live", "Live", ["live"]],
+  ["g-gone", "Gone", ["dns_error", "connection_error"]],
+  ["g-error", "Errors", ["http_error", "timeout", "ssl_error", "other_error"]],
+  ["g-unknown", "Not audited", ["not_audited"]],
+];
+const legendCount = (classes: string[]) =>
+  websites.filter((w) => classes.includes(w.audit?.statusClass ?? "not_audited")).length;
+
+const partyCounts = new Map<string, number>();
+for (const w of websites) for (const p of w.parties) partyCounts.set(p, (partyCounts.get(p) ?? 0) + 1);
+const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p]) => p);
+---
+
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content={`Browse all ${candidates.length.toLocaleString("en-GB")} UK candidate records — filter by party, status and search. ${live.length} sites still live, ${dead.length} domains gone.`}
+    />
+    <meta property="og:title" content="Browse the ledger — Civicord" />
+    <meta
+      property="og:description"
+      content={`All ${candidates.length.toLocaleString("en-GB")} candidates, filterable by party and outcome. What survived and what didn't.`}
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Browse — Civicord</title>
+    <ClientRouter />
+  </head>
+  <body class="reveal-root">
+    <div class="progress" aria-hidden="true"><b id="progress-bar"></b></div>
+
+    <p class="crumb"><a href="/">Civicord</a> / <b>Browse</b></p>
+
+    <header class="masthead">
+      <h1 class="wordmark">Browse<span class="dot">.</span></h1>
+      <p class="lede">All {candidates.length.toLocaleString("en-GB")} candidates — filter, search, then open the record.</p>
+      <p class="tagline">
+        Every row is a candidate website from Campaign Lab's April 2025 scrape, re-checked September 2026.
+        <a href="/methodology">Methodology ↗</a> · <a href="/">← Back to overview</a>
+      </p>
+    </header>
+
+    <div class="filterbar" role="search" aria-label="Filter candidates">
+      <input id="q" type="search" placeholder="Filter by candidate, party, website…" autocomplete="off" aria-label="Search" />
+      <label class="visually-hidden" for="status">Filter by status</label>
+      <select id="status" aria-label="Filter by status">
+        <option value="all">All statuses</option>
+        {Object.entries(statusLabels).map(([value, label]) => <option value={value}>{label}</option>)}
+      </select>
+      <label class="visually-hidden" for="party">Filter by party</label>
+      <select id="party" aria-label="Filter by party">
+        <option value="all">All parties</option>
+        {parties.map((p) => <option value={p.toLowerCase()}>{p}</option>)}
+      </select>
+      <span id="count" class="count" role="status" aria-live="polite"></span>
+    </div>
+
+    <div class="legend" role="group" aria-label="Filter by status group">
+      {legendGroups.map(([dot, label, classes]) => (
+        <button type="button" class="legend-item" data-classes={classes.join(",")} aria-pressed="false">
+          <span class={`dot ${dot}`} aria-hidden="true"></span>
+          {label} <b>{legendCount(classes).toLocaleString("en-GB")}</b>
+        </button>
+      ))}
+      <span class="legend-hint">click to filter</span>
+    </div>
+
+    <div class="table-wrap">
+      <table aria-label="Candidate ledger">
+        <thead>
+          <tr><th>Candidate</th><th>Party</th><th>Election</th><th>Website</th><th>Status</th></tr>
+        </thead>
+        <tbody id="ledger-body">
+          {candidates.flatMap((c) =>
+            c.websites.map((w) => {
+              const st = w.audit?.statusClass ?? "not_audited";
+              return (
+                <tr
+                  class={`row-st-${st}`}
+                  data-status={st}
+                  data-redirected={w.audit?.redirected ? "1" : "0"}
+                  data-party={w.parties.map((p) => p.toLowerCase()).join(" ")}
+                  data-haystack={`${c.name} ${w.parties.join(" ")} ${w.elections[0] ?? ""} ${w.url}`.toLowerCase()}
+                >
+                  <td class="who">
+                    <a class="who-name" href={`/candidates/${c.id}`}>{c.name}</a>
+                    {c.onchain && <span class="onchain-chip" title={`${c.onchain.ens} — permanent public record`}>On-chain ✓</span>}
+                  </td>
+                  <td class="muted" data-label="Party">{w.parties.join(", ")}</td>
+                  <td class="muted" data-label="Election">{w.elections[0]}</td>
+                  <td class="url" data-label="Website">
+                    <a class="url" href={w.url} rel="noopener noreferrer" title={w.url}>
+                      {w.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                    </a>
+                  </td>
+                  <td data-label="Status">
+                    <span class={`badge ${st}`}>{statusLabels[st]}</span>
+                    {w.audit?.redirected && <span class="redir" title={w.audit.finalUrl ?? ""}> ↳</span>}
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+    </div>
+
+    <p id="noresults" class="noresults" hidden>
+      No candidates match those filters.{" "}
+      <button type="button" id="clear">Clear filters</button>
+    </p>
+
+    <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
+
+    <footer>
+      <p>
+        <a href="/">← Overview</a> · <a href="/methodology">Methodology</a> · Data: Campaign Lab April 2025 · Democracy Club IDs · Audit 2026-09-07
+        · <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
+      </p>
+    </footer>
+
+    <script define:vars={{ statuses: cohortBoot.statuses, parties: cohortBoot.parties }}>
+      window.__COHORT_STATUSES = statuses;
+      window.__COHORT_PARTIES = parties;
+      document.addEventListener("astro:page-load", () => {
+        const PAGE_SIZE = 50;
+
+        const fuzzyMatch = (hay, needle) => {
+          if (hay.includes(needle)) return true;
+          if (needle.length > 40) return false;
+          let j = 0;
+          for (let i = 0; i < hay.length && j < needle.length; i++) {
+            if (hay[i] === needle[j]) j++;
+          }
+          return j === needle.length;
+        };
+
+        const q = document.getElementById("q");
+        const status = document.getElementById("status");
+        const party = document.getElementById("party");
+        const count = document.getElementById("count");
+        const noresults = document.getElementById("noresults");
+        const clear = document.getElementById("clear");
+        const legend = [...document.querySelectorAll(".legend-item")];
+        const rows = [...document.querySelectorAll("#ledger-body tr")];
+        const pagination = document.getElementById("pagination");
+
+        let legendClasses = null;
+        let currentPage = 1;
+
+        const getParams = () => new URLSearchParams(location.search);
+
+        const syncUrl = () => {
+          const out = new URLSearchParams();
+          if (q.value.trim()) out.set("q", q.value.trim().slice(0, 120));
+          if (status.value !== "all") out.set("status", status.value);
+          if ((party?.value ?? "all") !== "all") out.set("party", party.value);
+          if (currentPage > 1) out.set("page", String(currentPage));
+          const next = out.toString();
+          history.replaceState(null, "", next ? `${location.pathname}?${next}` : location.pathname);
+        };
+
+        const renderPagination = (total, page, totalPages) => {
+          if (!pagination) return;
+          pagination.innerHTML = "";
+          if (total === 0 || totalPages <= 1) {
+            pagination.hidden = total === 0;
+            if (totalPages <= 1 && total > 0) {
+              const info = document.createElement("span");
+              info.className = "page-info";
+              info.textContent = `${total.toLocaleString("en-GB")} entries`;
+              pagination.appendChild(info);
+              pagination.hidden = false;
+            }
+            return;
+          }
+          pagination.hidden = false;
+
+          const mkBtn = (label, p, disabled, active) => {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.textContent = label;
+            b.disabled = !!disabled;
+            if (active) b.setAttribute("aria-current", "page");
+            b.addEventListener("click", () => {
+              currentPage = p;
+              syncUrl();
+              apply();
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+            return b;
+          };
+
+          pagination.appendChild(mkBtn("← Prev", Math.max(1, page - 1), page === 1, false));
+
+          // windowed page numbers: first, last, and 2 around current
+          const pages = [];
+          for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || Math.abs(i - page) <= 2) pages.push(i);
+            else if (pages[pages.length - 1] !== "…") pages.push("…");
+          }
+          for (const p of pages) {
+            if (p === "…") {
+              const s = document.createElement("span");
+              s.textContent = "…";
+              s.className = "page-ellipsis";
+              pagination.appendChild(s);
+            } else {
+              const b = mkBtn(String(p), p, false, p === page);
+              if (p === page) b.className = "is-active";
+              pagination.appendChild(b);
+            }
+          }
+
+          pagination.appendChild(mkBtn("Next →", Math.min(totalPages, page + 1), page === totalPages, false));
+
+          const info = document.createElement("span");
+          info.className = "page-info";
+          info.textContent = `page ${page} of ${totalPages} · ${total.toLocaleString("en-GB")} matches`;
+          pagination.appendChild(info);
+        };
+
+        const apply = () => {
+          const needle = q.value.trim().toLowerCase();
+          const want = status.value;
+          const wantParty = party?.value ?? "all";
+
+          // virtual status "redirected" filters on the redirected flag
+          const wantRedirected = want === "redirected";
+          const wantGone = want === "gone";
+          const filtered = [];
+          let filteredLive = 0;
+          for (const tr of rows) {
+            const isRedirected = tr.dataset.redirected === "1";
+            const isGone = tr.dataset.status === "dns_error" || tr.dataset.status === "connection_error";
+            const statusMatches = want === "all"
+              ? true
+              : wantRedirected ? isRedirected
+              : wantGone ? isGone
+              : tr.dataset.status === want;
+            const matches =
+              (wantParty === "all" || (tr.dataset.party ?? "").split(" ").includes(wantParty)) &&
+              (!needle || fuzzyMatch(tr.dataset.haystack, needle)) &&
+              statusMatches &&
+              (!legendClasses || legendClasses.includes(tr.dataset.status));
+            tr.dataset.matched = matches ? "1" : "0";
+            if (matches) {
+              filtered.push(tr);
+              if (tr.dataset.status === "live") filteredLive++;
+            }
+          }
+
+          const total = filtered.length;
+          const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+          if (currentPage > totalPages) currentPage = totalPages;
+          if (currentPage < 1) currentPage = 1;
+
+          // hide all, then show slice
+          for (const tr of rows) tr.hidden = true;
+          if (total > 0) {
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const slice = filtered.slice(start, start + PAGE_SIZE);
+            for (const tr of slice) tr.hidden = false;
+          }
+
+          const isDefault = !needle && want === "all" && wantParty === "all" && !legendClasses;
+          if (total === 0) {
+            count.textContent = "no matches";
+          } else if (isDefault) {
+            const pctLive = Math.round((filteredLive / total) * 100);
+            count.textContent = `${total.toLocaleString("en-GB")} entries · ${pctLive}% live · page ${currentPage} of ${totalPages}`;
+          } else {
+            const pctLive = Math.round((filteredLive / total) * 100);
+            count.textContent = `${total.toLocaleString("en-GB")} shown · ${pctLive}% live · page ${currentPage} of ${totalPages}`;
+          }
+          noresults.hidden = total !== 0;
+          renderPagination(total, currentPage, totalPages);
+        };
+
+        q.addEventListener("input", () => { currentPage = 1; syncUrl(); apply(); });
+        status.addEventListener("change", () => { currentPage = 1; syncUrl(); apply(); });
+        party?.addEventListener("change", () => { currentPage = 1; syncUrl(); apply(); });
+        legend.forEach((btn) =>
+          btn.addEventListener("click", () => {
+            const classes = btn.dataset.classes.split(",");
+            const active = btn.getAttribute("aria-pressed") === "true";
+            legend.forEach((b) => b.setAttribute("aria-pressed", "false"));
+            if (active) {
+              legendClasses = null;
+            } else {
+              btn.setAttribute("aria-pressed", "true");
+              legendClasses = classes;
+              status.value = "all";
+            }
+            currentPage = 1;
+            syncUrl();
+            apply();
+          })
+        );
+        clear.addEventListener("click", () => {
+          q.value = "";
+          status.value = "all";
+          if (party) party.value = "all";
+          legendClasses = null;
+          legend.forEach((b) => b.setAttribute("aria-pressed", "false"));
+          currentPage = 1;
+          syncUrl();
+          apply();
+          q.focus();
+        });
+
+        // boot from URL
+        const params = getParams();
+        const bootStatuses = window.__COHORT_STATUSES;
+        const bootParties = window.__COHORT_PARTIES;
+        const qp = (params.get("party") ?? "").toLowerCase();
+        const qs = params.get("status") ?? "";
+        const qq = params.get("q") ?? "";
+        const qpage = parseInt(params.get("page") ?? "1", 10);
+        if (party && qp && bootParties.includes(qp)) party.value = qp;
+        if (qs && bootStatuses.includes(qs)) status.value = qs;
+        if (qq) q.value = qq.slice(0, 120);
+        if (Number.isFinite(qpage) && qpage > 1) currentPage = Math.min(qpage, 500);
+
+        // honor legend-style status groups that don't map 1:1? gone = dns+connection handled via legend, not select
+        // but if ?status=gone arrives from old link, map to legend
+        // virtual statuses that map to filtered views (cohort deeplinks)
+        if (qs === "gone" || qs === "redirected") {
+          // keep the virtual value visible in the select if present, else show All
+          const hasOption = [...status.options].some((o) => o.value === qs);
+          if (hasOption) status.value = qs;
+          else status.value = qs; // select will show the value even if not in list via JS; fallback to "all" visually
+          // gone also highlights the Gone legend for affordance
+          if (qs === "gone") {
+            legend.forEach((b) => {
+              if (b.dataset.classes === "dns_error,connection_error") b.setAttribute("aria-pressed", "true");
+            });
+            legendClasses = null; // status filter already handles it — don't double-filter
+          }
+        }
+
+        apply();
+
+        // scroll progress
+        const bar = document.getElementById("progress-bar");
+        if (bar) {
+          const onScroll = () => {
+            const max = document.documentElement.scrollHeight - innerHeight;
+            bar.style.width = `${max > 0 ? Math.min(100, (scrollY / max) * 100) : 0}%`;
+          };
+          addEventListener("scroll", onScroll, { passive: true });
+          onScroll();
+        }
+      });
+    </script>
+  </body>
+</html>

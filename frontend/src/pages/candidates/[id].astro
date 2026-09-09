@@ -94,7 +94,7 @@ const compareAvg = compareFound?.[1] ?? null;
   </head>
   <body class="reveal-root">
     <p class="crumb">
-      <a href="/">Public record index</a> / {party}{seat && <> / {seat}</>} / <b>{person.name}</b>
+      <a href="/">Civicord</a> · <a href="/browse">Browse</a> / {party}{seat && <> / {seat}</>} / <b>{person.name}</b>
     </p>
 
     <p class="context-line">
@@ -118,7 +118,7 @@ const compareAvg = compareFound?.[1] ?? null;
       <p class="compare-line">
         {compareParty}: <b>{Math.round(compareAvg * 100)}% of sites live</b> across the party ·{" "}
         this candidate: <b>{personShare >= 1 ? "live" : personShare <= 0 ? "gone" : `${Math.round(personShare * 100)}% live`}</b>.{" "}
-        <a href={`/?party=${encodeURIComponent(compareParty.toLowerCase())}`}>See the cohort ↗</a>
+        <a href={`/browse?party=${encodeURIComponent(compareParty.toLowerCase())}`}>See the cohort ↗</a>
       </p>
     )}
 
@@ -203,7 +203,7 @@ const compareAvg = compareFound?.[1] ?? null;
 
     <nav class="prevnext" aria-label="More candidates">
       {prevId ? <a href={`/candidates/${prevId}`}>← Previous candidate</a> : <span />}
-      <a href="/">All candidates</a>
+      <a href="/browse">Browse ledger</a>
       {nextId ? <a href={`/candidates/${nextId}`}>Next candidate →</a> : <span />}
     </nav>
 
