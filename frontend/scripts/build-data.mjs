@@ -10,13 +10,33 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.resolve(here, "../../data/out");
 const outDir = path.resolve(here, "../src/data");
 
-// Deploy environments (e.g. Vercel) have no pipeline outputs — the pipeline is
-// Python-only and `data/` is gitignored. If a committed candidates.json exists,
-// deploy with that instead of failing.
+// Deploy environments (e.g. Cloudflare Pages) have no pipeline outputs — the
+// pipeline is Python-only and `data/` is gitignored. Fallback order:
+//   1. pipeline CSVs in ../data/out (freshest)
+//   2. the published snapshot on R2 (set DATA_SNAPSHOT_URL; updated by the
+//      pipeline after each run: `wrangler r2 object put ...`)
+//   3. a committed src/data/candidates.json (last resort)
+const R2_SNAPSHOT_URL =
+  process.env.DATA_SNAPSHOT_URL || "https://data.famile.xyz/candidates.json";
+
 if (!existsSync(dataDir)) {
   const committed = path.join(outDir, "candidates.json");
-  if (existsSync(committed)) {
-    console.log("No data/out CSVs — deploying with the committed src/data/candidates.json");
+  if (existsSync(committed) || process.env.DATA_SNAPSHOT_URL) {
+    try {
+      const res = await fetch(R2_SNAPSHOT_URL);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const buf = Buffer.from(await res.arrayBuffer());
+      mkdirSync(outDir, { recursive: true });
+      writeFileSync(committed, buf);
+      console.log(`No data/out CSVs — fetched snapshot from ${R2_SNAPSHOT_URL} (${(buf.length / 1e6).toFixed(1)}MB)`);
+      process.exit(0);
+    } catch (err) {
+      if (!existsSync(committed)) {
+        console.error(`Snapshot fetch failed (${err.message}) and no committed fallback exists.`);
+        process.exit(1);
+      }
+      console.log(`Snapshot fetch failed (${err.message}) — falling back to committed src/data/candidates.json`);
+    }
     process.exit(0);
   }
   console.error(`Missing ${dataDir}. From the repo root run: .venv/bin/civicord ingest`);
