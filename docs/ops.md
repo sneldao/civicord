@@ -4,7 +4,7 @@ Infrastructure and deployment notes for Civicord. This doc is **internal** —
 it's safe to commit (no secrets), but unlike `architecture.md` /
 `onchain-plan.md` it documents *how we run* the project rather than what it is.
 
-Last updated: 2026-09-10 — frontend map layer + deploy runbook correction (manual `wrangler pages deploy`; no auto-build from Git).
+Last updated: 2026-09-10 — frontend map layer deployed, subgraph AS compile fixed, subgraph deploy pending Studio creation.
 
 ## Hosting topology
 
@@ -215,14 +215,53 @@ R2 snapshot at `https://civicord.pages.dev/data/candidates.json` → committed
 - **Map layer (2026-09-10):** `frontend/src/pages/constituencies/[slug].astro` +
   `frontend/src/components/HalftoneHexMap.astro` + `frontend/scripts/build-map.mjs`
   generate 650 constituency pages and the halftone hex map at build time from
-  `data/out/*.csv` + `data/boundaries/ak-v5.geojson`. Built locally into
-  `frontend/dist/` but **not yet deployed** to Cloudflare Pages.
+  `data/out/*.csv` + `data/boundaries/ak-v5.geojson`. Built and deployed to
+  Cloudflare Pages on 2026-09-10 — `https://civicord.pages.dev` now serves
+  the map and all 650 constituency pages.
 
 - **Gotchas hit & fixed tonight:**
   - `npx --prefix frontend wrangler pages deploy dist` fails (`ENOENT dist` / `[UNRESOLVED_ENTRY]`). Use `cd frontend && npm run build && npx wrangler pages deploy dist` (see **Deploying the frontend** above).
   - Any `CLOUDFLARE_API_KEY`/`ACCOUNT_ID`/`BASE_URL` in the shell (Workers AI key `ff315` from a prior `.zshrc`) causes `Authentication error [code: 10000]` on non-AI endpoints — the `env -u CLOUDFLARE_API_KEY -u CLOUDFLARE_ACCOUNT_ID -u CLOUDFLARE_BASE_URL` prefix is required.
   - `python -m http.server` single-threaded dies on `ClientRouter` prefetch `BrokenPipeError` (every Chromium view-transition kills the server). Fix: threaded server `socketserver.ThreadingMixIn` + `except (BrokenPipeError, ConnectionResetError): pass` in `/tmp/serve.py` and bind `0.0.0.0` for `agent-browser` (needs LAN IP `192.168.0.74:4321`, not `127.0.0.1`).
   - Bare `python scripts/publish/publish.py` buffers `>> /tmp/records-blast.log` (4K file buffering) — stall at `p1067` looked like a hang but was unflushed output. Fix: `python -u` (wrapper now `python -u publish.py --blast --records-only`).
+
+## Subgraph (The Graph)
+
+Indexing the on-chain ENSv2 `LabelRegistered`/`TextChanged` events on **sepolia**
+(start block `8150000`). `npx graph` is provided by the root `package.json` dev
+dependencies (`@graphprotocol/graph-cli`, `@graphprotocol/graph-ts`).
+
+### Build
+
+```bash
+cd subgraph
+npx graph codegen
+npx graph build
+```
+
+Build output goes to `subgraph/build/` (ignored by `.gitignore`);
+`subgraph/generated/schema.ts` is committed so the build works on a fresh clone.
+
+### Deploy
+
+The deploy key is cached in `~/.graph-cli.json` (set once with
+`npx graph auth <DEPLOY-KEY>` if this machine is new). One-time: create the
+subgraph in [Subgraph Studio](https://thegraph.com/studio/) first. The CLI's
+`graph create --node https://api.studio.thegraph.com/deploy/ <name>` currently
+returns `Method not found`, so the Studio UI is the only way to create it.
+
+Once the subgraph exists in Studio:
+
+```bash
+cd subgraph
+npx graph deploy --node https://api.studio.thegraph.com/deploy/ \
+  --version-label v0.0.1 civicord subgraph.yaml
+```
+
+### Current status (2026-09-10)
+
+- `npx graph build` now passes after the AS compile fix.
+- IPFS upload succeeded during the first deploy attempt (manifest QmTp8yuyk6GFZJKB9KckxmSzjSHQM3CBEbTatZC1VnMKpM), but the deploy itself failed with `Subgraph not found` because `civicord` has not yet been created in the Studio account. Create it via the Studio UI and re-run the `graph deploy` command above.
 
 ## Sizes to keep an eye on
 
