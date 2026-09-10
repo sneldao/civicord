@@ -15,7 +15,7 @@
 5. **Privacy-aware.** Candidate sites are personal data (GDPR). Publish derived
    text/diffs openly; keep raw HTML access-controlled.
 
-## Data model (v1 + constituency/map layer — 2026-09-10)
+## Data model (v1 + constituency/map + gateway — 2026-09-11)
 
 ```
 candidates          # one row per person, Democracy Club person_id as key
@@ -100,18 +100,27 @@ reuses the existing `fuzzyMatch` subsequence matcher (see [cartography.md](carto
   page type). LLM claim-extraction is a later, optional pass.
 - **outputs** — static per-candidate timelines (GitHub Pages, like Campaign
   Lab's), plus bulk Parquet + CDX-style index exports.
-- **map** (new — build-time, 2026-09-10) — JOIN `posts → PCON24CD` via ONS Names
+- **map** (build-time, 2026-09-10) — JOIN `posts → PCON24CD` via ONS Names
   & Codes V2 (see Data sources), count per-constituency `live/gone/redirected`,
   render halftone hex (equal-weight, Automatic Knowledge v5) + pointillist hero
   (2,375 dots inside ONS BUC clip) as static SVG, emit 650
-  `/constituencies/[slug]` pages + OG stipple thumbnails. Script:
+  `/constituencies/[slug]` pages + 650 stipple deeds `build-og.mjs`
+  (1200×630 SVG from 1 template, 2.5 MB, copied via `public/og/`). Script:
   `frontend/scripts/build-map.mjs` (Node: D3 + TopoJSON + HexJSON), invoked by
-  `astro build`. No Maps API, no runtime. Design system in
+  `astro build` (`prebuild` chain). No Maps API, no runtime. Design system in
   [cartography.md](cartography.md): halftone = `radial-gradient` SVG
   `<pattern>` + `mix-blend-mode: multiply` + `contrast()`, dot `r = 1.5 +
   (1-liveShare)*3.5px`, colour + size double-encoding for accessibility/print.
   Inset = ONS BUC TopoJSON. See cartography §3 for the full static stack and
-  size budget (<18 MB dist).
+  size budget (`34M` dist, `4342` files incl. 650 OG).
+- **gateway** (static, 2026-09-11) — `openapi.yaml` (`frontend/public/openapi.yaml`,
+  277 lines) + Recipe (`gateway/recipe.md`) + static API routes
+  `GET /api/constituencies`, `GET /api/constituencies/{slug}` (650 prerendered
+  JSON, the x402/MPP pay-per-`?constituency=` unit), `GET /api/summary`
+  (free), `GET /og/constituencies/{slug}.svg` (free, 1200×630 deed).
+  No backend — Cloudflare Pages serves prerednered JSON/SVG; Bazantic gateways
+  the metered route. Humans still browse free at `civicord.pages.dev`.
+  See `gateway/recipe.md` for agent binding, pricing, and test cURL.
 
 ## Data sources
 
@@ -162,9 +171,9 @@ the ledger; no panning of a slippy map — *search + click* wins for 650 seats.
   print. Legend click dims, hex click sets `?constituency`, row hover pulses
   hex (Nusser linked brushing).
 - **Jurisdiction UX** — `/constituencies/[slug]` (650 static pages, one per
-  `posts`) shows halftone thumb + `n/m sites live`, ENS names, `?format=svg`
-  embed. Nation pills England/Scotland/Wales/NI + fuzzy autocomplete for Welsh
-  names (`Ynys Môn`). `/candidates/[id]` shows seat-context (shipped 2026-09-10,
+  `posts`) shows halftone thumb + `n/m sites live`, ENS names, `og:image`
+  deed `→ /og/constituencies/{slug}.svg` (1200×630, `og:image:type image/svg+xml`). Nation pills England/Scotland/Wales/NI + fuzzy autocomplete for Welsh
+  names (`Ynys Môn`). API mirrors every seat at `/api/constituencies/{slug}.json` (same payload + `ogImage`) for the Bazantic metered call. `/candidates/[id]` shows seat-context (shipped 2026-09-10,
   `frontend/src/pages/candidates/[id].astro`): hex thumb (colour + dot-size
   double-encoded via `thumbFills(livePct)`), `n of m live · gone · redirected` +
   GSS code / region / electorate, deep links to seat + `?constituency=` filtered

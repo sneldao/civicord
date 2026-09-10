@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node scripts/build-data.mjs && node scripts/build-map.mjs",
+    "predev": "node scripts/build-data.mjs && node scripts/build-map.mjs && node scripts/build-og.mjs",
     "dev": "astro dev",
-    "prebuild": "node scripts/build-data.mjs && node scripts/build-map.mjs",
+    "prebuild": "node scripts/build-data.mjs && node scripts/build-map.mjs && node scripts/build-og.mjs",
     "build": "astro build",
     "preview": "astro preview"
   },

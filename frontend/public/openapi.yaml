@@ -1,0 +1,277 @@
+openapi: 3.0.3
+info:
+  title: Civicord — Constituency Record API
+  version: 1.0.0
+  description: |
+    Permanent, verifiable record of UK parliamentary candidate website survival,
+    keyed on ONS PCON24 (650 Westminster constituencies). Built from Campaign Lab's
+    April 2025 scrape of 2,375 candidates, re-audited 2026-09-07, recorded as
+    p{id}.civicord.eth on ENS Sepolia.
+
+    **Static, no auth for read.** Bazantic gateways this API as a pay-per-constituency
+    query (x402/MPP) — agents pay per `?constituency=` call so humans never see a paywall
+    on the site itself (civicord.pages.dev remains open).
+
+    Sources: Campaign Lab scrape · Democracy Club IDs · AK v5 hexes (OGL) · ONS BUC (OGL)
+  contact:
+    name: Civicord
+    url: https://github.com/sneldao/civicord
+    email: hello@civicord.pages.dev
+  license:
+    name: AGPL-3.0
+    url: https://github.com/sneldao/civicord/blob/main/LICENSE
+servers:
+  - url: https://civicord.pages.dev
+    description: Production (Cloudflare Pages, static)
+  - url: http://localhost:4321
+    description: Local dev (astro dev)
+
+paths:
+  /api/constituencies:
+    get:
+      operationId: listConstituencies
+      summary: List all 650 constituencies with survival summary
+      description: |
+        Lightweight index — one object per seat. Filter client-side on slug/name/region/livePct.
+        For the full ledger (2375 candidates) use the static candidacy JSON at /data/candidates.json
+        or browse /browse?constituency={slug} on the site.
+      tags: [constituencies]
+      parameters:
+        - $ref: '#/components/parameters/RegionFilter'
+        - $ref: '#/components/parameters/CountryFilter'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Array of constituency summaries (static JSON)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConstituencySummary'
+              example:
+                - slug: st-ives
+                  name: St Ives
+                  gssCode: E14001511
+                  region: South West
+                  country: England
+                  electorate: 70107
+                  stats: { sites: 4, candidates: 4, live: 3, gone: 1, livePct: 75 }
+                  href: /constituencies/st-ives
+                  ogImage: /og/constituencies/st-ives.svg
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/constituencies/{slug}:
+    get:
+      operationId: getConstituency
+      summary: Get one constituency — candidates + site status + ENS names
+      description: |
+        **This is the metered endpoint Bazantic charges per call.**
+        One constituency = one jurisdiction. Agents should call this when a
+        human asks "what happened in Leeds Central?" or "which sites died in Ynys Môn?".
+
+        Returns the same data that powers /constituencies/{slug} on the site.
+        Every candidate listed carries its ENS name p{id}.civicord.eth and
+        liveness status (live / dns_error / http_error / ...).
+      tags: [constituencies]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: URL slug (kebab, e.g. ynys-mon, st-ives, holborn-and-st-pancras)
+          schema: { type: string, pattern: '^[a-z0-9-]+$' }
+          example: ynys-mon
+      responses:
+        '200':
+          description: Constituency record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Constituency'
+              example:
+                slug: ynys-mon
+                name: Ynys Môn
+                gssCode: W07000112
+                region: Wales
+                country: Wales
+                electorate: 52415
+                altName: Ynys Môn
+                stats: { sites: 3, candidates: 3, live: 2, gone: 1, livePct: 67 }
+                candidates:
+                  - id: "17372"
+                    name: Ieuan Môn Williams
+                    party: Labour Party
+                    url: https://www.ieuan4mon.cymru
+                    statusClass: dns_error
+                    redirected: false
+                    onchain: { ens: p17372.civicord.eth, status: dns_error }
+                href: /constituencies/ynys-mon
+                ogImage: /og/constituencies/ynys-mon.svg
+        '404':
+          description: Unknown slug (650 valid — e.g. st-ives, ynys-mon).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: constituency not found, slug: bad-slug }
+
+  /api/summary:
+    get:
+      operationId: getSummary
+      summary: National audit summary (one call, no metering)
+      description: Top-line numbers for the whole ledger — free, cacheable, unmetered.
+      tags: [meta]
+      responses:
+        '200':
+          description: Summary counters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Summary'
+              example:
+                candidates: 2375
+                websites: 2452
+                audited: 2452
+                live: 1512
+                gone: 441
+                redirected: 659
+                constituencies: 650
+                withSites: 633
+                emptySeats: 17
+                onchain: 2375
+                auditedAt: "2026-09-07"
+                source: Campaign Lab April 2025 + Democracy Club IDs
+
+  /og/constituencies/{slug}.svg:
+    get:
+      operationId: getConstituencyOgImage
+      summary: Stipple deed OG image for a constituency (SVG, 1200×630)
+      description: |
+        Social-card for sharing — halftone hex thumb + "3 of 4 live (75%)" + GSS code.
+        Cacheable, unmetered. Returned as image/svg+xml (convert to PNG at the edge if needed).
+      tags: [og]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema: { type: string }
+          example: st-ives
+      responses:
+        '200':
+          description: SVG image
+          content:
+            image/svg+xml:
+              schema: { type: string, format: binary }
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  parameters:
+    RegionFilter:
+      name: region
+      in: query
+      required: false
+      schema: { type: string }
+      description: Filter client-side (e.g. South West, Scotland)
+    CountryFilter:
+      name: country
+      in: query
+      required: false
+      schema: { type: string, enum: [England, Scotland, Wales, Northern Ireland] }
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 650, default: 650 }
+
+  schemas:
+    ConstituencySummary:
+      type: object
+      required: [slug, name, gssCode, stats, href]
+      properties:
+        slug: { type: string, example: st-ives }
+        name: { type: string, example: St Ives }
+        gssCode: { type: string, example: E14001511 }
+        region: { type: string, nullable: true, example: South West }
+        country: { type: string, nullable: true, example: England }
+        type: { type: string, nullable: true, example: county }
+        electorate: { type: integer, nullable: true, example: 70107 }
+        altName: { type: string, nullable: true, example: null }
+        stats:
+          $ref: '#/components/schemas/Stats'
+        href: { type: string, example: /constituencies/st-ives }
+        ogImage: { type: string, example: /og/constituencies/st-ives.svg }
+
+    Constituency:
+      allOf:
+        - $ref: '#/components/schemas/ConstituencySummary'
+        - type: object
+          properties:
+            candidates:
+              type: array
+              items: { $ref: '#/components/schemas/CandidateInSeat' }
+
+    CandidateInSeat:
+      type: object
+      required: [id, name, party, url, statusClass]
+      properties:
+        id: { type: string, example: "2504" }
+        name: { type: string, example: Andrew George }
+        party: { type: string, example: Liberal Democrats }
+        url: { type: string, format: uri, example: http://www.andrewgeorge.org.uk }
+        statusClass: { type: string, enum: [live, dns_error, http_error, timeout, connection_error, ssl_error, other_error], example: live }
+        statusCode: { type: string, nullable: true, example: "200" }
+        redirected: { type: boolean, example: true }
+        finalUrl: { type: string, nullable: true, format: uri }
+        nameFound: { type: boolean, nullable: true }
+        onchain:
+          type: object
+          nullable: true
+          properties:
+            ens: { type: string, example: p2504.civicord.eth }
+            status: { type: string, nullable: true }
+
+    Stats:
+      type: object
+      properties:
+        sites: { type: integer, example: 4 }
+        candidates: { type: integer, example: 4 }
+        live: { type: integer, example: 3 }
+        gone: { type: integer, example: 1 }
+        http_error: { type: integer }
+        timeout: { type: integer }
+        other: { type: integer }
+        redirected: { type: integer, example: 3 }
+        onchain: { type: integer }
+        liveShare: { type: number, example: 0.75 }
+        livePct: { type: integer, example: 75 }
+        gonePct: { type: integer, example: 25 }
+
+    Summary:
+      type: object
+      properties:
+        candidates: { type: integer }
+        websites: { type: integer }
+        audited: { type: integer }
+        live: { type: integer }
+        gone: { type: integer }
+        redirected: { type: integer }
+        constituencies: { type: integer }
+        withSites: { type: integer }
+        emptySeats: { type: integer }
+        onchain: { type: integer }
+        auditedAt: { type: string, format: date }
+        source: { type: string }
+
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        slug: { type: string }
+
+  responses:
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }

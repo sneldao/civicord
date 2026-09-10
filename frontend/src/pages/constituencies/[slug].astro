@@ -35,6 +35,8 @@ try {
   hex = hexes.find((h: any) => h.slug === c.slug) || null;
 } catch {}
 
+const siteUrl = "https://civicord.pages.dev";
+const ogImage = `${siteUrl}/og/constituencies/${c.slug}.svg`;
 const ogTitle = `${c.name} — Civicord`;
 const ogDesc = c.stats.sites ? `${c.name}: ${shareLine}. Permanent record on civicord.eth.` : `${c.name}: no candidate site in the April 2025 scrape. Permanent record on civicord.eth.`;
 ---
@@ -47,7 +49,12 @@ const ogDesc = c.stats.sites ? `${c.name}: ${shareLine}. Permanent record on civ
     <meta property="og:title" content={ogTitle} />
     <meta property="og:description" content={ogDesc} />
     <meta property="og:type" content="article" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImage} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{c.name} — Civicord</title>
     <ClientRouter />

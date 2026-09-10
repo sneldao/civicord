@@ -13,11 +13,11 @@ web-monitoring and the Library of Congress's Elections Web Archive — see
 
 ## Status
 
-**2026-09-10 · Phase 0 + map layer + seat context complete (3,031 pages).** Liveness audit of all 2,375 scraped candidate
+**2026-09-11 · Phase 0 + map + seat context + gateway (3,031 html + 652 json + 650 deeds).** Liveness audit of all 2,375 scraped candidate
 websites: **64% still live ~17 months after the scrape** — 363 domains gone
 entirely, 372 serving HTTP errors, 659 URLs redirect elsewhere ([docs/phase0-findings.md](docs/phase0-findings.md)). Homepage is narrative-only with cohort cards and hero search →
 `/browse` (paginated ledger, 50/page, deep-linkable filters); the 2,375-row wall is gone. Disclosure stack:
-`summary → cohort → filtered ledger → record → archived pages`. Cartography research (Parallel Search API, 22 sources) in [docs/cartography.md](docs/cartography.md) — now **shipped**: halftone hex (Automatic Knowledge v5, 435 KB, OGL) on `/` and `/browse` (650 hexes, colour + dot-size double-encoded), 650 `/constituencies/[slug]` pages, ledger↔map sync via `?constituency`, and candidate→seat linkage on 1,607 records (hex thumb + `n of m live` + deep links to seat + filtered ledger). Build: `3031` static pages, no Maps API. What's next: [docs/plan.md](docs/plan.md).
+`summary → cohort → filtered ledger → record → archived pages`. Cartography research (Parallel Search API, 22 sources) in [docs/cartography.md](docs/cartography.md) — now **shipped**: halftone hex (Automatic Knowledge v5, 435 KB, OGL) on `/` and `/browse` (650 hexes, colour + dot-size double-encoded), 650 `/constituencies/[slug]` pages, ledger↔map sync via `?constituency`, and candidate→seat linkage on 1,607 records (hex thumb + `n of m live` + deep links to seat + filtered ledger). **Gateway** ([gateway/recipe.md](gateway/recipe.md), `openapi.yaml`): static `GET /api/constituencies[/{slug}]` + `/api/summary` + 650 stipple deeds `GET /og/constituencies/{slug}.svg` (1200×630) with `og:image` on every seat page — the `?constituency=` query is Bazantic's pay-per-seat unit (humans browse free at `civicord.pages.dev`). Build: `3031` html pages + `652` API json + `650` deeds, no backend, no Maps API. What's next: [docs/plan.md](docs/plan.md).
 
 ## Development
 
@@ -55,6 +55,9 @@ Deployed via Cloudflare Pages (https://civicord.pages.dev); see
 | [docs/ops.md](docs/ops.md) | Internal runbook: Cloudflare accounts, deploys, data snapshots, gotchas |
 | [docs/architecture.md](docs/architecture.md) | System design, data model, data sources, pipeline, map layer |
 | [docs/cartography.md](docs/cartography.md) | **New** — halftone hex + pointillist map UX, hex comparison, visual-encoding & a11y methods (Parallel research, 22 sources) |
+| [gateway/recipe.md](gateway/recipe.md) + [`frontend/public/openapi.yaml`](frontend/public/openapi.yaml) | Bazantic Recipe + OpenAPI — the agent gateway (pay-per-`?constituency=` query, x402/MPP) |
+| [`/api/constituencies/{slug}.json`](frontend/src/pages/api/constituencies/[slug].json.ts) · [`/api/summary.json`](frontend/src/pages/api/summary.json.ts) | Static jurisdiction API (metered by Bazantic, free on the site) |
+| [`/og/constituencies/{slug}.svg`](frontend/scripts/build-og.mjs) | 650 stipple-deed share cards (1200×630 SVG from one template) |
 | [docs/phase0-findings.md](docs/phase0-findings.md) | Phase 0 liveness-audit baseline (64% live) |
 | [docs/outreach.md](docs/outreach.md) | Partner strategy and draft outreach emails |
 | [RESEARCH.md](RESEARCH.md) | Adjacent projects, validated gaps, prior art |
