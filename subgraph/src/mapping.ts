@@ -30,6 +30,7 @@ function ensureStat(): Stat {
     stat.goneCount = BigInt.fromI32(0);
     stat.textRecordCount = BigInt.fromI32(0);
     stat.textRecordChangeCount = BigInt.fromI32(0);
+    stat.save();
   }
   return stat as Stat;
 }
@@ -48,8 +49,15 @@ function bumpStat(field: string, by: i32 = 1): void {
   stat.save();
 }
 
-function nodeId(tokenId: BigInt): string {
-  return tokenId.toHexString();
+function tokenIdHex(tokenId: BigInt): string {
+  // BigInt.toHexString() on Graph is 0x + 64 hex chars (32 bytes) — lower-case,
+  // same format as Bytes.toHexString(). Use this consistently for node↔candidate
+  // lookup so TextChanged (bytes32 node) matches LabelRegistered (uint256 tokenId).
+  return tokenId.toHexString().toLowerCase();
+}
+
+function nodeHex(node: Bytes): string {
+  return node.toHexString().toLowerCase();
 }
 
 function emptyResolver(): Bytes {
@@ -67,7 +75,7 @@ export function handleLabelRegistered(event: LabelRegisteredEvent): void {
     candidate = new Candidate(personId);
     candidate.label = label;
     candidate.ensName = label + ".civicord.eth";
-    candidate.node = Bytes.fromHexString(event.params.tokenId.toHexString());
+    candidate.node = Bytes.fromHexString(tokenIdHex(event.params.tokenId));
     candidate.tokenId = event.params.tokenId;
     candidate.owner = changetype<Bytes>(event.params.owner);
     candidate.resolver = emptyResolver();
@@ -84,19 +92,23 @@ export function handleLabelRegistered(event: LabelRegisteredEvent): void {
   }
   candidate.save();
 
-  // Map the ENS node (tokenId) to the candidate so TextChanged/ResolverUpdated
-  // can resolve it without scanning the registry.
-  const nId = nodeId(event.params.tokenId);
+  // Map the ENS node (tokenId as bytes32 hex) → candidate so TextChanged/
+  // ResolverUpdated can resolve it without scanning the registry.
+  const nId = tokenIdHex(event.params.tokenId);
   let nodeMap = NodeToCandidate.load(nId);
   if (nodeMap === null) {
     nodeMap = new NodeToCandidate(nId);
+    nodeMap.candidate = personId;
+    nodeMap.save();
+  } else if (nodeMap.candidate != personId) {
+    // Re-registered under same tokenId but different person — update.
     nodeMap.candidate = personId;
     nodeMap.save();
   }
 }
 
 export function handleLabelUnregistered(event: LabelUnregisteredEvent): void {
-  const nId = nodeId(event.params.tokenId);
+  const nId = tokenIdHex(event.params.tokenId);
   const nodeMap = NodeToCandidate.load(nId);
   if (nodeMap !== null) {
     const candidate = Candidate.load(nodeMap.candidate);
@@ -109,7 +121,7 @@ export function handleLabelUnregistered(event: LabelUnregisteredEvent): void {
 }
 
 export function handleResolverUpdated(event: ResolverUpdatedEvent): void {
-  const nId = nodeId(event.params.tokenId);
+  const nId = tokenIdHex(event.params.tokenId);
   const nodeMap = NodeToCandidate.load(nId);
   if (nodeMap === null) {
     return;
@@ -125,10 +137,10 @@ export function handleResolverUpdated(event: ResolverUpdatedEvent): void {
 // ── PermissionedResolver handlers ─────────────────────────────────────────────
 
 export function handleTextChanged(event: TextChangedEvent): void {
-  const nId = event.params.node.toHexString();
+  const nId = nodeHex(event.params.node);
   const nodeMap = NodeToCandidate.load(nId);
   if (nodeMap === null) {
-    // Not one of our candidate names.
+    // Not one of our candidate names (different ENS tree or pre-v0.0.1 block).
     return;
   }
 
@@ -162,7 +174,7 @@ export function handleTextChanged(event: TextChangedEvent): void {
     record.save();
   }
 
-  const changeId = recordId + "/" + event.block.number.toString();
+  const changeId = recordId + "/" + event.block.number.toString() + "/" + event.logIndex.toString();
   const change = new TextRecordChange(changeId);
   change.candidate = personId;
   change.textRecord = recordId;

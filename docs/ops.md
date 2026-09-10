@@ -4,7 +4,7 @@ Infrastructure and deployment notes for Civicord. This doc is **internal** —
 it's safe to commit (no secrets), but unlike `architecture.md` /
 `onchain-plan.md` it documents *how we run* the project rather than what it is.
 
-Last updated: 2026-09-11 — gateway **LIVE** (`civicord-aieyq.bazgateway.com`, marketplace *Pending verification*), OG deeds live, worker alias for extensionless `/api/*` shipped (`68950dd3`); subgraph deployed to Studio v0.0.1.
+Last updated: 2026-09-11 22:40 — gateway **LIVE** (`civicord-aieyq.bazgateway.com`, marketplace *Pending verification*), OG deeds live, worker alias for extensionless `/api/*` shipped (`68950dd3`); subgraph **v0.0.2 deployed** (`QmQqGfVxLZ…`, `hasIndexingErrors:false` @ 8149999, syncing 3.5M blocks from 8150000 to 11677k — `v0.0.1` faulted).
 
 ## Hosting topology
 
@@ -269,15 +269,17 @@ npx graph deploy --node https://api.studio.thegraph.com/deploy/ \
   --version-label v0.0.1 civicord subgraph.yaml
 ```
 
-### Current status (2026-09-10)
+### Current status (2026-09-11 22:40)
 
-- `npx graph build` now passes after the AS compile fix.
+- `npx graph build` now passes after the AS compile fix (`b725f11` + `22:40` `NodeToCandidate` entity + `Stat.save()` + lower-case hex fix, `npx graph build subgraph/subgraph.yaml -o subgraph/build`).
 - Deployed to Subgraph Studio: `https://thegraph.com/studio/subgraph/civicord`
-- Query endpoint (v0.0.1): `https://api.studio.thegraph.com/query/101650/civicord/v0.0.1`
-- IPFS manifest: `QmTp8yuyk6GFZJKB9KckxmSzjSHQM3CBEbTatZC1VnMKpM`
+- Query endpoints: `v0.0.1` `QmTp8yuyk6GFZJKB9KckxmSzjSHQM3CBEbTatZC1VnMKpM` — **faulted** (`hasIndexingErrors:true` @ 11660475, `indexing_error` on every `stat`/`candidates` query — missing `NodeToCandidate` entity registration + `Stat` unsaved on first `ensureStat()`)
+- **`v0.0.2` — LIVE, syncing:** `QmQqGfVxLZ2zmHmmKu1eYDKFyVJvPdKaf6W22xJ5DYnaQn` — `hasIndexingErrors:false` @ 8149999 (1 block before `startBlock` 8150000). ~3.5M blocks to head `11677k`, use this endpoint for the demo: `https://api.studio.thegraph.com/query/101650/civicord/v0.0.2`
 - Studio metadata (description, source/website URLs, categories) saved in the
   Studio UI; not published to the decentralized network — the Studio query
   endpoint is enough for the hackathon demo.
+- Verify: `curl -X POST -H 'content-type: application/json' -d '{"query":"{ _meta { block { number } deployment hasIndexingErrors } }"}' https://api.studio.thegraph.com/query/101650/civicord/v0.0.2`
+- Redeployed with `npx graph deploy --node https://api.studio.thegraph.com/deploy/ --version-label v0.0.2 --output-dir subgraph/build civicord subgraph/subgraph.yaml` (deploy key in `~/.graph-cli.json`).
 
 ## Sizes to keep an eye on
 

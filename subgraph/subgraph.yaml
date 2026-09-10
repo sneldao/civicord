@@ -18,6 +18,7 @@ dataSources:
       file: ./src/mapping.ts
       entities:
         - Candidate
+        - NodeToCandidate
         - Stat
       abis:
         - name: UserRegistry
@@ -43,6 +44,7 @@ dataSources:
       file: ./src/mapping.ts
       entities:
         - Candidate
+        - NodeToCandidate
         - TextRecord
         - TextRecordChange
         - Stat
