@@ -1,6 +1,6 @@
 # Plan
 
-Delivery phases, the current sprint, and risks. Last updated 2026-09-11 19:26 BST.
+Delivery phases, the current sprint, and risks. Last updated 2026-09-11 21:45 BST.
 (Day-of-week note: 2026-09-08 is a **Tuesday**; earlier drafts of this file
 labelled it Monday — all day labels below use the corrected mapping.)
 
@@ -63,9 +63,9 @@ Substreams is blockchain ETL; web-archive data can't flow through it.
 | --- | --- |
 | Tue 8 | ✅ Frontend restyle — "Public Record" direction (pending sign-off) — the demo surface |
 | Wed 9 | 🔄 ENSv2 registry + subname mint + `civicord publish` — parent `civicord.eth` live (civicordhq alias), proxies deployed, blast-mode publisher shipped, 348/2,375 minted; paused on deployer gas top-up |
-| Wed 10 | Subgraph in Subgraph Studio + MCP agent demo (go/no-go vs fallback) |
-| Thu 11 | Bazantic gateway + Recipe |
-| Fri 12 | Demo video (2–4 min), FEEDBACK.md per sponsor, AI-attribution pass |
+| Wed 10 | Subgraph in Subgraph Studio + MCP agent demo (go/no-go vs fallback) — **Studio metadata saved, publish deferred** (see [ops.md](ops.md)) |
+| Thu 11 | ✅ Bazantic gateway **LIVE** (`civicord-aieyq.bazgateway.com` + `3se6sbx…bazgateway.com`, `MCP Live · 5 tools`, Marketplace *Pending verification* `/services/3se6sbxfgjfh3fw4gjpytkcroa`) + Recipe + 650 stipple deeds + worker alias for extensionless `/api/*` (`cb09faf`/`68950dd3`, `100`/`200` mcents verified) |
+| Fri 12 | Demo video (2–4 min) + FEEDBACK.md per sponsor, AI-attribution pass |
 | Sat 13 | Buffer; submit before 12:00 EDT / 17:00 UK |
 
 ## Phases after the sprint
@@ -190,9 +190,9 @@ All built at `astro build` — no Maps API, no backend. State lives in the URL; 
 
 **8h path to demo:** `1` fetch AK v5 + ONS BUC + Names V2 → cache `data/boundaries/` · `2` write `build-map.mjs` (join + counts + TopoJSON) · `3` `index.astro` pointillist hero (static `<svg>`+`<clipPath>`+2,375 circles) · `4` `map.astro` + `constituencies/[slug].astro` halftone hex wired to existing filter state + linked brushing + `format=svg` download.
 
-**Day plan update (live — 2026-09-11 19:26 shipped):** `3031` html + `652` API json (`constituencies` × 650 + list + summary) + `650` stipple deeds (1200×630 SVG, 2.5 MB, `build-og.mjs`) — `34M` `frontend/dist`, `4342` files. `openapi.yaml` + Recipe ([gateway/recipe.md](gateway/recipe.md)) at `gateway/` — pay-per-`?constituency=` (x402/MPP via Bazantic) while humans browse free. Remaining: `~30` `posts→PCON24NM` polish, nation pills, demo video.
+**Day plan update (live — 2026-09-11 21:45 gateway LIVE):** `3031` html + `652` API json (`constituencies` × 650 + list + summary) + `650` stipple deeds (1200×630 SVG, 2.5 MB, `build-og.mjs`) — `34M` `frontend/dist`, `4342` files. `openapi.yaml` + Recipe ([gateway/recipe.md](gateway/recipe.md)) at `gateway/` — `https://civicord-aieyq.bazgateway.com` (handle, `MCP Live · 5 tools` at `/mcp`, Marketplace *Pending verification*) — pay-per-`?constituency=` (x402/MPP `100`/`200` mcents, humans browse free). Worker alias `frontend/public/_worker.js` (`cb09faf`) maps extensionless Bazantic `/api/*` → `…json` with query filtering. Remaining: `~30` `posts→PCON24NM` polish, nation pills, demo video.
 
-| Thu 11 | ✅ Gateway + Recipe + OG deeds (this commit) — subgraph left to you |
+| Thu 11 | ✅ Gateway **LIVE** + Recipe + OG deeds + handle + marketplace pending — subgraph left to you |
 | Fri 12 | Demo video (2–4 min) + FEEDBACK.md — lead with map hook: “Check your constituency: 4/6 sites already gone” |
 
 Existing Thu Bazantic slot shifts to co-deliver with the map (gateway + Recipe remain); Fri video leads with the map hook: “Check your constituency: 4/6 sites already gone.”

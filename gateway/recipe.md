@@ -1,6 +1,6 @@
 # Civicord — Jurisdiction Recipe (Bazantic)
 
-**Gateway:** `https://civicord.pages.dev` (static) → `openapi.yaml` proxied via Bazantic x402/MPP gateway
+**Gateway (LIVE):** `https://civicord-aieyq.bazgateway.com` (custom handle, also `https://3se6sbxfgjfh3fw4gjpytkcroa.bazgateway.com`) — `MCP Live · 5 tools` at `/mcp` (`claude mcp add --transport http civicord https://civicord-aieyq.bazgateway.com/mcp`), upstream `https://civicord.pages.dev` (static). Marketplace: **Pending verification** — published at `/services/3se6sbxfgjfh3fw4gjpytkcroa`. Payout `0x96F3…7446` ready.
 **OpenAPI:** [`/openapi.yaml`](https://civicord.pages.dev/openapi.yaml) · **Contact:** `hello@civicord.pages.dev` · **Repo:** `github.com/sneldao/civicord`
 
 > **One-line pitch for an agent:** When a human asks *what happened in Leeds Central / Ynys Môn / any UK constituency* — which candidate sites survived, which vanished, who to verify on ENS — call Civicord before you guess. One constituency = one jurisdiction = one metered call.
@@ -69,13 +69,14 @@ slug = ynys-mon  (normalize NFD, &→and, lower, -)
 
 > Data: Campaign Lab April 2025 (2,375 candidates, Democracy Club IDs) · audit 2026-09-07 · on-chain `p{id}.civicord.eth` (Sepolia ENS) · map: AK v5 hexes (OGL, 650 equal) + ONS BUC (OGL). Verify any claim at `app.ens.domains/{ens}` or `sepolia.etherscan.io`.
 
-## Gateway wiring (for Bazantic dashboard)
+## Gateway wiring (live — verified 2026-09-11 21:45)
 
-* **Upstream:** `https://civicord.pages.dev` (Cloudflare Pages, static, no auth)
+* **Gateway:** `https://civicord-aieyq.bazgateway.com` (handle, also `https://3se6sbxfgjfh3fw4gjpytkcroa.bazgateway.com`) — `Live`, `MCP Live · 5 tools` at `/mcp` (`getConstituency`, `getConstituencyOgImage`, `getSummary`, `listConstituencies`, `info`) — `claude mcp add --transport http civicord https://civicord-aieyq.bazgateway.com/mcp` (also `old-hash.bazgateway.com/mcp`). Canonical listing `/services/3se6sbxfgjfh3fw4gjpytkcroa` — **Pending verification** · Published.
+* **Upstream:** `https://civicord.pages.dev` (Cloudflare Pages, static, no auth) — extensionless `GET /api/*` aliased via `frontend/public/_worker.js` (`cb09faf` → `…json` + `?country=&region=&limit=` filtering; verified `21:30` after `68950dd3`).
 * **Spec:** `https://civicord.pages.dev/openapi.yaml`
-* **Metered routes:** `/api/constituencies/{slug}` (x402 $0.002), `/api/constituencies` (x402 $0.001)
-* **Free routes:** `/api/summary`, `/og/constituencies/{slug}.svg`, `/*.html`, `/browse?constituency=*`
-* **Cache:** `max-age=300` on `/api/*`, `max-age=86400` on `/og/*`
+* **Metered routes:** `/api/constituencies/{slug}` (x402 $0.002 = `200` mcents), `/api/constituencies` (x402 $0.001 = `100` mcents) — both `402` with `x402Version:1` + `payment-required` + `www-authenticate: Payment` on Base USDC `0x8335…` → `0x96F3…7446`
+* **Free routes:** `/api/summary` (`200` free), `/og/constituencies/{slug}.svg` (origin `200 image/svg+xml`, gateway currently `404 not found` — origin is canonical), `/*.html`, `/browse?constituency=*`, `/openapi.yaml`
+* **Cache:** `max-age=300` on `/api/*`, `max-age=86400` on `/og/*` (origin; gateway inherits)
 * **Second service for Bazantic prize (use one already on Bazantic):** proxy ENS resolver read via `https://sepolia.etherscan.io` or The Graph Subgraph once live — satisfies “use at least one other service through Bazantic” without new code.
 
 ## Local test (no key)
@@ -86,11 +87,21 @@ curl -s https://civicord.pages.dev/api/summary | jq .
 curl -s https://civicord.pages.dev/og/constituencies/st-ives.svg | head
 ```
 
-With Bazantic gateway (replace `GATEWAY_URL` after you create it):
+With Bazantic gateway (LIVE — use the handle):
 
 ```bash
-curl -s $GATEWAY_URL/api/constituencies/st-ives -H "X-Payment: <x402>"
+GATEWAY_URL=https://civicord-aieyq.bazgateway.com
+# free (no payment)
+curl -s $GATEWAY_URL/api/summary | jq .
+# metered — 402 without X-Payment, 200 with it (Base USDC 0x8335… → 0x96F3…7446)
+curl -s $GATEWAY_URL/api/constituencies/st-ives -H "X-Payment: <x402>" | jq .slug
 curl -s $GATEWAY_URL/api/constituencies | jq 'sort_by(.stats.livePct) | .[0:3]'
+curl -s -D - $GATEWAY_URL/api/constituencies/st-ives | grep -i payment-required  # 402 header
+# OG deeds — canonical is origin (gateway free route is 404, origin is 200)
+curl -s https://civicord.pages.dev/og/constituencies/st-ives.svg | head
+# MCP (POST, not GET)
+curl -s -X POST -H 'content-type: application/json' -H 'accept: text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' $GATEWAY_URL/mcp | head
 ```
 
 Keep it static-first: no backend, no secrets, no wallet to read. Agents pay per jurisdiction; humans browse free. That is the whole recipe.

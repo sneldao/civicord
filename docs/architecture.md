@@ -113,14 +113,20 @@ reuses the existing `fuzzyMatch` subsequence matcher (see [cartography.md](carto
   (1-liveShare)*3.5px`, colour + size double-encoding for accessibility/print.
   Inset = ONS BUC TopoJSON. See cartography §3 for the full static stack and
   size budget (`34M` dist, `4342` files incl. 650 OG).
-- **gateway** (static, 2026-09-11) — `openapi.yaml` (`frontend/public/openapi.yaml`,
+- **gateway** (static, 2026-09-11 — **LIVE**) — `openapi.yaml` (`frontend/public/openapi.yaml`,
   277 lines) + Recipe (`gateway/recipe.md`) + static API routes
   `GET /api/constituencies`, `GET /api/constituencies/{slug}` (650 prerendered
-  JSON, the x402/MPP pay-per-`?constituency=` unit), `GET /api/summary`
-  (free), `GET /og/constituencies/{slug}.svg` (free, 1200×630 deed).
-  No backend — Cloudflare Pages serves prerednered JSON/SVG; Bazantic gateways
-  the metered route. Humans still browse free at `civicord.pages.dev`.
-  See `gateway/recipe.md` for agent binding, pricing, and test cURL.
+  JSON, the x402/MPP pay-per-`?constituency=` unit `100`/`200` mcents),
+  `GET /api/summary` (free), `GET /og/constituencies/{slug}.svg` (free,
+  1200×630 deed). No backend — Cloudflare Pages serves prerendered JSON/SVG
+  (extensionless `GET /api/*` aliased via `frontend/public/_worker.js`,
+  `cb09faf`, with `?country=&region=&limit=` query handling); Bazantic
+  gateways the metered route at `https://civicord-aieyq.bazgateway.com`
+  (handle, also `3se6sbx…bazgateway.com`, `MCP Live · 5 tools` at `/mcp`,
+  Marketplace *Pending verification* `/services/3se6sbxfgjfh3fw4gjpytkcroa`,
+  upstream `civicord.pages.dev`, payout `0x96F3…7446`). Humans still browse
+  free at `civicord.pages.dev`. See `gateway/recipe.md` for agent binding,
+  pricing, and test cURL.
 
 ## Data sources
 

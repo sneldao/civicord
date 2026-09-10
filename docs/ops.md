@@ -4,7 +4,7 @@ Infrastructure and deployment notes for Civicord. This doc is **internal** —
 it's safe to commit (no secrets), but unlike `architecture.md` /
 `onchain-plan.md` it documents *how we run* the project rather than what it is.
 
-Last updated: 2026-09-11 — gateway + OG deeds landed, still to deploy; subgraph deployed to Studio v0.0.1.
+Last updated: 2026-09-11 — gateway **LIVE** (`civicord-aieyq.bazgateway.com`, marketplace *Pending verification*), OG deeds live, worker alias for extensionless `/api/*` shipped (`68950dd3`); subgraph deployed to Studio v0.0.1.
 
 ## Hosting topology
 
@@ -204,18 +204,26 @@ R2 snapshot at `https://civicord.pages.dev/data/candidates.json` → committed
 `src/data/candidates.json`. R2 snapshot: ~2.5 MB (`candidates.json`), alias at
 `civicord.pages.dev/data/candidates.json`.
 
-## Frontend deploy state (2026-09-11 — gateway + deeds built, not yet deployed)
+## Frontend deploy state (2026-09-11 — gateway LIVE, deeds live, worker alias shipped)
 
 - **Built:** `frontend/dist` — `3031` html (`2375` candidates + `650` constituencies + `6` static), `+ 652` API json (`650` × `/api/constituencies/{slug}.json` + `/api/constituencies.json` + `/api/summary.json`), `+ 650` OG deeds (`/og/constituencies/{slug}.svg`, 1200×630, 2.5 MB via `public/og/`), `+ openapi.yaml` — `34M`, `4342` files, sitemap `3031` html. `cd frontend && npm run build` (chain: `build-data.mjs` → `build-map.mjs` → `build-og.mjs` → `astro build`). Previously `2381` html before map.
-- **API (static, Bazantic-metered):** `GET /api/constituencies/{slug}` is the pay-per-`?constituency=` unit (x402/MPP via Bazantic; humans still browse free at `/browse?constituency=`). `GET /api/summary` free. `GET /og/constituencies/{slug}.svg` free deed. `GET /openapi.yaml` (277 lines) + Recipe at `gateway/recipe.md` — gateway creation is the only remaining Bazantic-dashboard step.
-- **OG:** every `/constituencies/{slug}` now has `og:image → /og/constituencies/{slug}.svg` (`summary_large_image`, 1200×630, `image/svg+xml`) + `twitter:image` — share test: paste a seat URL in Slack/X.
-- **Last live deploys:** `ce51b262` / `61556895` (pre-gateway+og). Next deploy must push the `+652+650+1` new static files. Verify:
+- **Deployed:** `68950dd3` (plus `aeab68ad` / `266a570d` / `5e5ab5a0`) — `https://civicord.pages.dev` now serves extensionless `GET /api/constituencies`, `GET /api/constituencies/{slug}`, `GET /api/summary` via `frontend/public/_worker.js` rewrite (`cb09faf` — `…json` files on disk, Bazantic defines without `.json`). `?country=&region=&limit=` filtering now handled in the worker (was returning 650 unfiltered). Verified `21:30`.
+- **API (static, Bazantic-metered):** `GET /api/constituencies/{slug}` is the pay-per-`?constituency=` unit (x402/MPP via Bazantic; humans still browse free at `/browse?constituency=`). `GET /api/summary` free. `GET /og/constituencies/{slug}.svg` free deed. `GET /openapi.yaml` (277 lines) + Recipe at `gateway/recipe.md`.
+- **Gateway (Bazantic — LIVE):** `https://civicord-aieyq.bazgateway.com` (custom handle — claimed, live <1 min) — also `https://3se6sbxfgjfh3fw4gjpytkcroa.bazgateway.com` (hash). Upstream `https://civicord.pages.dev`, `No auth`, Payout `0x96F3…7446` ready, `MCP Live · 5 tools` (`getConstituency`, `getConstituencyOgImage`, `getSummary`, `listConstituencies`, `info`) at `/mcp` — `claude mcp add --transport http civicord https://civicord-aieyq.bazgateway.com/mcp`. Marketplace: **Pending verification** · Published at `/services/3se6sbxfgjfh3fw4gjpytkcroa` (canonical listing). Resources: `GET /api/constituencies 100 ($0.001)` · `GET /api/constituencies/{slug} 200 ($0.002)` · `GET /api/summary 0` · `GET /og/constituencies/{slug}.svg 0` (`Price per call 0–200` mcents). Verified `21:10–21:30` — `api/summary 200` free, `api/constituencies* 402` with `x402Version:1` / `payment-required` + `www-authenticate: Payment` (correct `1000`/`2000` on Base USDC `0x8335…`), `mcp POST 200 text/event-stream`.
+- **OG:** every `/constituencies/{slug}` now has `og:image → /og/constituencies/{slug}.svg` (`summary_large_image`, 1200×630, `image/svg+xml`) + `twitter:image` — share test: paste a seat URL in Slack/X. Origin `200`, gateway `404` (resource is `0 mcents` but Fly returns `not found` — origin is canonical; documented in Recipe).
+- **Last live Pages deploys:** `68950dd3` (current), `aeab68ad`, `266a570d`, `5e5ab5a0` — all include `+652+650+1`. Pre-gateway were `ce51b262` / `61556895`. Verify:
   ```bash
-  curl -s -o /dev/null -w '%{http_code}\n' https://civicord.pages.dev/api/constituencies/st-ives.json
-  curl -s https://civicord.pages.dev/api/summary.json | jq .
-  curl -s -o /dev/null -w '%{http_code}\n' https://civicord.pages.dev/openapi.yaml
-  curl -s -o /dev/null -w '%{http_code}\n' https://civicord.pages.dev/og/constituencies/st-ives.svg
-  curl -s https://civicord.pages.dev/constituencies/st-ives/ | grep -q 'og:image' && echo "og live" || echo "no og"
+  # origin (extensionless works via _worker.js)
+  curl -s https://civicord.pages.dev/api/summary | jq .
+  curl -s https://civicord.pages.dev/api/constituencies?limit=2 | jq 'length'  # now 2, worker-filtered
+  curl -s https://civicord.pages.dev/api/constituencies/st-ives | jq .slug
+  curl -s -o /dev/null -w '%{http_code} %{content_type}\n' https://civicord.pages.dev/og/constituencies/st-ives.svg
+  # gateway (x402)
+  curl -s https://civicord-aieyq.bazgateway.com/api/summary | jq .
+  curl -s -o /dev/null -w '%{http_code}\n' https://civicord-aieyq.bazgateway.com/api/constituencies/st-ives  # 402 + payment-required
+  curl -s https://civicord-aieyq.bazgateway.com/openapi.yaml | head
+  curl -s -X POST -H 'content-type: application/json' -H 'accept: text/event-stream' \
+    -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' https://civicord-aieyq.bazgateway.com/mcp | head
   ```
 - **R2 snapshot:** `frontend/src/data/candidates.json` (2,412,060 bytes) uploaded via
   `scripts/upload_snapshot.sh` to `civicord-data/candidates.json` — `https://civicord.pages.dev/data/candidates.json`
