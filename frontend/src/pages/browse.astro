@@ -1,7 +1,9 @@
 ---
 import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
+import HalftoneHexMap from "../components/HalftoneHexMap.astro";
 import "../styles/global.css";
+import constituenciesRaw from "../data/constituencies.json";
 
 // Validated at build time by src/content.config.ts
 const all = await getCollection("candidates");
@@ -48,6 +50,27 @@ const parties = [...partyCounts.entries()].sort((a, b) => b[1] - a[1]).map(([p])
 const randomIds = candidates.map((c) => c.id);
 const goneCount = websites.filter((w) => ["dns_error","connection_error"].includes(w.audit?.statusClass ?? "")).length;
 const liveCount = live.length;
+
+// Constituency data for filtering + datalist (static import — Astro/Vite bundles it, no fs at build)
+let constituencies: Array<{ slug: string; name: string; gssCode: string; stats: any }> = [];
+try {
+  const raw: any = (constituenciesRaw as any);
+  const arr = Array.isArray(raw) ? raw : Array.isArray(raw?.default) ? raw.default : [];
+  if (arr.length) constituencies = arr as any;
+} catch {}
+const constituencySlugs = new Set(constituencies.map((c) => c.slug));
+const constituencyBySlug = new Map(constituencies.map((c) => [c.slug, c]));
+const constituencyNamesForDatalist = constituencies.map((c) => c.name);
+
+// Helper for row constituency slugs — must match build-map.mjs slugify
+function slugify(name: string): string {
+  let s = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  s = s.replace(/&/g, " and ");
+  s = s.toLowerCase();
+  s = s.replace(/[^a-z0-9]+/g, "-");
+  s = s.replace(/^-+|-+$/g, "").replace(/--+/g, "-");
+  return s;
+}
 ---
 
 <html lang="en-GB">
@@ -56,12 +79,12 @@ const liveCount = live.length;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content={`Browse all ${candidates.length.toLocaleString("en-GB")} UK candidate records — filter by party, status and search. ${live.length} sites still live, ${dead.length} domains gone.`}
+      content={`Browse all ${candidates.length.toLocaleString("en-GB")} UK candidate records — filter by party, status, constituency and search. ${live.length} sites still live, ${dead.length} domains gone.`}
     />
     <meta property="og:title" content="Browse the ledger — Civicord" />
     <meta
       property="og:description"
-      content={`All ${candidates.length.toLocaleString("en-GB")} candidates, filterable by party and outcome. What survived and what didn't.`}
+      content={`All ${candidates.length.toLocaleString("en-GB")} candidates, filterable by party, constituency and outcome. What survived and what didn't.`}
     />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
@@ -76,15 +99,26 @@ const liveCount = live.length;
 
     <header class="masthead">
       <h1 class="wordmark">Browse<span class="dot">.</span></h1>
-      <p class="lede">All {candidates.length.toLocaleString("en-GB")} candidates — filter, search, then open the record.</p>
+      <p class="lede">All {candidates.length.toLocaleString("en-GB")} candidates — filter, search, then open the record. Pick a hex to see a seat.</p>
       <p class="tagline">
         Every row is a candidate website from Campaign Lab's April 2025 scrape, re-checked September 2026.
         <a href="/methodology">Methodology ↗</a> · <a href="/">← Back to overview</a>
       </p>
     </header>
 
+    <HalftoneHexMap />
+
+    <div id="constituency-banner" class="constituency-banner" hidden>
+      <span>Showing <b id="constituency-banner-name"></b> — <span id="constituency-banner-stats"></span></span>
+      <a id="constituency-banner-link" href="#">View seat page ↗</a>
+      <button type="button" id="clear-constituency">Clear</button>
+    </div>
+
     <div class="filterbar" role="search" aria-label="Filter candidates">
-      <input id="q" type="search" placeholder="Filter by candidate, party, website… — try “farrage”" autocomplete="off" aria-label="Search" />
+      <input id="q" type="search" placeholder="Filter by candidate, party, constituency, website… — try “farrage” or “Ynys Môn”" autocomplete="off" aria-label="Search" list="browse-constituencies" />
+      <datalist id="browse-constituencies">
+        {constituencyNamesForDatalist.map((n) => <option value={n}></option>)}
+      </datalist>
       <label class="visually-hidden" for="status">Filter by status</label>
       <select id="status" aria-label="Filter by status">
         <option value="all">All statuses</option>
@@ -112,7 +146,7 @@ const liveCount = live.length;
       <button type="button" id="random-browse" class="btn-ghost btn-sm">Surprise me — random record 🎲</button>
       <button type="button" id="copy-link" class="btn-ghost btn-sm">Copy filtered link</button>
       <span id="copy-toast" class="copy-toast" hidden role="status" aria-live="polite"></span>
-      <span class="toolbar-hint muted">Press <kbd>/</kbd> to search, <kbd>Esc</kbd> to clear</span>
+      <span class="toolbar-hint muted">Press <kbd>/</kbd> to search, <kbd>Esc</kbd> to clear · Click a hex to filter by seat</span>
     </div>
 
     <div class="table-wrap">
@@ -124,13 +158,16 @@ const liveCount = live.length;
           {candidates.flatMap((c) =>
             c.websites.map((w) => {
               const st = w.audit?.statusClass ?? "not_audited";
+              const constSlugs = w.posts.map((p) => slugify(p)).join("|");
+              const postsStr = w.posts.join(" ");
               return (
                 <tr
                   class={`row-st-${st}`}
                   data-status={st}
                   data-redirected={w.audit?.redirected ? "1" : "0"}
                   data-party={w.parties.map((p) => p.toLowerCase()).join("|")}
-                  data-haystack={`${c.name} ${w.parties.join(" ")} ${w.elections[0] ?? ""} ${w.url}`.toLowerCase()}
+                  data-constituency={constSlugs}
+                  data-haystack={`${c.name} ${w.parties.join(" ")} ${postsStr} ${w.elections[0] ?? ""} ${w.url}`.toLowerCase()}
                 >
                   <td class="who">
                     <a class="who-name" href={`/candidates/${c.id}`}>{c.name}</a>
@@ -142,6 +179,7 @@ const liveCount = live.length;
                     <a class="url" href={w.url} rel="noopener noreferrer" title={w.url}>
                       {w.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                     </a>
+                    {w.posts[0] && <div style="font-size:0.72em;color:var(--muted);margin-top:0.15rem">{w.posts[0]}</div>}
                   </td>
                   <td data-label="Status">
                     <span class={`badge ${st}`}>{statusLabels[st]}</span>
@@ -170,14 +208,16 @@ const liveCount = live.length;
 
     <footer>
       <p>
-        <a href="/">← Overview</a> · <a href="/methodology">Methodology</a> · Data: Campaign Lab April 2025 · Democracy Club IDs · Audit 2026-09-07
+        <a href="/">← Overview</a> · <a href="/methodology">Methodology</a> · Map: Automatic Knowledge v5 (OGL) · Data: Campaign Lab April 2025 · Democracy Club IDs · Audit 2026-09-07
         · <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
       </p>
     </footer>
 
-    <script define:vars={{ statuses: cohortBoot.statuses, parties: cohortBoot.parties, randomIds, goneCount, liveCount }}>
+    <script define:vars={{ statuses: cohortBoot.statuses, parties: cohortBoot.parties, randomIds, goneCount, liveCount, constituencySlugs: [...constituencySlugs], constituencyList: constituencies.map((c) => ({ slug: c.slug, name: c.name, stats: c.stats })) }}>
       window.__COHORT_STATUSES = statuses;
       window.__COHORT_PARTIES = parties;
+      window.__COHORT_CONSTITUENCIES = constituencySlugs;
+      window.__CONSTITUENCY_LIST = constituencyList;
       const BROWSE_IDS = randomIds;
       document.addEventListener("astro:page-load", () => {
         const PAGE_SIZE = 50;
@@ -209,6 +249,11 @@ const liveCount = live.length;
         const copyBtn = document.getElementById("copy-link");
         const copyToast = document.getElementById("copy-toast");
         const randomBtn = document.getElementById("random-browse");
+        const banner = document.getElementById("constituency-banner");
+        const bannerName = document.getElementById("constituency-banner-name");
+        const bannerStats = document.getElementById("constituency-banner-stats");
+        const bannerLink = document.getElementById("constituency-banner-link");
+        const clearConstituencyBtn = document.getElementById("clear-constituency");
 
         // store originals for highlight restore
         for (const tr of rows) {
@@ -220,6 +265,9 @@ const liveCount = live.length;
 
         let legendClasses = null;
         let currentPage = 1;
+        let activeConstituency = null;
+
+        const constituencyBySlug = new Map((window.__CONSTITUENCY_LIST ?? []).map((c) => [c.slug, c]));
 
         const getParams = () => new URLSearchParams(location.search);
 
@@ -228,9 +276,29 @@ const liveCount = live.length;
           if (q.value.trim()) out.set("q", q.value.trim().slice(0, 120));
           if (status.value !== "all") out.set("status", status.value);
           if ((party?.value ?? "all") !== "all") out.set("party", party.value);
+          if (activeConstituency) out.set("constituency", activeConstituency);
           if (currentPage > 1) out.set("page", String(currentPage));
           const next = out.toString();
           history.replaceState(null, "", next ? `${location.pathname}?${next}` : location.pathname);
+        };
+
+        const updateBanner = () => {
+          if (!banner || !bannerName || !bannerStats || !bannerLink) return;
+          if (!activeConstituency) {
+            banner.hidden = true;
+            return;
+          }
+          const c = constituencyBySlug.get(activeConstituency);
+          const name = c?.name ?? activeConstituency.replace(/-/g, " ");
+          bannerName.textContent = name;
+          if (c?.stats) {
+            const s = c.stats;
+            bannerStats.textContent = s.sites ? `${s.live} of ${s.sites} live (${s.livePct}%)` : "no scraped site";
+          } else {
+            bannerStats.textContent = "";
+          }
+          bannerLink.href = `/constituencies/${activeConstituency}`;
+          banner.hidden = false;
         };
 
         const renderPagination = (total, page, totalPages) => {
@@ -323,11 +391,13 @@ const liveCount = live.length;
               : wantRedirected ? isRedirected
               : wantGone ? isGone
               : tr.dataset.status === want;
+            const constituencyMatches = !activeConstituency || (tr.dataset.constituency ?? "").split("|").includes(activeConstituency);
             const matches =
               (wantParty === "all" || (tr.dataset.party ?? "").split("|").includes(wantParty)) &&
               (!needle || fuzzyMatch(tr.dataset.haystack, needle)) &&
               statusMatches &&
-              (!legendClasses || legendClasses.includes(tr.dataset.status));
+              (!legendClasses || legendClasses.includes(tr.dataset.status)) &&
+              constituencyMatches;
             tr.dataset.matched = matches ? "1" : "0";
             if (matches) {
               filtered.push(tr);
@@ -377,7 +447,7 @@ const liveCount = live.length;
             }
           }
 
-          const isDefault = !needle && want === "all" && wantParty === "all" && !legendClasses;
+          const isDefault = !needle && want === "all" && wantParty === "all" && !legendClasses && !activeConstituency;
           if (total === 0) {
             count.textContent = "no matches";
             if (noresultsQuery) noresultsQuery.textContent = needle ? ` for “${q.value.trim().slice(0,40)}”` : "";
@@ -408,10 +478,13 @@ const liveCount = live.length;
             count.textContent = `${total.toLocaleString("en-GB")} entries · ${pctLive}% live · page ${currentPage} of ${totalPages}`;
           } else {
             const pctLive = Math.round((filteredLive / total) * 100);
-            count.textContent = `${total.toLocaleString("en-GB")} shown · ${pctLive}% live · page ${currentPage} of ${totalPages}`;
+            const label = activeConstituency ? constituencyBySlug.get(activeConstituency)?.name ?? activeConstituency : "";
+            const prefix = activeConstituency ? `${label} · ` : "";
+            count.textContent = `${prefix}${total.toLocaleString("en-GB")} shown · ${pctLive}% live · page ${currentPage} of ${totalPages}`;
           }
           noresults.hidden = total !== 0;
           renderPagination(total, currentPage, totalPages);
+          updateBanner();
         };
 
         q.addEventListener("input", () => { currentPage = 1; syncUrl(); apply(); });
@@ -440,10 +513,17 @@ const liveCount = live.length;
           if (party) party.value = "all";
           legendClasses = null;
           legend.forEach((b) => b.setAttribute("aria-pressed", "false"));
+          activeConstituency = null;
           currentPage = 1;
           syncUrl();
           apply();
           q.focus();
+        });
+        clearConstituencyBtn?.addEventListener("click", () => {
+          activeConstituency = null;
+          currentPage = 1;
+          syncUrl();
+          apply();
         });
 
         // Copy filtered link
@@ -489,9 +569,26 @@ const liveCount = live.length;
               currentPage = 1;
               syncUrl();
               apply();
+            } else if (activeConstituency) {
+              activeConstituency = null;
+              currentPage = 1;
+              syncUrl();
+              apply();
             } else {
               q.blur();
             }
+          }
+        });
+
+        // Handle hex map clicks via custom event
+        window.addEventListener("civicord:constituency", (e) => {
+          const slug = e.detail?.slug;
+          if (!slug) return;
+          if ((window.__COHORT_CONSTITUENCIES ?? []).includes(slug)) {
+            activeConstituency = slug;
+            currentPage = 1;
+            syncUrl();
+            apply();
           }
         });
 
@@ -499,12 +596,15 @@ const liveCount = live.length;
         const params = getParams();
         const bootStatuses = window.__COHORT_STATUSES;
         const bootParties = window.__COHORT_PARTIES;
+        const bootConstituencies = window.__COHORT_CONSTITUENCIES ?? [];
         const qp = (params.get("party") ?? "").toLowerCase();
         const qs = params.get("status") ?? "";
         const qq = params.get("q") ?? "";
+        const qc = (params.get("constituency") ?? "").toLowerCase();
         const qpage = parseInt(params.get("page") ?? "1", 10);
         if (party && qp && bootParties.includes(qp)) party.value = qp;
         if (qs && bootStatuses.includes(qs)) status.value = qs;
+        if (qc && bootConstituencies.includes(qc)) activeConstituency = qc;
         if (qq) q.value = qq.slice(0, 120);
         if (Number.isFinite(qpage) && qpage > 1) currentPage = Math.min(qpage, 500);
 

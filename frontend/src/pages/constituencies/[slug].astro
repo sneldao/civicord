@@ -1,0 +1,142 @@
+---
+import { ClientRouter } from "astro:transitions";
+import "../../styles/global.css";
+import constituenciesRaw from "../../data/constituencies.json";
+import hexesRaw from "../../data/hexes.json";
+
+export async function getStaticPaths() {
+  const raw: any = constituenciesRaw as any;
+  const list: any[] = Array.isArray(raw) ? raw : Array.isArray(raw?.default) ? raw.default : [];
+  return list.map((c) => ({ params: { slug: c.slug }, props: { c } }));
+}
+
+const { c } = Astro.props as { c: any };
+const verdict = c.stats.sites === 0 ? "empty" : c.stats.livePct >= 66 ? "live" : c.stats.livePct >= 40 ? "mixed" : "gone";
+const verdictCopy: Record<string, [string,string]> = {
+  empty: ["No scraped site", "This seat had no candidate site in the April 2025 scrape — nothing to audit. 17 seats are like this (e.g. Belfast North)."],
+  live: ["Mostly live", "Most candidate sites here still respond."],
+  mixed: ["Partly gone", "About half the sites here are gone or error."],
+  gone: ["Mostly gone", "Most candidate sites here no longer resolve."],
+};
+const shareLine = c.stats.sites ? `${c.stats.live} of ${c.stats.sites} sites live (${c.stats.livePct}%) · ${c.stats.gone} gone · ${c.stats.redirected} redirected` : "no sites to show";
+
+function thumbFills(livePct: number) {
+  if (livePct >= 66) return "var(--live)";
+  if (livePct >= 40) return "var(--warn)";
+  return "var(--gone)";
+}
+
+// single-hex thumbnail — resolve from statically imported hexes.json
+let hex: any = null;
+try {
+  const raw: any = hexesRaw as any;
+  const obj = Array.isArray(raw?.hexes) ? raw : raw?.default ?? raw;
+  const hexes = obj?.hexes ?? [];
+  hex = hexes.find((h: any) => h.slug === c.slug) || null;
+} catch {}
+
+const ogTitle = `${c.name} — Civicord`;
+const ogDesc = c.stats.sites ? `${c.name}: ${shareLine}. Permanent record on civicord.eth.` : `${c.name}: no candidate site in the April 2025 scrape. Permanent record on civicord.eth.`;
+---
+
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={ogDesc} />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={ogDesc} />
+    <meta property="og:type" content="article" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{c.name} — Civicord</title>
+    <ClientRouter />
+  </head>
+  <body class="reveal-root">
+    <p class="crumb"><a href="/">Civicord</a> · <a href="/browse">Browse</a> / <b>{c.name}</b></p>
+    <p class="context-line">{c.name} · {c.gssCode} · {c.region}{c.country ? ` · ${c.country}` : ""} · {c.electorate ? `${c.electorate.toLocaleString("en-GB")} electorate` : ""}</p>
+
+    <header class="record-head">
+      <h1>{c.name}</h1>
+      <ul class="chips">
+        <li>{c.gssCode}</li>
+        <li>{c.region || c.country}</li>
+        <li>{c.stats.candidates} candidates</li>
+        <li>{c.stats.sites} sites</li>
+      </ul>
+    </header>
+
+    <p class={`verdict v-${verdict === 'empty' ? 'unknown' : verdict === 'gone' ? 'gone' : verdict === 'live' ? 'live' : 'mixed'}`} role="status">
+      <b>{verdictCopy[verdict][0]}</b> — {verdictCopy[verdict][1]} <span class="muted">{shareLine}</span>
+    </p>
+
+    {hex && (
+      <div class="const-thumb" aria-label={`Halftone hex for ${c.name}`}>
+        <svg viewBox="0 0 120 120" role="img" aria-label={`Hex for ${c.name}`} width="84" height="84" class="thumb-hex">
+          <title>{c.name} — {shareLine}</title>
+          {(() => {
+            const pts: [number,number][] = hex.points;
+            const xs = pts.map(([x]: [number,number]) => x);
+            const ys = pts.map(([,y]: [number,number]) => y);
+            const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+            const w = maxX - minX || 1, h = maxY - minY || 1;
+            const norm = pts.map(([x,y]: [number,number]) => `${((x-minX)/w)*110+5},${((y-minY)/h)*110+5}`).join(" ");
+            const cx = 60, cy = 60;
+            const dotCount = c.stats.sites === 0 ? 0 : c.stats.livePct < 40 ? 3 : c.stats.livePct < 66 ? 2 : 1;
+            return (
+              <>
+                <polygon points={norm} fill={c.stats.sites === 0 ? "var(--paper-deep)" : thumbFills(c.stats.livePct)} fill-opacity={c.stats.sites === 0 ? 0.35 : 0.92} stroke="var(--ink)" stroke-width="1.2" stroke-linejoin="round" />
+                {c.stats.sites === 0 && <circle cx={cx} cy={cy} r="8" fill="var(--ink)" opacity="0.18" />}
+                {Array.from({length: dotCount}).map((_, i) => {
+                  const off: [number,number][] = [[0,0],[10,14],[-10,-14]];
+                  const [ox, oy] = off[i] ?? [0,0];
+                  return <circle cx={cx+ox} cy={cy+oy} r={c.stats.livePct < 40 ? 6.5 : c.stats.livePct < 66 ? 5 : 3.6} fill="var(--paper)" fill-opacity={c.stats.livePct < 40 ? 0.88 : 0.45} />;
+                })}
+              </>
+            );
+          })()}
+        </svg>
+        <span class="thumb-label">Halftone: more / larger paper dots = more gone.</span>
+      </div>
+    )}
+
+    <section class="entries">
+      <h2>Candidates in this seat</h2>
+      {c.stats.sites === 0 ? (
+        <p class="muted">No candidate stood here with a homepage recorded in the scrape. See <a href="/methodology">Methodology</a> and the <a href="/browse">full ledger</a>.</p>
+      ) : (
+        c.candidates.map((cand: any) => (
+          <article class={`entry st-${cand.statusClass}`}>
+            <header>
+              <span class={`badge ${cand.statusClass}`}>{cand.statusClass}</span>
+              {cand.redirected && <span class="redir" title={cand.finalUrl ?? ""}> ↳</span>}
+              <a class="site-url" href={cand.url} rel="noopener noreferrer">{cand.url.replace(/^https?:\/\//,"").replace(/\/$/,"")}</a>
+            </header>
+            <p class="muted" style="margin:0.45rem 0 0">
+              <a href={`/candidates/${cand.id}`}>{cand.name}</a> · {cand.party}
+              {cand.onchain && <> · <span class="onchain-chip">On-chain ✓</span> <code style="font-size:0.78em">{cand.onchain.ens}</code></>}
+            </p>
+            <ul class="facts">
+              {cand.statusCode && <li>HTTP {cand.statusCode}</li>}
+              {cand.redirected && cand.finalUrl && <li class="fact-redir">↳ now redirects to <a href={cand.finalUrl} rel="noopener noreferrer">{cand.finalUrl}</a></li>}
+              {cand.nameFound === true && <li>candidate surname still present</li>}
+              {cand.nameFound === false && <li class="fact-warn">surname absent — may have been repurposed</li>}
+            </ul>
+          </article>
+        ))
+      )}
+    </section>
+
+    <div class="browse-actions" style="margin-top:1.2rem">
+      <a class="btn-primary" href={`/browse?constituency=${c.slug}`}>Open filtered ledger — {c.stats.sites} sites ↗</a>
+      <a class="btn-ghost" href="/browse">Browse all 2,375 ↗</a>
+      <a class="btn-ghost" href="/">Overview ←</a>
+    </div>
+
+    <p class="muted browse-hint">Share: copy the URL — it encodes your view. This seat's hex is equal-weight (Automatic Knowledge v5, OGL) · <a href="/methodology">How we checked →</a></p>
+
+    <footer>
+      <p>Civicord record · {c.name} · <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a></p>
+    </footer>
+  </body>
+</html>

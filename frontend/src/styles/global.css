@@ -754,11 +754,71 @@ tbody tr:nth-child(-n + 14) { animation-delay: calc(0.4s + var(--row-i, 0) * 24m
 /* Selection in recording red — small, on-brand detail */
 ::selection { background: rgba(199, 58, 29, 0.18); }
 
+/* Hex map — halftone, equal-weight (AK v5, OGL) */
+.hexmap-wrap { margin: 1.8rem 0 0.6rem; border-top: 2px solid var(--ink); padding-top: 1rem; }
+.hexmap-head h2 { font-family: var(--serif); font-size: 1.2rem; margin: 0 0 0.2rem; }
+.hexmap-lede { font-size: 0.84rem; margin: 0 0 0.6rem; max-width: 42em; }
+.hex-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin: 0 0 0.7rem; font-size: 0.78rem; color: var(--muted); align-items: center; }
+.hex-legend .hl { display: inline-flex; align-items: center; gap: 0.35rem; }
+.hex-legend .sq { width: 0.9em; height: 0.9em; border-radius: 2px; border: 1px solid rgba(0,0,0,0.12); display: inline-block; }
+.hex-legend .sq.empty { background: var(--paper-deep); border-color: var(--rule); }
+.hex-legend .dotmark { color: var(--ink); font-weight: 700; letter-spacing: 0.12em; }
+.hexmap-frame { position: relative; border: 1.5px solid var(--rule); border-radius: 6px; background: #fff; padding: 0.55rem; overflow: hidden; }
+.hexmap-svg { width: 100%; height: auto; display: block; background: var(--paper-deep); border-radius: 4px; }
+.hex { cursor: pointer; outline: none; }
+.hex:focus-visible .hex-poly { stroke: var(--accent) !important; stroke-width: 5200 !important; }
+.hex:hover .hex-poly { filter: brightness(1.06); }
+.hex-poly { transition: filter 0.15s, fill-opacity 0.15s, stroke 0.15s; }
+.halftone-dots circle { pointer-events: none; }
+.hexmap-tip { position: absolute; left: 0.7rem; bottom: 0.7rem; background: rgba(28,36,52,0.92); color: #fff; font-size: 0.78rem; padding: 0.35rem 0.6rem; border-radius: 999px; display: inline-flex; gap: 0.45rem; align-items: center; pointer-events: none; }
+.hexmap-tip[hidden] { display: none !important; }
+.hexmap-tip b { font-weight: 700; }
+.hexmap-foot { margin: 0.55rem 0 0; font-size: 0.78rem; }
+.hexmap-empty-note { white-space: nowrap; }
+@media (max-width: 640px) {
+  .hexmap-frame { padding: 0.35rem; }
+  .hex-legend { font-size: 0.74rem; }
+}
+
+/* Constituency thumbnail */
+.const-thumb { display: flex; gap: 0.8rem; align-items: center; margin: 1.1rem 0 0; padding: 0.75rem 0.9rem; background: #fff; border: 1.5px solid var(--rule); border-radius: 6px; }
+.thumb-hex { flex: 0 0 auto; background: var(--paper-deep); border-radius: 4px; display: block; }
+.thumb-label { font-size: 0.82rem; color: var(--muted); }
+
+/* Candidate seat-context — links a person to their place + its survival */
+.seat-context {
+  display: flex; gap: 0.9rem; align-items: flex-start;
+  margin: 1rem 0 0; padding: 0.85rem 0.95rem;
+  border: 1.5px solid var(--rule); border-radius: 6px; background: #fff;
+}
+.seat-context .seat-hex { flex: 0 0 auto; display: block; border-radius: 4px; line-height: 0; }
+.seat-context .seat-hex:hover { filter: brightness(1.03); }
+.seat-context .seat-copy { min-width: 0; flex: 1; }
+.seat-line { margin: 0; font-size: 0.92rem; line-height: 1.45; }
+.seat-line b { font-variant-numeric: tabular-nums; }
+.seat-meta { margin: 0.25rem 0 0; font-size: 0.78rem; }
+.seat-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.55rem; }
+.seat-also { margin: 0.45rem 0 0; font-size: 0.78rem; }
+.thumb-hex--empty { width: 56px; height: 56px; display: inline-block; background: var(--paper-deep); border: 1px solid var(--rule); border-radius: 4px; }
+@media (max-width: 640px) {
+  .seat-context { flex-direction: column; }
+}
+
+/* Constituency selector in browse */
+.constituency-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0 0 0.6rem; padding: 0.55rem 0.7rem; border: 1.5px solid var(--ink); border-radius: 6px; background: var(--paper-deep); font-size: 0.86rem; }
+.constituency-banner[hidden] { display: none !important; }
+.constituency-banner b { font-weight: 700; }
+.constituency-banner button { font: inherit; font-size: 0.82rem; font-weight: 700; border: 1px solid var(--rule); background: #fff; border-radius: 999px; padding: 0.2rem 0.6rem; cursor: pointer; }
+.constituency-banner button:hover { border-color: var(--ink); color: var(--accent); }
+
 /* A public record should print as one */
 @media print {
-  .progress, .filterbar, .how, .ens-note { display: none !important; }
+  .progress, .filterbar, .how, .ens-note, .hexmap-tip { display: none !important; }
   body { max-width: none; padding: 0; font-size: 11px; background: #fff; }
-  tbody tr { break-inside: avoid; animation: none !important; }
+  tbody tr, .hex { break-inside: avoid; animation: none !important; }
+  .hexmap-svg { background: #fff !important; }
+  .hex-poly { fill: #ddd !important; stroke: #999 !important; }
+  .halftone-dots circle { fill: #000 !important; }
   a { text-decoration: none; color: inherit; }
   footer { border-top: 1px solid #999; }
 }

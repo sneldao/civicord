@@ -3,6 +3,8 @@ import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import { partyLiveShare } from "../../lib/cohorts";
 import "../../styles/global.css";
+import constituenciesRaw from "../../data/constituencies.json";
+import hexesRaw from "../../data/hexes.json";
 
 export async function getStaticPaths() {
   const all = await getCollection("candidates");
@@ -47,6 +49,41 @@ const verdictCopy: Record<string, [string, string]> = {
 // Cold-arrival context line + breadcrumb: party / first constituency.
 const party = parties[0] ?? "Candidate";
 const seat = person.websites[0]?.posts?.[0] ?? elections[0] ?? "";
+
+// --- Constituency seat-context (links candidate → place → survival) ---
+function slugifyConstituency(name: string): string {
+  let s = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  s = s.replace(/&/g, " and ");
+  s = s.toLowerCase();
+  s = s.replace(/[^a-z0-9]+/g, "-");
+  s = s.replace(/^-+|-+$/g, "").replace(/--+/g, "-");
+  return s;
+}
+function thumbFills(livePct: number): string {
+  if (livePct >= 66) return "var(--live)";
+  if (livePct >= 40) return "var(--warn)";
+  return "var(--gone)";
+}
+const rawConstituencies: any = constituenciesRaw as any;
+const constituenciesArray: any[] = Array.isArray(rawConstituencies) ? rawConstituencies : Array.isArray(rawConstituencies?.default) ? rawConstituencies.default : [];
+const constituencyByName = new Map<string, any>(constituenciesArray.map((c: any) => [c.name, c]));
+const constituencyBySlug = new Map<string, any>(constituenciesArray.map((c: any) => [c.slug, c]));
+const distinctSeatNames: string[] = [...new Set(person.websites.flatMap((w: any) => (w.posts ?? []) as string[]))].filter(Boolean) as string[];
+const seatInfos: Array<{ name: string; constituency: any | null; hex: any | null }> = distinctSeatNames.map((name) => {
+  let c = constituencyByName.get(name) ?? null;
+  if (!c) c = constituencyBySlug.get(slugifyConstituency(name)) ?? null;
+  let hex: any = null;
+  if (c) {
+    try {
+      const rawHex: any = hexesRaw as any;
+      const obj = Array.isArray(rawHex?.hexes) ? rawHex : rawHex?.default ?? rawHex;
+      const hexes: any[] = obj?.hexes ?? [];
+      hex = hexes.find((h: any) => h.slug === c.slug) || null;
+    } catch {}
+  }
+  return { name, constituency: c, hex };
+});
+const primarySeatInfo = seatInfos.find((s) => s.constituency) ?? (seatInfos[0] ? seatInfos[0] : null);
 
 // Prev / next by id order for the "poking around" loop.
 const ids = (await getCollection("candidates")).map((e) => e.data.id).sort();
@@ -94,11 +131,11 @@ const compareAvg = compareFound?.[1] ?? null;
   </head>
   <body class="reveal-root">
     <p class="crumb">
-      <a href="/">Civicord</a> · <a href="/browse">Browse</a> / {party}{seat && <> / {seat}</>} / <b>{person.name}</b>
+      <a href="/">Civicord</a> · <a href="/browse">Browse</a> / {party}{primarySeatInfo?.constituency ? <> / <a href={`/constituencies/${primarySeatInfo.constituency.slug}`}>{seat}</a></> : seat ? <> / {seat}</> : null} / <b>{person.name}</b>
     </p>
 
     <p class="context-line">
-      Campaign site{person.websites.length > 1 ? "s" : ""} for {person.name} ({party}{seat && ` — ${seat}`}),
+      Campaign site{person.websites.length > 1 ? "s" : ""} for {person.name} ({party}{primarySeatInfo?.constituency ? <> — <a href={`/constituencies/${primarySeatInfo.constituency.slug}`}>{seat}</a></> : seat ? ` — ${seat}` : ""}),
       scraped April 2025, audited September 2026.
     </p>
 
@@ -120,6 +157,61 @@ const compareAvg = compareFound?.[1] ?? null;
         this candidate: <b>{personShare >= 1 ? "live" : personShare <= 0 ? "gone" : `${Math.round(personShare * 100)}% live`}</b>.{" "}
         <a href={`/browse?party=${encodeURIComponent(compareParty.toLowerCase())}`}>See the cohort ↗</a>
       </p>
+    )}
+
+    {primarySeatInfo?.constituency && (
+      <section class="seat-context" aria-label={`Constituency — ${primarySeatInfo.constituency.name}`}>
+        <a class="seat-hex" href={`/constituencies/${primarySeatInfo.constituency.slug}`} aria-label={`View ${primarySeatInfo.constituency.name}`}>
+          {primarySeatInfo.hex ? (
+            <svg viewBox="0 0 120 120" role="img" aria-hidden="true" width="56" height="56" class="thumb-hex">
+              {(() => {
+                const pts: [number, number][] = primarySeatInfo.hex.points;
+                const xs = pts.map(([x]: [number, number]) => x);
+                const ys = pts.map(([, y]: [number, number]) => y);
+                const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+                const w = maxX - minX || 1, h = maxY - minY || 1;
+                const norm = pts.map(([x, y]: [number, number]) => `${((x - minX) / w) * 110 + 5},${((y - minY) / h) * 110 + 5}`).join(" ");
+                const dotCount = primarySeatInfo.constituency.stats.sites === 0 ? 0 : primarySeatInfo.constituency.stats.livePct < 40 ? 3 : primarySeatInfo.constituency.stats.livePct < 66 ? 2 : 1;
+                return (
+                  <>
+                    <polygon points={norm} fill={primarySeatInfo.constituency.stats.sites === 0 ? "var(--paper-deep)" : thumbFills(primarySeatInfo.constituency.stats.livePct)} fill-opacity={primarySeatInfo.constituency.stats.sites === 0 ? 0.35 : 0.92} stroke="var(--ink)" stroke-width="1.2" stroke-linejoin="round" />
+                    {primarySeatInfo.constituency.stats.sites === 0 && <circle cx="60" cy="60" r="8" fill="var(--ink)" opacity="0.18" />}
+                    {Array.from({ length: dotCount }).map((_, i) => {
+                      const off: [number, number][] = [[0, 0], [10, 14], [-10, -14]];
+                      const [ox, oy] = off[i] ?? [0, 0];
+                      return <circle cx={60 + ox} cy={60 + oy} r={primarySeatInfo.constituency.stats.livePct < 40 ? 6.5 : primarySeatInfo.constituency.stats.livePct < 66 ? 5 : 3.6} fill="var(--paper)" fill-opacity={primarySeatInfo.constituency.stats.livePct < 40 ? 0.88 : 0.45} />;
+                    })}
+                  </>
+                );
+              })()}
+            </svg>
+          ) : (
+            <span class="thumb-hex thumb-hex--empty" aria-hidden="true"></span>
+          )}
+        </a>
+        <div class="seat-copy">
+          <p class="seat-line">
+            Stood in <a href={`/constituencies/${primarySeatInfo.constituency.slug}`}><b>{primarySeatInfo.constituency.name}</b></a>
+            {primarySeatInfo.constituency.stats.sites > 0 ? (
+              <> — <b>{primarySeatInfo.constituency.stats.live} of {primarySeatInfo.constituency.stats.sites} sites live ({primarySeatInfo.constituency.stats.livePct}%)</b><span class="muted"> · {primarySeatInfo.constituency.stats.gone} gone · {primarySeatInfo.constituency.stats.redirected} redirected</span></>
+            ) : (
+              <> — <span class="muted">no scraped site in this seat (17 like it)</span></>
+            )}
+          </p>
+          <p class="muted seat-meta">
+            {primarySeatInfo.constituency.gssCode} · {primarySeatInfo.constituency.region}{primarySeatInfo.constituency.country ? ` · ${primarySeatInfo.constituency.country}` : ""}{primarySeatInfo.constituency.electorate ? ` · ${primarySeatInfo.constituency.electorate.toLocaleString("en-GB")} electorate` : ""} · Halftone: more / larger paper dots = more gone.
+          </p>
+          <div class="seat-actions">
+            <a class="btn-primary btn-sm" href={`/constituencies/${primarySeatInfo.constituency.slug}`}>View {primarySeatInfo.constituency.name} ↗</a>
+            <a class="btn-ghost btn-sm" href={`/browse?constituency=${primarySeatInfo.constituency.slug}`}>Filtered ledger — {primarySeatInfo.constituency.stats.sites} sites ↗</a>
+          </div>
+          {seatInfos.length > 1 && (
+            <p class="muted seat-also">Also stood in: {seatInfos.filter((s) => s.name !== primarySeatInfo.name).map((s, i) => (
+              <span>{i > 0 && ", "}{s.constituency ? <a href={`/constituencies/${s.constituency.slug}`}>{s.name}</a> : s.name}</span>
+            ))}</p>
+          )}
+        </div>
+      </section>
     )}
 
     <ol class="timeline" aria-label="Record history">

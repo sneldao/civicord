@@ -1,0 +1,213 @@
+---
+import hexDataImport from "../data/hexes.json";
+
+interface HexStat {
+  sites: number;
+  candidates: number;
+  live: number;
+  gone: number;
+  http_error: number;
+  timeout: number;
+  other: number;
+  redirected: number;
+  onchain: number;
+  liveShare: number;
+  livePct: number;
+  gonePct: number;
+}
+interface HexEntry {
+  slug: string;
+  name: string;
+  gssCode: string;
+  region: string;
+  country: string;
+  points: [number, number][];
+  center: [number, number];
+  stats: HexStat;
+}
+
+let hexData: { viewBox: string; width: number; height: number; hexes: HexEntry[] } = { viewBox: "0 0 700 1000", width: 700, height: 1000, hexes: [] };
+try {
+  const raw: any = hexDataImport as any;
+  if (raw && Array.isArray(raw.hexes)) hexData = raw;
+  else if (Array.isArray(raw?.default?.hexes)) hexData = raw.default;
+} catch {}
+const { hexes, viewBox, width, height } = hexData;
+// fallback if empty
+const hasHexes = hexes.length > 0;
+
+// Helper: polygon points to "x,y x,y ..."
+function pointsStr(pts: [number, number][]) {
+  return pts.map(([x, y]) => `${x},${y}`).join(" ");
+}
+
+// halftone dot radius per liveShare: large sparse = dying, small dense = surviving
+// r = 1.5 + (1-liveShare)*3.5  → 1.5..5.0 in data units; we'll scale in CSS via transform? keep in svg units: map W ~1e6, hex width ~~35k? Need normalized.
+// Instead, we use pattern dots: the hex fill itself uses pattern with dot size via <pattern> circles. But for SVG simplicity: we render TWO layers per hex:
+//  - base fill color by liveShare band
+//  - inner halftone dots via <pattern> applied as second rect clipped to hex
+// For MVP (Wednesday): keep it simple: solid fill by liveShare + dot overlay as 1-3 small circles centered in hex (stipple metaphor without heavy patterns)
+// A11y: still double-encoded via fill + dot count.
+
+function fillFor(stats: HexStat): string {
+  if (stats.sites === 0) return "var(--paper-deep)"; // empty — 17 seats with no scraped site
+  const p = stats.livePct;
+  if (p >= 66) return "var(--live)";
+  if (p >= 40) return "var(--warn)";
+  return "var(--gone)";
+}
+function opacityFor(stats: HexStat): number {
+  if (stats.sites === 0) return 0.22;
+  // we want halftone metaphor: gone seats are more opaque/muddy, live are lighter but still vivid — use alpha to suggest density
+  if (stats.livePct >= 66) return 0.88;
+  if (stats.livePct >= 40) return 0.72;
+  return 0.95;
+}
+function dotCountFor(stats: HexStat): number {
+  if (stats.sites === 0) return 0;
+  if (stats.livePct >= 66) return 1;
+  if (stats.livePct >= 40) return 2;
+  return 3;
+}
+
+const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
+---
+
+{hasHexes ? (
+  <section class="hexmap-wrap" aria-label="Constituency map — 650 equal hexes, halftone by survival">
+    <div class="hexmap-head">
+      <h2>The map <span class="muted">— 650 seats, equal weight</span></h2>
+      <p class="muted hexmap-lede">Every hex is one constituency. Colour = still live. Dot density = how much vanished. Hover to read, click to filter the ledger.</p>
+      <div class="hex-legend" role="group" aria-label="Map legend">
+        <span class="hl"><i class="sq" style="background: var(--live)"></i> 66–100% live <b class="dotmark">·</b></span>
+        <span class="hl"><i class="sq" style="background: var(--warn)"></i> 40–65% live <b class="dotmark">··</b></span>
+        <span class="hl"><i class="sq" style="background: var(--gone)"></i> 0–39% live <b class="dotmark">···</b></span>
+        <span class="hl"><i class="sq empty"></i> no scraped site (17)</span>
+      </div>
+    </div>
+    <div class="hexmap-frame">
+      <svg
+        class="hexmap-svg"
+        viewBox={viewBox}
+        role="img"
+        aria-label="UK constituency hex map, halftone by site survival"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <title>UK Westminster constituencies — halftone by candidate-site survival</title>
+        <defs>
+          {/* keep patterns lightweight — we use dot count overlay instead of <pattern> for MVP */}
+        </defs>
+        <g class="hex-layer" id="hex-layer">
+          {hexes.map((h) => (
+            <g
+              class="hex"
+              data-slug={h.slug}
+              data-name={h.name}
+              data-live-pct={String(h.stats.livePct)}
+              data-sites={String(h.stats.sites)}
+              data-gone={String(h.stats.gone)}
+              tabindex="0"
+              role="button"
+              aria-label={`${h.name}: ${h.stats.sites ? `${h.stats.live} of ${h.stats.sites} sites live (${h.stats.livePct}%)` : 'no scraped site'}`}
+            >
+              <title>{h.name}: {h.stats.sites ? `${h.stats.live}/${h.stats.sites} live · ${h.stats.gone} gone · p → ${h.slug}.civicord.eth` : 'no scraped site — 17 seats (e.g. Belfast North) had no candidate site in the April 2025 scrape'}</title>
+              <polygon
+                class="hex-poly"
+                points={pointsStr(h.points)}
+                fill={fillFor(h.stats)}
+                fill-opacity={opacityFor(h.stats)}
+                stroke="var(--paper)"
+                stroke-width={Math.max(900, width * 0.0015)}
+                stroke-linejoin="round"
+              />
+              {/* halftone dots — 1..3 small circles at centre, paper-coloured; count = death */}
+              {dotCountFor(h.stats) > 0 && (
+                <g class="halftone-dots" aria-hidden="true" opacity={h.stats.livePct < 40 ? 0.92 : 0.72}>
+                  {Array.from({ length: dotCountFor(h.stats) }).map((_, i) => {
+                    const offsets = [[0,0],[5200, 9000],[-5200, -9000],[0, 9000]][i] ?? [0,0];
+                    // dot radius in data units — scales with viewBox; ~3500 ≈ 1/10 hex radius
+                    const r = h.stats.livePct < 40 ? 5200 : h.stats.livePct < 66 ? 4100 : 3000;
+                    return (
+                      <circle
+                        cx={h.center[0] + offsets[0]}
+                        cy={h.center[1] + offsets[1]}
+                        r={r}
+                        fill="var(--paper)"
+                        fill-opacity={h.stats.livePct < 40 ? 0.88 : 0.45}
+                      />
+                    );
+                  })}
+                </g>
+              )}
+              {/* empty seats: small ink dot so the hex lattice stays legible */}
+              {h.stats.sites === 0 && (
+                <circle cx={h.center[0]} cy={h.center[1]} r={4200} fill="var(--ink)" opacity="0.18" />
+              )}
+            </g>
+          ))}
+        </g>
+      </svg>
+      <div class="hexmap-tip" id="hexmap-tip" role="status" aria-live="polite" hidden>
+        <b id="hexmap-tip-name"></b> <span id="hexmap-tip-stats"></span>
+      </div>
+    </div>
+    <p class="muted hexmap-foot">Halftone: more / larger paper dots = more gone. <span class="hexmap-empty-note">{emptyCount} seats had no candidate site in the scrape (so nothing to audit).</span> <a href="/methodology">Methodology ↗</a> · Built from Automatic Knowledge v5 (OGL) + ONS boundaries. <a href="/browse">Browse ledger ↗</a></p>
+  </section>
+) : (
+  <section class="hexmap-wrap hexmap-empty">
+    <p class="muted">Map data missing — run <code>node scripts/build-map.mjs</code> after <code>civicord ingest</code>. The ledger below is still complete.</p>
+  </section>
+)}
+
+<script>
+  // Lightweight interactivity: click hex → push ?constituency=slug (ledger will pick it up if present), hover → tooltip
+  document.addEventListener("astro:page-load", () => {
+    const tip = document.getElementById("hexmap-tip");
+    const tipName = document.getElementById("hexmap-tip-name");
+    const tipStats = document.getElementById("hexmap-tip-stats");
+    const hexes = [...document.querySelectorAll<HTMLElement>("[data-slug].hex")];
+    if (!hexes.length || !tip || !tipName || !tipStats) return;
+
+    const show = (el: HTMLElement) => {
+      const name = el.dataset.name || "";
+      const livePct = el.dataset.livePct || "";
+      const sites = el.dataset.sites || "0";
+      const gone = el.dataset.gone || "0";
+      tipName.textContent = name;
+      if (sites === "0") tipStats.textContent = "— no scraped site";
+      else tipStats.textContent = `— ${livePct}% live · ${gone} gone · ${sites} sites`;
+      tip.hidden = false;
+    };
+    const hide = () => { tip.hidden = true; };
+
+    for (const el of hexes) {
+      el.addEventListener("mouseenter", () => show(el));
+      el.addEventListener("focus", () => show(el));
+      el.addEventListener("mouseleave", hide);
+      el.addEventListener("blur", hide);
+      el.addEventListener("click", () => {
+        const slug = el.dataset.slug;
+        if (!slug) return;
+        // If on / or /map-like page, navigate to constituency; if on /browse, set filter param
+        const url = new URL(location.href);
+        if (location.pathname.startsWith("/browse")) {
+          url.searchParams.set("constituency", slug);
+          url.searchParams.delete("page");
+          history.replaceState(null, "", url.toString());
+          // dispatch a custom event so browse's filter can re-read URL
+          window.dispatchEvent(new CustomEvent("civicord:constituency", { detail: { slug } }));
+          // scroll ledger into view
+          document.querySelector(".table-wrap")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          location.href = `/constituencies/${slug}`;
+        }
+      });
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          (el as HTMLElement).click();
+        }
+      });
+    }
+  });
+</script>

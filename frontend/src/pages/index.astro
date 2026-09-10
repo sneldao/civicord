@@ -2,7 +2,18 @@
 import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import { cohortStats, statusCohorts } from "../lib/cohorts";
+import HalftoneHexMap from "../components/HalftoneHexMap.astro";
 import "../styles/global.css";
+import constituenciesRaw from "../data/constituencies.json";
+
+let constituencies: any[] = [];
+try {
+  const raw: any = constituenciesRaw as any;
+  const arr = Array.isArray(raw) ? raw : Array.isArray(raw?.default) ? raw.default : [];
+  if (arr.length) constituencies = arr;
+} catch {}
+const withSites = constituencies.filter((c) => c.stats.sites > 0).length;
+const constituenciesForSearch = constituencies.slice(0, 650).map((c) => ({ slug: c.slug, name: c.name }));
 
 // Validated at build time by src/content.config.ts
 const all = await getCollection("candidates");
@@ -113,9 +124,11 @@ const randomIds = candidates.map((c) => c.id);
       </div>
     </section>
 
+    <HalftoneHexMap />
+
     <section class="cohorts" aria-label="Survival by party">
       <h2>Which parties' sites survived?</h2>
-      <p class="muted">Share of each party's campaign sites still live — click a row to filter the ledger.</p>
+      <p class="muted">Share of each party's campaign sites still live — click a row to filter the ledger. Map above: every hex is one constituency (650 equal), halftone dots = how much vanished.</p>
       <ol class="board">
         {board.map((r) => (
           <li>
@@ -154,8 +167,16 @@ const randomIds = candidates.map((c) => c.id);
           placeholder="Search 2,375 candidates — try “Farage”, “Leeds Central” or “labour.org.uk”"
           autocomplete="off"
           aria-label="Search candidates"
+          list="hero-constituencies"
         />
+        <datalist id="hero-constituencies">
+          {constituenciesForSearch.map((c) => <option value={c.name}></option>)}
+        </datalist>
         <button type="button" id="q-go">Search ledger →</button>
+      </div>
+      <div class="browse-actions" style="margin-top:0.55rem">
+        <a class="btn-ghost" href="/browse">Browse ledger ↗</a>
+        <span class="muted" style="font-size:0.82rem">or explore <b>{withSites}</b> constituencies — try <a href="/constituencies/ynys-mon">Ynys Môn</a>, <a href="/constituencies/holborn-and-st-pancras">Holborn</a>, <a href="/constituencies/bangor-aberconwy">Bangor Aberconwy</a></span>
       </div>
       <div class="browse-actions">
         <a class="btn-primary" href="/browse">Browse full ledger — {candidates.length.toLocaleString("en-GB")} entries ↗</a>
@@ -176,15 +197,22 @@ const randomIds = candidates.map((c) => c.id);
       </p>
     </footer>
 
-    <script define:vars={{ randomIds }}>
+    <script define:vars={{ randomIds, constituenciesForSearch }}>
       const HOME_IDS = randomIds;
+      const CONS = constituenciesForSearch;
+      const consByNameLower = new Map(CONS.map((c) => [c.name.toLowerCase(), c.slug]));
+      const consNamesLower = new Set(consByNameLower.keys());
       document.addEventListener("astro:page-load", () => {
-        // hero search → /browse?q=…
+        // hero search → /browse?q=… or direct to /constituencies/[slug] if exact constituency name
         const input = document.getElementById("q-hero");
         const btn = document.getElementById("q-go");
         const go = () => {
-          const v = (input?.value ?? "").trim().slice(0, 120);
-          location.href = v ? `/browse?q=${encodeURIComponent(v)}` : "/browse";
+          const raw = (input?.value ?? "").trim().slice(0, 120);
+          const v = raw.trim();
+          if (!v) { location.href = "/browse"; return; }
+          const slug = consByNameLower.get(v.toLowerCase());
+          if (slug) { location.href = `/constituencies/${slug}`; return; }
+          location.href = `/browse?q=${encodeURIComponent(v)}`;
         };
         if (input && btn) {
           input.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
