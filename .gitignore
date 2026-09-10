@@ -40,3 +40,10 @@ scripts/publish/.abi-cache/
 
 # Cloudflare wrangler state
 .wrangler/
+
+# Astro build cache
+.astro/
+
+# Root npm (graph tooling dev deps — commit package.json, ignore lock)
+node_modules/
+package-lock.json
