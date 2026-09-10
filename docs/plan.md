@@ -150,3 +150,49 @@ Constraints kept: no JS frameworks, no client JS beyond the existing filter +
 three small vanilla scripts, no runtime data fetching. The site remains fully
 static — the Sylva lesson is craft through choreography and typography, not
 dependencies.
+
+## Map sprint — halftone hex + pointillist hero (2026-09-10 research complete)
+
+**Brief:** [cartography.md](cartography.md) — 22 sources via 3 Parallel Search API passes (IDs `search_0a9a45…`, `search_c910f8…`, `search_43af96…`). Key generated; rate-limit note: `/v1/search` accepts `objective` + max 5 `search_queries`.
+
+**Premise validated:** Civicord has 650 jurisdictions (`posts` = constituency) but no sense of place — everything reads as a list. The public asks “what happened in Leeds Central?”, not “how did Labour’s sites survive?”. The map closes that gap with two lenses on the same permanent register: **Ledger = text, Map = picture**. Same filters, same URL. Viral unit becomes the constituency, not the ledger row.
+
+**UX after (one register, two lenses):**
+
+```
+/                  Hero pointillist (2,375 dots = UK silhouette) + 3 cohort cards + search
+/map  [ List | Map ] toggle — same filtered ledger underneath
+/browse?q=&party=&status=&constituency=   ← every filter is a shareable deep-link
+/constituencies/[slug]                    ← 650 new static pages (one per posts constituency)
+/candidates/[id]                          ← now shows "in Leeds Central — 2/6 sites live" + Merkle root + Verify on ENS
+```
+
+All built at `astro build` — no Maps API, no backend. State lives in the URL; map + ledger read/write `?q&party&status&constituency&page`.
+
+* **Public** — hero pointillist (2,375 `<circle>` jittered inside a UK `clipPath` from ONS BUC, recording-red = gone) gives a 2s read: *half the dots vanished*. Tap hero or type `Leeds` → `/constituencies/leeds-central` → halftone hex thumb + `2 of 6 sites still live`, 6 names, `p{id}.civicord.eth`, `See filtered ledger →`. OG image is a stipple deed they can post.
+* **Journalist** — `/map` halftone hex (equal-weight, double-encoded: colour + dot size/density), legend `Gone` dims live, click Humber void → ledger filters → `Copy filtered link` → paste. Linked brushing: hover row pulses hex (per Nusser et al. cartogram good practices).
+* **Party / civic-tech** — `?party=labour%20party` now highlights that party’s hexes, not just rows. Each `/constituencies/[slug]` is a share target + `?format=svg` embed, no API key.
+* **ENS / ETHGlobal** — every dot *is* `p{id}.civicord.eth`; tooltip shows ENS + status, click → `app.ens.domains` + Sepolia Etherscan. Map re-shades from the Subgraph (`text(url/status)`) — picture *is* the register.
+
+**Recommended static stack (from research):**
+
+* **Primary hex:** Automatic Knowledge `uk-wpc-hex-constitcode-v5-june-2024.geojson` (435 KB, OGL) — one hex = one seat, 650 equal, July 2024 boundaries, 21 Jun 2024. See [cartography.md §2.1](cartography.md#21-uk-constituency-geometry--comparison-all-2024-boundaries).
+* **Hex toolchain:** Open Innovations HexJSON + `d3-hexjson` (Oli Hawkins) + Hex Builder/Hexify — MIT; `hex:{q,r}` as build interchange, render to SVG at build.
+* **Region-alt:** HoC Library `uk-hex-cartograms-noncontiguous` (4 gpkg, Open Parliament Licence) — exploded ceremonial-county groups for a `Region` toggle; their docs warn *gaps ≠ missing data, needs blurb + inset* — reuse that copy.
+* **True geography inset + lookup:** ONS Westminster ParCon July 2024 Boundaries UK **BUC** (Ultra Generalised 500 m, 650 rec, ~1/40 of BFC) + Names & Codes V2 (`PCON24CD/NM/NMW`, including Welsh) via ONS Open Geography Portal — OGL.
+* **Topology:** `topojson/topojson` + `topojson-client` (BSD) — encode once, `mesh` borders at build.
+* **Visual encoding:** PSU GEOG 486 + ColorBrewer2 (colorblind-safe + print/photocopy-safe) + JHU WCAG (4.5:1 text, 3:1 graphic, never colour-only) + Stamen/ESRI dot-density (minimum border + inter-dot distance, blend modes `multiply`/`screen`) + Ana Tudor pure-CSS halftone (`pattern + map + multiply + contrast()`) — see cartography.md §2.2–2.3.
+* **Size budget:** AK 435 KB → ~28 KB gzip, BUC TopoJSON ~45 KB, 650 JSON rows ~90 KB, 650 OG stipple cards on demand. `dist` stays <18 MB.
+
+**Build:** `candidates.json` JOIN `PCON24CD` (fuzzy `posts → PCON24NM` + ~30 manual fixes for renamed seats, Welsh via `PCON24NMW`) → `src/data/constituencies.json` (650) + `src/data/hex.json` (HexJSON) + `src/data/buc-topo.json`. New script `frontend/scripts/build-map.mjs` invoked via `astro build`. Output: inline `hex.svg` + `constituencies/[slug]` (650 pages) + OG stipple thumbnails. No runtime Maps API.
+
+**A11y/print contract (must):** 4.5:1 text, 3:1 graphic neighbours, pattern + hue double-encoding (`gone` = large sparse red dots), `<title>` per hex with `p{id}.civicord.eth`, `prefers-reduced-motion` disables stagger, print hides sticky bar and forces black halftone. `/browse` remains canonical — map annotates it.
+
+**8h path to demo:** `1` fetch AK v5 + ONS BUC + Names V2 → cache `data/boundaries/` · `2` write `build-map.mjs` (join + counts + TopoJSON) · `3` `index.astro` pointillist hero (static `<svg>`+`<clipPath>`+2,375 circles) · `4` `map.astro` + `constituencies/[slug].astro` halftone hex wired to existing filter state + linked brushing + `format=svg` download.
+
+**Day plan update:**
+
+| Thu 11 | Halftone hex + constituency pages spike (AK v5 + BUC join) — `build-map.mjs` + `/map` toggle + 10 manual constituency spot-checks |
+| Fri 12 | Pointillist hero + per-constituency OG stipple cards + demo video (2–4 min), FEEDBACK.md |
+
+Existing Thu Bazantic slot shifts to co-deliver with the map (gateway + Recipe remain); Fri video leads with the map hook: “Check your constituency: 4/6 sites already gone.”

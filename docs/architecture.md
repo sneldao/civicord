@@ -15,7 +15,7 @@
 5. **Privacy-aware.** Candidate sites are personal data (GDPR). Publish derived
    text/diffs openly; keep raw HTML access-controlled.
 
-## Data model (v1)
+## Data model (v1 + constituency/map layer — 2026-09-10)
 
 ```
 candidates          # one row per person, Democracy Club person_id as key
@@ -53,21 +53,40 @@ changes             # diffs between consecutive snapshots
 
 sources             # attribution for every ingested fact
   source_id (PK), kind, url, retrieved_at, license
+
+constituencies      # 650 Westminster seats — jurisdiction layer for the map (new)
+  pcon24cd (PK)           # ONS Government Statistical Service code, e.g. E14000530
+  pcon24nm                # English name, e.g. "Aldershot"
+  pcon24nmw               # Welsh name where applicable (Ynys Môn / Anglesey)
+  region                  # ONS region / nation (for exploded HoC toggle)
+  hex_q, hex_r            # Automatic Knowledge v5 axial coords (equal-weight layout)
+  buc_topo_ref            # feature id into buc-topo.json (inset + point-in-poly)
+
+constituency_stats   # derived at build from audit × constituencies join
+  pcon24cd (FK)
+  sites, candidates, live, gone, redirected, onchain
+  live_share              # live/sites — drives halftone dot size/density
 ```
 
 Storage: SQLite/DuckDB for the audit phase → PostgreSQL when multi-writer or
 public API is needed (schema stays the same; Supabase only if we want hosted
-REST/Realtime, since it's Postgres underneath).
+REST/Realtime, since it's Postgres underneath). For the map, the 650-row
+`constituencies` + `constituency_stats` are materialised at build time as
+`frontend/src/data/constituencies.json` (~90 KB) + `hex.json` (HexJSON) +
+`buc-topo.json` (TopoJSON, ~45 KB) — no runtime DB, no tile server. Join key:
+`websites.posts` (Democracy Club label) → `PCON24NM` literal, with ~30 manual
+fixes for 2023-review renames and Welsh `PCON24NMW` fallback; fuzzy fallback
+reuses the existing `fuzzyMatch` subsequence matcher (see [cartography.md](cartography.md)).
 
 ## Pipeline phases
 
 ```
-┌─────────┐   ┌────────┐   ┌─────────┐   ┌──────┐   ┌──────────┐
-│  ingest  │──▶│ audit  │──▶│ wayback │──▶│ diff │──▶│  outputs │
-└─────────┘   └────────┘   └─────────┘   └──────┘   └──────────┘
-  YNR JSON,    liveness,     CDX query,    text diff,  change log site
-  Campaign     coverage      id_ fetch,    significance, static site,
-  Lab JSON     stats         sha256        topic tags   Parquet/CDX export
+┌─────────┐   ┌────────┐   ┌─────────┐   ┌──────┐   ┌──────────┐    ┌───────┐
+│  ingest  │──▶│ audit  │──▶│ wayback │──▶│ diff │──▶│  outputs │───▶│  map  │
+└─────────┘   └────────┘   └─────────┘   └──────┘   └──────────┘    └───────┘
+  YNR JSON,    liveness,     CDX query,    text diff,  change log site   hex + constituency
+  Campaign     coverage      id_ fetch,    significance, static site,    halftone, pointillist,
+  Lab JSON     stats         sha256        topic tags   Parquet/CDX export  650 pages, OG cards
 ```
 
 - **ingest** — Campaign Lab `assets/json` + Democracy Club YNR export → tidy
@@ -81,6 +100,18 @@ REST/Realtime, since it's Postgres underneath).
   page type). LLM claim-extraction is a later, optional pass.
 - **outputs** — static per-candidate timelines (GitHub Pages, like Campaign
   Lab's), plus bulk Parquet + CDX-style index exports.
+- **map** (new — build-time, 2026-09-10) — JOIN `posts → PCON24CD` via ONS Names
+  & Codes V2 (see Data sources), count per-constituency `live/gone/redirected`,
+  render halftone hex (equal-weight, Automatic Knowledge v5) + pointillist hero
+  (2,375 dots inside ONS BUC clip) as static SVG, emit 650
+  `/constituencies/[slug]` pages + OG stipple thumbnails. Script:
+  `frontend/scripts/build-map.mjs` (Node: D3 + TopoJSON + HexJSON), invoked by
+  `astro build`. No Maps API, no runtime. Design system in
+  [cartography.md](cartography.md): halftone = `radial-gradient` SVG
+  `<pattern>` + `mix-blend-mode: multiply` + `contrast()`, dot `r = 1.5 +
+  (1-liveShare)*3.5px`, colour + size double-encoding for accessibility/print.
+  Inset = ONS BUC TopoJSON. See cartography §3 for the full static stack and
+  size budget (<18 MB dist).
 
 ## Data sources
 
@@ -96,9 +127,51 @@ REST/Realtime, since it's Postgres underneath).
 | British Election Study | 2024 results + candidate data (won/lost cross-check) | Free download | Academic |
 | TheyWorkForYou (mySociety) | MP activity/offices for candidate→MP joins | API | Open |
 | electionresults.uk / Electoral Commission | Result validation | CSV | Open (OGL) |
+| Automatic Knowledge WPC hex v5 (June 2024) | 650 equal hexes, one hex = one seat, `uk-wpc-hex-constitcode-v5-june-2024.geojson` (435 KB) | automaticknowledge.org/wpc-hex | OGL — **primary hex for the map** |
+| ONS Westminster ParCon July 2024 Boundaries UK **BUC** (Ultra Generalised 500 m) | Inset geography + point-in-poly, 650 features | geoportal.statistics.gov.uk | OGL (OS + ONS IP) — **inset, not BFC** |
+| ONS Westminster 2024 Boundaries UK **BFC** (Full resolution) | Full-res reference only (~61.8 MB GeoJSON) | data.gov.uk | OGL — **not shipped** |
+| ONS Westminster Names & Codes V2 | Join table `PCON24CD/NM/NMW` (650 rows, Welsh `NMW`) | geoportal.statistics.gov.uk | OGL — **authority for `posts → PCON24CD`** |
+| Open Innovations HexJSON + d3-hexjson + Hex Builder/Hexify | Hex interchange (`hex:{q,r}`) + build tooling | open-innovations.org/projects/hexmaps | MIT — **toolchain** |
+| House of Commons Library uk-hex-cartograms-noncontiguous | Exploded ceremonial-county hexes (4 gpkg) — `Region` toggle alt | github.com/houseofcommonslibrary | Open Parliament Licence — **secondary** |
+| topojson/topojson + topojson-client + spec | Topology-aware GeoJSON, `mesh`/`feature` at build | github.com/topojson | BSD |
+| martinjc/UK-GeoJSON | Pre-generalised GeoJSON/TopoJSON from ONS BGC/BSC | github.com/martinjc/UK-GeoJSON | MIT-ish — **fallback** |
+| ONSvisual/topojson_boundaries | LA-level TopoJSON including `geogHEXLA.json` | github.com/ONSvisual | — |
+| ColorBrewer 2.0 (Brewer et al.) | Cartographic palettes filtered `colorblind safe + print/photocopy safe` | colorbrewer2.org | — |
+| PSU GEOG 486 Visual Perception + Viz Palette | Deuteranomaly testing for palettes | courses.ems.psu.edu/geog486/node/879 | — |
+| Nusser et al. cartogram good practices (arXiv 2006.00285, go-cart.io) | Linked brushing, animation, infotips, GeoJSON/SVG download for web cartograms | arxiv.org/pdf/2006.00285 | — |
+| Stamen multivariate maps + ESRI dot-density (Kenneth Field) | Dot-density history, blend modes, border/inter-dot distance, dasymetric | stamen.com / esri.com/arcgis-blog | — |
 
 Access per phase: Phase 0 = scrape + YNR (done) · Phase 1 = Wayback CDX ·
 Phase 2+ = own robots-aware, rate-limited crawler identifying as civicord.
+Boundaries/hex are static OGL/MIT/Open Parliament — cached in `data/boundaries/`
+(AK v5 + BUC + Names V2) and materialised at build; no live API at runtime.
+
+## Frontend map layer (static — no tile server)
+
+Two lenses on the same register: **Ledger = text, Map = picture.** Same filters,
+same URL — `?q&party&status&constituency&page`. Toggle `[ List | Map ]` above
+the ledger; no panning of a slippy map — *search + click* wins for 650 seats.
+
+- **Hero pointillist** — static `<svg>` with `<clipPath id="uk">` from ONS BUC +
+  2,375 `<circle>` jittered inside, fixed `r=1.2`, colour = status
+  (`--live/--gone/--warn`). `<title>p{id}.civicord.eth — constituency — status</title>` per dot. Voids tell the story.
+- **Halftone hex** — AK v5 grid, each hex fill = SVG `<pattern>`
+  (`radial-gradient` dots) with `mix-blend-mode: multiply` + `contrast()`
+  (Ana Tudor 3-declaration technique). `r = 1.5 + (1-liveShare)*3.5px` —
+  large sparse = dying. Colour + size double-encoding survives colourblind +
+  print. Legend click dims, hex click sets `?constituency`, row hover pulses
+  hex (Nusser linked brushing).
+- **Jurisdiction UX** — `/constituencies/[slug]` (650 static pages, one per
+  `posts`) shows halftone thumb + `n/m sites live`, ENS names, `?format=svg`
+  embed. Nation pills England/Scotland/Wales/NI + fuzzy autocomplete for Welsh
+  names (`Ynys Môn`). `/candidates/[id]` now shows its constituency + party
+  live-share compare.
+- **A11y/print (must):** 4.5:1 text, 3:1 graphic neighbours, never colour-only,
+  `<title>` per hex, `aria-pressed` legend, `Tab` traverses hexes,
+  `prefers-reduced-motion` disables stagger, print hides sticky bar & forces
+  black halftone. `/browse` remains canonical — map annotates it.
+
+Design rationale, comparison table, and full reference list: [cartography.md](cartography.md).
 
 ## What we deliberately did NOT choose (v1)
 
@@ -117,5 +190,16 @@ Phase 2+ = own robots-aware, rate-limited crawler identifying as civicord.
 - **Library of Congress US Elections Web Archive** — metadata.csv + CDX package
   structure; bulk-download ethos.
 - **End of Term Web Archive** — seed nomination + consortium operating model.
+- **Open Innovations HexJSON + ODI Leeds hex maps (MIT)** — equal-weight
+  cartograms so rural Richmond doesn't dwarf Birmingham; HexJSON + `d3-hexjson`
+  + Hex Builder/Hexify toolchain.
+- **Automatic Knowledge WPC hex v5 + ONS BUC/BFC + ONS Names V2 (OGL)** — 2024
+  canonical hex (435 KB) + generalised inset + 650-row join table.
+- **House of Commons Library non-contiguous cartograms (Open Parliament)** —
+  exploded county-group hexes for the `Region` toggle; their “gaps ≠ missing
+  data” blurb is reused.
+- **PSU GEOG 486 + ColorBrewer + JHU WCAG + Nusser cartogram practices + Stamen/ESRI
+  dot-density** — accessible, print-friendly, cartogram-good-practice layer
+  (see [cartography.md](cartography.md) §2.2–2.3).
 
 See [../RESEARCH.md](../RESEARCH.md) for the full validated landscape.
