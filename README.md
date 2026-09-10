@@ -1,7 +1,10 @@
 # Civicord
 
-**An open, longitudinal tracker of UK candidate and MP websites** — which sites
-are still live, what content changed, and which claims quietly disappeared.
+**A permanent, verifiable public record of what political campaigns published** —
+which sites are still live, what content changed, and which claims quietly
+disappeared. Built as a public good: free to read, openly licensed, and designed
+to work for **any democracy**. The **United Kingdom is the genesis dataset**
+(2,375 candidates, 650 jurisdictions); the pipeline itself is region-agnostic.
 
 Built on [Campaign Lab's April 2025 candidate-website scrape](https://github.com/CampaignLab/candidate-website-scrape),
 keyed on [Democracy Club](https://candidates.democracyclub.org.uk/) person IDs,
@@ -18,6 +21,20 @@ websites: **64% still live ~17 months after the scrape** — 363 domains gone
 entirely, 372 serving HTTP errors, 659 URLs redirect elsewhere ([docs/phase0-findings.md](docs/phase0-findings.md)). Homepage is narrative-only with cohort cards and hero search →
 `/browse` (paginated ledger, 50/page, deep-linkable filters); the 2,375-row wall is gone. Disclosure stack:
 `summary → cohort → filtered ledger → record → archived pages`. Cartography research (Parallel Search API, 22 sources) in [docs/cartography.md](docs/cartography.md) — now **shipped**: halftone hex (Automatic Knowledge v5, 435 KB, OGL) on `/` and `/browse` (650 hexes, colour + dot-size double-encoded), 650 `/constituencies/[slug]` pages, ledger↔map sync via `?constituency`, and candidate→seat linkage on 1,607 records (hex thumb + `n of m live` + deep links to seat + filtered ledger). **Gateway LIVE** ([gateway/recipe.md](gateway/recipe.md), `openapi.yaml`) — `https://civicord-aieyq.bazgateway.com` (handle, also `3se6sbx…bazgateway.com`, `MCP Live · 5 tools` at `/mcp`, Marketplace *Pending verification* `/services/3se6sbxfgjfh3fw4gjpytkcroa`, upstream `civicord.pages.dev`, payout `0x96F3…7446`): static `GET /api/constituencies[/{slug}]` + `/api/summary` + 650 stipple deeds `GET /og/constituencies/{slug}.svg` (1200×630) with `og:image` on every seat page — the `?constituency=` query is Bazantic's pay-per-seat unit (`100`/`200` mcents, humans browse free at `civicord.pages.dev`). Build: `3031` html pages + `652` API json + `650` deeds, no backend, no Maps API. What's next: [docs/plan.md](docs/plan.md).
+
+### Region model (added 2026-09-11)
+
+The unit of the project is a **jurisdiction** — any electoral area a candidate
+stands in (a UK constituency today; a French circonscription or a US district
+would work identically). The landing page, the map and the data model are built
+around that abstraction; `Civicord` is the protocol, `UK 2024–25` is deployment #1.
+
+Nothing was renamed for the hackathon: `/constituencies/[slug]`,
+`/api/constituencies[/{slug}]` and the Bazantic pay-per-seat `?constituency=`
+unit are the **live contract, unchanged**. `constituency` is simply the current
+name of a jurisdiction instance. Adding a region needs three inputs — a public
+roster, a crawl, and the same record store — and is discussed on the landing
+page under *“Built for one election. Designed for any.”*
 
 ## Development
 

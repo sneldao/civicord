@@ -74,10 +74,10 @@ const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
 ---
 
 {hasHexes ? (
-  <section class="hexmap-wrap" aria-label="Constituency map — 650 equal hexes, halftone by survival">
+  <section class="hexmap-wrap" aria-label="Jurisdiction map — 650 equal hexes, halftone by survival">
     <div class="hexmap-head">
-      <h2>The map <span class="muted">— 650 seats, equal weight</span></h2>
-      <p class="muted hexmap-lede">Every hex is one constituency. Colour = still live. Dot density = how much vanished. Hover to read, click to filter the ledger.</p>
+      <h2>One hex, one jurisdiction <span class="muted">— 650 seats, equal weight</span></h2>
+      <p class="muted hexmap-lede">Every hex is one constituency. Colour = still live. Dot density = how much vanished. Hover to read, click to filter the ledger. The pattern is deliberately region-agnostic: <b>577 French circonscriptions</b> or <b>435 US districts</b> would render the same way.</p>
       <div class="hex-legend" role="group" aria-label="Map legend">
         <span class="hl"><i class="sq" style="background: var(--live)"></i> 66–100% live <b class="dotmark">·</b></span>
         <span class="hl"><i class="sq" style="background: var(--warn)"></i> 40–65% live <b class="dotmark">··</b></span>
@@ -90,10 +90,10 @@ const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
         class="hexmap-svg"
         viewBox={viewBox}
         role="img"
-        aria-label="UK constituency hex map, halftone by site survival"
+        aria-label="United Kingdom jurisdiction hex map, halftone by site survival"
         preserveAspectRatio="xMidYMid meet"
       >
-        <title>UK Westminster constituencies — halftone by candidate-site survival</title>
+        <title>United Kingdom — 650 Westminster jurisdictions, halftone by candidate-site survival</title>
         <defs>
           {/* keep patterns lightweight — we use dot count overlay instead of <pattern> for MVP */}
         </defs>
@@ -152,6 +152,7 @@ const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
       </div>
     </div>
     <p class="muted hexmap-foot">Halftone: more / larger paper dots = more gone. <span class="hexmap-empty-note">{emptyCount} seats had no candidate site in the scrape (so nothing to audit).</span> <a href="/methodology">Methodology ↗</a> · Built from Automatic Knowledge v5 (OGL) + ONS boundaries. <a href="/browse">Browse ledger ↗</a></p>
+    <p class="muted hexmap-region-note">Shown: <b>United Kingdom</b> · genesis dataset. The same halftone encoding reads a jurisdiction with a colour and a dot density — no basemap, no tile server, nothing region-specific in the drawing.</p>
   </section>
 ) : (
   <section class="hexmap-wrap hexmap-empty">

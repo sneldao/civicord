@@ -1,6 +1,6 @@
 # Plan
 
-Delivery phases, the current sprint, and risks. Last updated 2026-09-11 23:05 BST.
+Delivery phases, the current sprint, and risks. Last updated 2026-09-11 23:35 BST.
 (Day-of-week note: 2026-09-08 is a **Tuesday**; earlier drafts of this file
 labelled it Monday — all day labels below use the corrected mapping.)
 
@@ -65,6 +65,7 @@ Substreams is blockchain ETL; web-archive data can't flow through it.
 | Wed 9 | 🔄 ENSv2 registry + subname mint + `civicord publish` — parent `civicord.eth` live (civicordhq alias), proxies deployed, blast-mode publisher shipped, 348/2,375 minted; paused on deployer gas top-up |
 | Wed 10 | Subgraph in Subgraph Studio + MCP agent demo — **v0.0.1 deployed but faulted** then **pruned**, **v0.0.2 redeployed 22:40 but faulted @ 11660475** (unpadded `toHexString` → `Bytes.fromHexString` throw), **v0.0.3 redeployed 23:05** (`QmUcjfa…`, `hasIndexingErrors:false` @ 8149999, syncing 3.5M blocks to 11677k) (see [ops.md](ops.md)) |
 | Thu 11 | ✅ Bazantic gateway **LIVE** (`civicord-aieyq.bazgateway.com` + `3se6sbx…bazgateway.com`, `MCP Live · 5 tools`, Marketplace *Pending verification* `/services/3se6sbxfgjfh3fw4gjpytkcroa`) + Recipe + 650 stipple deeds + worker alias for extensionless `/api/*` (`cb09faf`/`68950dd3`, `100`/`200` mcents verified) |
+| Thu 11 (late) | ✅ Landing reframed **region-agnostic** — mission-first hero, `Region: UK · genesis` picker, UK-as-genesis badge, decay line (`April 2025 → Sept 2026 · 64% live`), infra-homage strip (registry `0x0895…` / resolver `0x340d…` / subgraph `QmUcjfa…` / gateway), *“Built for one election. Designed for any.”* region section, public-good footer. Additive only — **no route, file or data change**; build still `3031 html + 652 api + 650 deeds`, gateway untouched |
 | Fri 12 | Demo video (2–4 min) + FEEDBACK.md per sponsor, AI-attribution pass |
 | Sat 13 | Buffer; submit before 12:00 EDT / 17:00 UK |
 

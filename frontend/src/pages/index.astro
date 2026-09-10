@@ -25,6 +25,8 @@ const dead = audited.filter((w) => w.audit?.statusClass === "dns_error");
 const redirected = audited.filter((w) => w.audit?.redirected);
 const onchain = candidates.filter((c) => c.onchain);
 const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
+// The story is time, not just geography — the same record read at two dates.
+const livePctNow = audited.length ? pct(live.length, audited.length) : 0;
 
 const stats = await cohortStats();
 const board = stats.parties.slice(0, 8);
@@ -40,34 +42,85 @@ const randomIds = candidates.map((c) => c.id);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="When the election ended, candidate websites began to disappear. Civicord gives each UK parliamentary candidate a permanent, publicly verifiable record — who they were, what they published, and whether it's still there."
+      content="Political websites disappear the day after the election. Civicord gives candidates a permanent, publicly verifiable record — who they were, what they published, and whether it's still there. Starting with the UK: 2,375 candidate sites, 650 jurisdictions."
     />
-    <meta property="og:title" content="Civicord — the public record candidates can't delete" />
+    <meta property="og:title" content="Civicord — the permanent public record for political websites" />
     <meta
       property="og:description"
-      content="A permanent, verifiable record of UK parliamentary candidate websites. What they published, and what happened to it."
+      content="A permanent, verifiable record of what candidates published — and what happened to it. Built as a public good; the UK is the genesis dataset."
     />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Civicord — a public record of UK candidate websites</title>
+    <title>Civicord — the permanent public record for political websites</title>
     <ClientRouter />
   </head>
   <body class="reveal-root">
     <div class="progress" aria-hidden="true"><b id="progress-bar"></b></div>
 
     <header class="masthead">
-      <h1 class="wordmark">Civicord<span class="dot">.</span></h1>
+      <div class="masthead-top">
+        <h1 class="wordmark">Civicord<span class="dot">.</span></h1>
+
+        <!-- Region picker — a native disclosure element, no JS. One deployment
+             today; the shape is deliberately region-agnostic so others can be
+             added without touching routes or data. -->
+        <details class="region-picker">
+          <summary>
+            <span class="rp-kicker">Region</span>
+            <span class="rp-current">UK · genesis</span>
+            <span class="rp-caret" aria-hidden="true">▾</span>
+          </summary>
+          <ul class="rp-list">
+            <li class="rp-is-live">
+              <span class="rp-status">Live</span>
+              <b>United Kingdom</b>
+              <span class="rp-meta">{candidates.length.toLocaleString("en-GB")} candidates · {constituencies.length || 650} jurisdictions</span>
+            </li>
+            <li>
+              <span class="rp-status rp-soon">Propose</span>
+              <b>France</b>
+              <span class="rp-meta">577 circonscriptions</span>
+            </li>
+            <li>
+              <span class="rp-status rp-soon">Propose</span>
+              <b>United States</b>
+              <span class="rp-meta">435 districts</span>
+            </li>
+            <li>
+              <span class="rp-status rp-soon">Propose</span>
+              <b>Your democracy</b>
+              <span class="rp-meta">bring a roster + a crawl</span>
+            </li>
+          </ul>
+          <p class="rp-foot">
+            The UK is the first deployment, not the boundary of the idea.
+            <a href="/#add-region">See what a region needs →</a>
+          </p>
+        </details>
+      </div>
+
       <p class="lede">
-        When the election ended, candidate websites began to disappear. Civicord
-        gives every UK parliamentary candidate a permanent, publicly verifiable
-        record — who they were, what they published, and whether it's still there.
+        Political websites disappear the day after the election. So does the record
+        of what was promised, and what was quietly removed. Civicord makes that
+        record permanent, verifiable and citable — for any democracy.
       </p>
       <p class="tagline">
-        Built on Campaign Lab's April 2025 scrape of 2,375 candidates, keyed on
-        Democracy Club person IDs, recorded as names on the Ethereum Name Service.
+        Starting with the UK: every one of the {candidates.length.toLocaleString("en-GB")} candidate
+        campaign sites scraped in April 2025, re-checked {audited.length ? "17 months" : "after the election"} later, and
+        recorded as permanent public names. No account, no wallet, nothing to take on trust.
       </p>
+      <ul class="good-strip">
+        <li><b>Public good</b><span>free to read, permanently</span></li>
+        <li><b>Open</b><span>AGPL-3.0 code · OGL boundaries</span></li>
+        <li><b>Verifiable</b><span>every claim links to its source</span></li>
+      </ul>
     </header>
+
+    <p class="dataset-badge">
+      <span class="db-live">Live</span>
+      <b>United Kingdom</b> — genesis dataset, the first of many
+    </p>
 
     <section class="stats" aria-label="Audit summary">
       <div class="stat"><b>{candidates.length.toLocaleString("en-GB")}</b><span>Candidates</span></div>
@@ -77,13 +130,27 @@ const randomIds = candidates.map((c) => c.id);
       <div class="stat"><b>{redirected.length.toLocaleString("en-GB")}</b><span>Redirected</span></div>
     </section>
 
+    <p class="decay-line" aria-label="Decay over time">
+      <span class="decay-when"><b>April 2025</b> — campaign ends, {websites.length.toLocaleString("en-GB")} sites captured</span>
+      <span class="decay-arrow" aria-hidden="true">→</span>
+      <span class="decay-when"><b>September 2026</b> — <b class="decay-now">{livePctNow}%</b> still live, {100 - livePctNow}% gone or broken</span>
+    </p>
+
     <section class="how" aria-label="How Civicord works">
       <h2>How it works</h2>
+      <p class="how-lede muted">
+        The same five steps work for any democracy: a public roster, a crawl of the
+        campaign web, and a permanent place to put the result.
+      </p>
       <ol>
         <li>
-          <b>Collect.</b> Campaign Lab scraped every candidate's campaign website in
-          April 2025. We've re-checked them all: some are live, some have vanished,
-          some now sell insurance.
+          <b>Collect.</b> Start from a national roster (the UK's is Democracy Club)
+          and a crawl of candidate sites — Campaign Lab captured every one in April 2025.
+        </li>
+        <li>
+          <b>Audit.</b> Re-request every URL and record what actually happened. “Live”
+          is deliberately strict: the site answers <em>and</em> still mentions the candidate.
+          Some are live, some have vanished, some now sell insurance.
         </li>
         <li>
           <b>Record.</b> Each candidate gets a permanent public name —
@@ -91,11 +158,43 @@ const randomIds = candidates.map((c) => c.id);
           archived evidence. Once written, records can't be quietly edited or deleted.
         </li>
         <li>
+          <b>Index.</b> Publish the change log so the record can be queried, not just
+          browsed — by researchers, journalists, and increasingly by agents.
+        </li>
+        <li>
           <b>Verify.</b> You don't need an account, a wallet, or our permission.
           Every claim on this site links to the public record behind it — check it
           yourself, any time, forever.
         </li>
       </ol>
+
+      <!-- Infra homage: the record is held by public infrastructure, and you can
+           check each piece directly. Concrete addresses, not “web3”. -->
+      <div class="infra-strip">
+        <p class="infra-title">The record is held by public infrastructure — not our servers alone</p>
+        <ul class="infra-list">
+          <li>
+            <span class="infra-k">ENSv2 registry</span>
+            <code>0x0895…2aa9</code>
+            <a href="https://sepolia.etherscan.io/address/0x08953da0c2ff527a825686a24a12c7bb2ae22aa9" rel="noopener">verify ↗</a>
+          </li>
+          <li>
+            <span class="infra-k">PermissionedResolver</span>
+            <code>0x340d…ee67</code>
+            <a href="https://sepolia.etherscan.io/address/0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67" rel="noopener">verify ↗</a>
+          </li>
+          <li>
+            <span class="infra-k">Change log (Subgraph)</span>
+            <code>QmUcjfa…</code>
+            <a href="https://thegraph.com/studio/subgraph/civicord" rel="noopener">verify ↗</a>
+          </li>
+          <li>
+            <span class="infra-k">Agent gateway</span>
+            <code>civicord-aieyq</code>
+            <a href="https://civicord-aieyq.bazgateway.com/api/summary" rel="noopener">try it ↗</a>
+          </li>
+        </ul>
+      </div>
     </section>
 
     <!-- Cohort feature cards: narrative entry points instead of a wall -->
@@ -159,6 +258,48 @@ const randomIds = candidates.map((c) => c.id);
       </p>
     )}
 
+    <!-- Region-agnostic future: what the project is for, beyond this dataset. -->
+    <section class="future" id="add-region" aria-label="Add your region">
+      <h2>Built for one election. Designed for any.</h2>
+      <p class="muted future-lede">
+        Any democracy needs three things to run this: a <b>public roster</b> to key on,
+        a <b>crawl</b> of the campaign web, and a <b>place to keep the record</b>. The
+        UK is where we proved it end to end. Everything else is already built, openly
+        licensed, and documented.
+      </p>
+      <div class="future-grid">
+        <a class="future-card is-live" href="/browse">
+          <span class="fc-status">Live now</span>
+          <b>United Kingdom</b>
+          <span class="fc-meta">{candidates.length.toLocaleString("en-GB")} candidates · {constituencies.length || 650} jurisdictions · audited Sept 2026</span>
+          <span class="fc-cta">Browse the ledger ↗</span>
+        </a>
+        <a class="future-card" href="https://github.com/sneldao/civicord/issues">
+          <span class="fc-status">Propose</span>
+          <b>France</b>
+          <span class="fc-meta">577 circonscriptions · a roster exists; needs a crawl</span>
+          <span class="fc-cta">Start a region ↗</span>
+        </a>
+        <a class="future-card" href="https://github.com/sneldao/civicord/issues">
+          <span class="fc-status">Propose</span>
+          <b>United States</b>
+          <span class="fc-meta">435 districts · LoC + EDGI are close cousins</span>
+          <span class="fc-cta">Start a region ↗</span>
+        </a>
+        <a class="future-card" href="/methodology">
+          <span class="fc-status">Blueprint</span>
+          <b>Your democracy</b>
+          <span class="fc-meta">Read the method, then bring a roster and a crawl</span>
+          <span class="fc-cta">How it works ↗</span>
+        </a>
+      </div>
+      <p class="future-foot muted">
+        Read the method: <a href="/methodology">Methodology</a> · code
+        <a href="https://github.com/sneldao/civicord" rel="noopener">AGPL-3.0</a> ·
+        boundaries OGL · <a href="https://github.com/sneldao/civicord/issues" rel="noopener">propose a region ↗</a>
+      </p>
+    </section>
+
     <section class="browse-cta" aria-label="Search and browse the ledger">
       <div class="search-hero" role="search">
         <input
@@ -194,6 +335,11 @@ const randomIds = candidates.map((c) => c.id);
         Data: Campaign Lab candidate-website scrape (April 2025) · Democracy Club person
         IDs · Liveness audit 2026-09-07 · Wayback history (in progress). Code AGPL-3.0 ·
         <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
+      </p>
+      <p class="footer-good">
+        Built as a public good — free to read, openly licensed, citable, and designed to
+        outlive the election it documents. The UK dataset is the first deployment; any
+        democracy can run the same pipeline. <a href="/#add-region">See what a region needs →</a>
       </p>
     </footer>
 

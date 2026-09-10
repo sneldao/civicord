@@ -78,6 +78,26 @@ REST/Realtime, since it's Postgres underneath). For the map, the 650-row
 fixes for 2023-review renames and Welsh `PCON24NMW` fallback; fuzzy fallback
 reuses the existing `fuzzyMatch` subsequence matcher (see [cartography.md](cartography.md)).
 
+### Jurisdiction abstraction (2026-09-11)
+
+`constituencies` is **not** a UK concept — it is one deployment of a jurisdiction
+layer. A *jurisdiction* is any electoral unit a candidate stands in: a UK
+constituency, a French circonscription, a US district. The map, the seat pages,
+the JSON API and the Bazantic meter all key on that unit; the UK is simply the
+region that currently has data. The visual encoding is deliberately generic —
+one polygon, one colour, one dot density per jurisdiction, no basemap and no
+tile server — so `577` circonscriptions or `435` districts would render with the
+same code path.
+
+**Nothing is renamed for the hackathon.** The live contract is unchanged:
+`/constituencies/[slug]`, `/api/constituencies[/{slug}]`, `/og/constituencies/{slug}.svg`
+and the Bazantic `?constituency=` pay-per-seat unit all stay as they are, because
+judges, the gateway spec and every shared link depend on them. A second region
+would add a `region` field to the payload and an alias `?jurisdiction=`
+alongside `?constituency=` — not a new schema, and not a URL break. The landing
+page (`frontend/src/pages/index.astro`) states the abstraction explicitly via a
+region picker and an *“Add your region”* section.
+
 ## Pipeline phases
 
 ```

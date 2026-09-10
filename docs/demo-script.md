@@ -7,11 +7,13 @@
 > “permanent record / public register / verify”.
 
 ## 0:00 — Cold open on hero (15s)
-**Screen:** `civicord.pages.dev` — pointillist hero (2,375 dots = UK).
+**Screen:** `civicord.pages.dev` — masthead (`Region: UK · genesis`) + pointillist hero (2,375 dots = UK).
 **Line:** “2,375 candidates stood in the last UK election with a homepage.
 17 months later, this is what’s left.”
 Hover — gone dots are recording-red, voids around Humber/Highlands.
 “Every dot is a website. The gaps are where the record already vanished.”
+Point once at the region chip: “The UK is the first country we’ve done this
+for — not the only one it works for.”
 
 ## 0:15 — Halftone hex = one seat, one jurisdiction (30s)
 **Screen:** Scroll to halftone hex on `/` then click into `/browse` — Map/List toggle stays synced.
@@ -67,9 +69,12 @@ went dark since April? Which now redirect to a shop?* — that’s a Subgraph qu
 not a scrape.”
 
 ## 2:35 — Close + verify (15s)
-**Screen:** Back to hero, scroll to “How it works: Collect → Record → Verify”.
+**Screen:** Back to hero, scroll to “How it works: Collect → Record → Verify”
+and the infra strip, then land on the **“Built for one election. Designed for any.”**
+region cards (`UK · Live now` / France / US / Your democracy).
 **Line:** “Open, longitudinal, citable. Every fact links to the public register
-it came from. Try your constituency — Civicord pages dot dev.”
+it came from — and nothing here is UK-special: a roster, a crawl, and a place to
+keep the record is all a region needs. Try your constituency — Civicord pages dot dev.”
 Overlay cards:
 `civicord.pages.dev` · `civicord-aieyq.bazgateway.com` · `github.com/sneldao/civicord`
 
