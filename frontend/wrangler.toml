@@ -1,13 +1,13 @@
 name = "civicord"
-account_id = "e7383c0c7474c8f61cc06598eeb134a0"
 compatibility_date = "2026-09-01"
 pages_build_output_dir = "dist"
 
 # R2 bucket holding pipeline data snapshots (candidates.json etc.), served at
-# /data/* by public/_worker.js. account_id is pinned so `wrangler pages deploy`
-# targets the right account. NOTE: `wrangler r2 object put` ignores this pin and
-# writes to the wrong account — upload snapshots with scripts/upload_snapshot.sh
-# instead (see docs/ops.md).
+# /data/* by public/_worker.js. The deploy targets the account of the logged-in
+# Wrangler token (ungethe@gmail.com / e7383c0c…). Do not set CLOUDFLARE_ACCOUNT_ID
+# or CLOUDFLARE_API_KEY in the shell — they override the token and can write to
+# the wrong account. Upload snapshots with scripts/upload_snapshot.sh instead of
+# `wrangler r2 object put` (see docs/ops.md).
 [[r2_buckets]]
 binding = "DATA"
 bucket_name = "civicord-data"
