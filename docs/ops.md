@@ -4,7 +4,7 @@ Infrastructure and deployment notes for Civicord. This doc is **internal** —
 it's safe to commit (no secrets), but unlike `architecture.md` /
 `onchain-plan.md` it documents *how we run* the project rather than what it is.
 
-Last updated: 2026-09-11 — gateway + OG deeds landed, still to deploy; subgraph left to owner.
+Last updated: 2026-09-11 — gateway + OG deeds landed, still to deploy; subgraph deployed to Studio v0.0.1.
 
 ## Hosting topology
 
@@ -264,7 +264,12 @@ npx graph deploy --node https://api.studio.thegraph.com/deploy/ \
 ### Current status (2026-09-10)
 
 - `npx graph build` now passes after the AS compile fix.
-- IPFS upload succeeds (manifest QmTp8yuyk6GFZJKB9KckxmSzjSHQM3CBEbTatZC1VnMKpM), but the deploy is still failing with `Deploy key not found` against `https://api.studio.thegraph.com/deploy/` even after `npx graph auth <key>`. The supplied key is probably a Studio API/query key rather than the subgraph-specific **Deploy Key**. Get the actual deploy key from the `civicord` subgraph page in Studio and re-run the `graph deploy` command above.
+- Deployed to Subgraph Studio: `https://thegraph.com/studio/subgraph/civicord`
+- Query endpoint (v0.0.1): `https://api.studio.thegraph.com/query/101650/civicord/v0.0.1`
+- IPFS manifest: `QmTp8yuyk6GFZJKB9KckxmSzjSHQM3CBEbTatZC1VnMKpM`
+- Subgraph Studio UI still needs its metadata filled in manually:
+  description, source code URL, website URL, and categories. These cannot be
+  set via the CLI.
 
 ## Sizes to keep an eye on
 
