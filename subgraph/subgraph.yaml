@@ -1,0 +1,54 @@
+specVersion: 1.0.0
+repository: https://github.com/sneldao/civicord
+description: Longitudinal tracker of UK candidate/MP websites — ENSv2 subnames (p{person_id}.civicord.eth) as a tamper-evident public record of website liveness and change.
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: UserRegistry
+    network: sepolia
+    source:
+      address: "0x08953da0c2ff527a825686a24a12c7bb2ae22aa9"
+      abi: UserRegistry
+      startBlock: 8150000
+    mapping:
+      kind: ethereum
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/mapping.ts
+      entities:
+        - Candidate
+        - Stat
+      abis:
+        - name: UserRegistry
+          file: ./abis/UserRegistry.json
+      eventHandlers:
+        - event: LabelRegistered(indexed uint256,indexed bytes32,string,address,uint64,indexed address)
+          handler: handleLabelRegistered
+        - event: LabelUnregistered(indexed uint256,indexed address)
+          handler: handleLabelUnregistered
+        - event: ResolverUpdated(indexed uint256,indexed address,indexed address)
+          handler: handleResolverUpdated
+  - kind: ethereum
+    name: PermissionedResolver
+    network: sepolia
+    source:
+      address: "0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67"
+      abi: PermissionedResolver
+      startBlock: 8150000
+    mapping:
+      kind: ethereum
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/mapping.ts
+      entities:
+        - Candidate
+        - TextRecord
+        - TextRecordChange
+        - Stat
+      abis:
+        - name: PermissionedResolver
+          file: ./abis/PermissionedResolver.json
+      eventHandlers:
+        - event: TextChanged(indexed bytes32,indexed string,string,string)
+          handler: handleTextChanged

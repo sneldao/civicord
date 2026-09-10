@@ -1,0 +1,49 @@
+type Candidate @entity(immutable: false) {
+  id: ID! # person id, e.g. "122389"
+  tokenId: BigInt! # ERC-6492-style token id = namehash of full name
+  node: Bytes! # namehash of "p{id}.civicord.eth"
+  label: String! # "p122389"
+  ensName: String! # "p122389.civicord.eth"
+  owner: Bytes!
+  registeredAtBlock: BigInt!
+  registeredAt: BigInt! # block timestamp
+  unregisteredAtBlock: BigInt
+  resolver: Bytes!
+  status: String # live | http_error | dns_error | connection_error | timeout | other
+  url: String
+  personName: String # vnd.civicord.person_name text record
+  lastAudited: String # ISO date from pipeline, via 'status' style record keys
+  textRecordCount: BigInt!
+  textRecords: [TextRecord!]! @derivedFrom(field: "candidate")
+  textRecordChanges: [TextRecordChange!]! @derivedFrom(field: "candidate")
+}
+
+type TextRecord @entity(immutable: false) {
+  id: ID! # node + "/" + key
+  candidate: Candidate!
+  key: String!
+  value: String
+  lastSetAtBlock: BigInt!
+  lastSetAt: BigInt! # block timestamp
+}
+
+type TextRecordChange @entity(immutable: false) {
+  id: ID! # node + "/" + key + "/" + blockNumber
+  candidate: Candidate!
+  textRecord: TextRecord!
+  key: String!
+  oldValue: String
+  newValue: String
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+type Stat @entity(immutable: false) {
+  id: ID! # "civicord"
+  candidateCount: BigInt!
+  liveCount: BigInt!
+  goneCount: BigInt! # unregistered OR status records showing dead sites
+  textRecordCount: BigInt!
+  textRecordChangeCount: BigInt!
+}
