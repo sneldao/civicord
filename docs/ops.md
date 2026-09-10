@@ -4,13 +4,13 @@ Infrastructure and deployment notes for Civicord. This doc is **internal** —
 it's safe to commit (no secrets), but unlike `architecture.md` /
 `onchain-plan.md` it documents *how we run* the project rather than what it is.
 
-Last updated: 2026-09-09 23:35 BST — split homepage + /browse pagination + party | fix + threaded preview (Alchemy + pending-nonce + decode still in flight).
+Last updated: 2026-09-10 — frontend map layer + deploy runbook correction (manual `wrangler pages deploy`; no auto-build from Git).
 
 ## Hosting topology
 
 | Layer | Service | Notes |
 | --- | --- | --- |
-| Frontend (2,381 static pages) | Cloudflare Pages — project `civicord` | Live at https://civicord.pages.dev; production deploys from `main` |
+| Frontend (2,381 static pages) | Cloudflare Pages — project `civicord` | Live at https://civicord.pages.dev; **deployed manually** from local `frontend/dist` with `wrangler pages deploy` (see below) |
 | Data snapshots | Cloudflare R2 — bucket `civicord-data` (account e738) | Served same-origin at `/data/*` by `frontend/public/_worker.js` (5-min cache) |
 | Legacy/unused | Vercel (`civicord.vercel.app`) | `vercel.json` still present; superseded by Pages — delete when confident |
 | Future | VPS available for pipeline cron + FastAPI search API | Not yet used |
@@ -145,19 +145,41 @@ PY
 
 ## Deploying the frontend
 
+**Important:** `frontend/dist/` is gitignored, and `data/` (the pipeline CSVs +
+GeoJSON used by `build-data.mjs` / `build-map.mjs`) is also gitignored. There is
+no GitHub Actions workflow and no Cloudflare Pages Git integration that can auto-build
+this repo. A commit/push to `main` does **not** make the site live — you must build
+locally and run `wrangler pages deploy`.
+
 ```bash
-cd frontend && npm run build
-# CLOUDFLARE_API_KEY in the shell (AI key ff315ddd) breaks Pages auth — unset it:
+cd frontend
+npm ci                 # if node_modules is missing
+npm run build          # regenerates src/data/* and dist/
+
+# If you have leftover CLOUDFLARE_API_KEY / CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_BASE_URL
+# from a Workers AI key, unset them — they break Pages auth and land deploys in the
+# wrong Cloudflare account (ff315ddd instead of e7383c0c…):
 env -u CLOUDFLARE_API_KEY -u CLOUDFLARE_ACCOUNT_ID -u CLOUDFLARE_BASE_URL \
-  npx wrangler pages deploy frontend/dist --project-name civicord --commit-dirty=true
-# deploys to https://<hash>.civicord.pages.dev (civicord.pages.dev alias follows)
+  npx wrangler pages deploy dist --project-name civicord --branch main
 ```
 
-Verify after deploy:
+`wrangler` will open a browser for OAuth on first use, or you can authenticate
+ahead of time with `npx wrangler login` (ensure it targets the `e7383c0c…`
+account that owns the Pages project).
+
+**Always rebuild before deploying.** `dist/` is a build artifact; if the
+pipeline outputs (`data/out/*.csv`, `data/boundaries/ak-v5.geojson`) have
+changed, an old `dist/` will still contain stale stats and the wrong on-chain
+counts. After a pipeline or `onchain_manifest.csv` update, run `npm run build`
+from `frontend/` so `dist/` reflects the latest `candidates.json` and map data.
+
+Verify after deploy (check that a new constituency page is *not* the homepage):
+
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' https://civicord.pages.dev/
 curl -s -o /dev/null -w '%{http_code} %{size_download}\n' \
   https://civicord.pages.dev/data/candidates.json
+curl -s https://civicord.pages.dev/constituencies/st-ives/ | grep -q 'St Ives' && echo "map page live" || echo "still serving homepage fallback"
 ```
 
 ## Refreshing the data snapshot
@@ -182,7 +204,7 @@ R2 snapshot at `https://civicord.pages.dev/data/candidates.json` → committed
 `src/data/candidates.json`. R2 snapshot: ~2.5 MB (`candidates.json`), alias at
 `civicord.pages.dev/data/candidates.json`.
 
-## Frontend deploy state (2026-09-09 23:35 BST — browse split live)
+## Frontend deploy state (2026-09-10 — map layer built, awaiting manual deploy)
 
 - **Built:** `frontend/dist` 2,381 pages (2,375 candidates + `cohorts/{live,gone,redirected}` + `methodology` + `index` + `browse` + sitemap) — ~6–11 s (Astro 7.3). `cd frontend && npx astro build` (not `npx --prefix frontend wrangler pages deploy dist` — that gives `ENOENT dist` / `UNRESOLVED_ENTRY`).
 - **Pages deploys:** `https://ce51b262.civicord.pages.dev` and `https://61556895.civicord.pages.dev` (both 200), alias `https://civicord.pages.dev`. Smoke-tested: `/` has narrative hero + 3 cohort feature cards (Gone/Redirected/Live → `/cohorts/[status]`) and no ledger wall (0 `row-st-` rows); `/browse/` is the paginated ledger (50/page, `?q`/`?party`/`?status`/`?page`, fuzzy `farrage→Farage`, `data-party` joined on `|` — fixed tonight from space-join bug that made `?party=labour%20party` return 0 rows); `cohorts/gone` → *The graveyard*, `cohorts/redirected` → *Top destinations*, `/candidates/3454` + `/candidates/9` → `compare-line` + `timeline` present; `party` and `q` deep-links verified on live.
@@ -190,8 +212,14 @@ R2 snapshot at `https://civicord.pages.dev/data/candidates.json` → committed
   `scripts/upload_snapshot.sh` to `civicord-data/candidates.json` — `https://civicord.pages.dev/data/candidates.json`
   returns 200; `candidates 2375 onchain 2375` in committed JSON (manifest-driven
   — on-chain record *content* is still catching up at `p185` in the in-flight `records-only` pass, see ENS section above).
+- **Map layer (2026-09-10):** `frontend/src/pages/constituencies/[slug].astro` +
+  `frontend/src/components/HalftoneHexMap.astro` + `frontend/scripts/build-map.mjs`
+  generate 650 constituency pages and the halftone hex map at build time from
+  `data/out/*.csv` + `data/boundaries/ak-v5.geojson`. Built locally into
+  `frontend/dist/` but **not yet deployed** to Cloudflare Pages.
+
 - **Gotchas hit & fixed tonight:**
-  - `npx --prefix frontend wrangler pages deploy dist` fails (`ENOENT dist` / `[UNRESOLVED_ENTRY]`); deploy from repo root as `frontend/dist` via `cd frontend && npx astro build` then `npx wrangler pages deploy frontend/dist`.
+  - `npx --prefix frontend wrangler pages deploy dist` fails (`ENOENT dist` / `[UNRESOLVED_ENTRY]`). Use `cd frontend && npm run build && npx wrangler pages deploy dist` (see **Deploying the frontend** above).
   - Any `CLOUDFLARE_API_KEY`/`ACCOUNT_ID`/`BASE_URL` in the shell (Workers AI key `ff315` from a prior `.zshrc`) causes `Authentication error [code: 10000]` on non-AI endpoints — the `env -u CLOUDFLARE_API_KEY -u CLOUDFLARE_ACCOUNT_ID -u CLOUDFLARE_BASE_URL` prefix is required.
   - `python -m http.server` single-threaded dies on `ClientRouter` prefetch `BrokenPipeError` (every Chromium view-transition kills the server). Fix: threaded server `socketserver.ThreadingMixIn` + `except (BrokenPipeError, ConnectionResetError): pass` in `/tmp/serve.py` and bind `0.0.0.0` for `agent-browser` (needs LAN IP `192.168.0.74:4321`, not `127.0.0.1`).
   - Bare `python scripts/publish/publish.py` buffers `>> /tmp/records-blast.log` (4K file buffering) — stall at `p1067` looked like a hang but was unflushed output. Fix: `python -u` (wrapper now `python -u publish.py --blast --records-only`).
