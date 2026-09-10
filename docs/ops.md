@@ -267,9 +267,9 @@ npx graph deploy --node https://api.studio.thegraph.com/deploy/ \
 - Deployed to Subgraph Studio: `https://thegraph.com/studio/subgraph/civicord`
 - Query endpoint (v0.0.1): `https://api.studio.thegraph.com/query/101650/civicord/v0.0.1`
 - IPFS manifest: `QmTp8yuyk6GFZJKB9KckxmSzjSHQM3CBEbTatZC1VnMKpM`
-- Subgraph Studio UI still needs its metadata filled in manually:
-  description, source code URL, website URL, and categories. These cannot be
-  set via the CLI.
+- Studio metadata (description, source/website URLs, categories) saved in the
+  Studio UI; not published to the decentralized network — the Studio query
+  endpoint is enough for the hackathon demo.
 
 ## Sizes to keep an eye on
 
