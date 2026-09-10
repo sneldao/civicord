@@ -1153,6 +1153,31 @@ tbody tr:nth-child(-n + 14) { animation-delay: calc(0.4s + var(--row-i, 0) * 24m
   max-height: 15rem; overflow: auto;
 }
 .av-out[hidden] { display: none; }
+
+/* Copy affordance consistency: same feedback language as .ens-copy everywhere.
+   Cursor says "copyable"; feedback is the same green "copied ✓" chip. */
+.copyable { cursor: copy; }
+.copyable.copied { position: relative; }
+.copyable.copied::after {
+  content: "copied ✓";
+  position: absolute;
+  right: 0.5rem;
+  top: 0.25rem;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--live);
+  white-space: nowrap;
+}
+
+/* Keyboard hints outside .browse-toolbar (cohort + methodology footers). */
+.toolbar-hint { font-size: 0.74rem; }
+.toolbar-hint kbd, .browse-hint kbd {
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 700;
+  border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 3px;
+  padding: 0.05rem 0.32rem; background: #fff; color: var(--muted);
+}
+
 .av-foot { font-size: 0.74rem; margin: 0.8rem 0 0; }
 .av-foot a { color: var(--accent); }
 

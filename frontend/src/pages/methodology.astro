@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
+import CommandPalette from "../components/CommandPalette.astro";
 import "../styles/global.css";
 
 // Validated at build time by src/content.config.ts.
@@ -113,5 +114,12 @@ const onchain = candidates.filter((c) => c.onchain);
         <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
       </p>
     </footer>
+
+    <p class="toolbar-hint muted" style="text-align:center">
+      Press <kbd>⌘K</kbd> to jump to any candidate, seat, or party — or try it
+      against the live data in the <a href="/browse">ledger</a>.
+    </p>
+
+    <CommandPalette />
   </body>
 </html>

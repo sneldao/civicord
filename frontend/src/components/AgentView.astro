@@ -69,13 +69,13 @@ const mcpSnippet = `getConstituency(slug="${slug}")
       <section class="av-card">
         <h3><span class="av-n">3</span> MCP tool</h3>
         <p class="muted av-note">Same call, as an agent would invoke it over MCP.</p>
-        <pre class="av-code" data-av-out="mcp">{mcpSnippet}</pre>
+        <pre class="av-code copyable" data-av-out="mcp" title="Click to copy" data-copy={mcpSnippet}>{mcpSnippet}</pre>
       </section>
 
       <section class="av-card">
         <h3><span class="av-n">4</span> Change log</h3>
         <p class="muted av-note">The on-chain record, queryable through The Graph.</p>
-        <pre class="av-code">{subgraphQuery}</pre>
+        <pre class="av-code copyable" title="Click to copy" data-copy={subgraphQuery}>{subgraphQuery}</pre>
       </section>
     </div>
 
@@ -195,6 +195,24 @@ const mcpSnippet = `getConstituency(slug="${slug}")
       const out = outFor("paid");
       if (out) probePaid(slug, out);
     });
+
+    // Click-to-copy on the MCP + subgraph snippets (same feedback as .ens-copy).
+    for (const el of root.querySelectorAll<HTMLElement>(".copyable[data-copy]")) {
+      el.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(el.dataset.copy ?? "");
+        } catch {
+          const ta = document.createElement("textarea");
+          ta.value = el.dataset.copy ?? "";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          ta.remove();
+        }
+        el.classList.add("copied");
+        setTimeout(() => el.classList.remove("copied"), 1200);
+      });
+    }
 
     if (!bound) bound = true;
   });

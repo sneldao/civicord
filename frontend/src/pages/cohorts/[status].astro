@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import { statusCohorts, type StatusCohort } from "../../lib/cohorts";
+import CommandPalette from "../../components/CommandPalette.astro";
 import "../../styles/global.css";
 
 export async function getStaticPaths() {
@@ -94,10 +95,16 @@ const blurb: Record<StatusCohort["slug"], string> = {
       <a href="/methodology">How the audit works ↗</a>
     </p>
 
+    <p class="toolbar-hint muted" style="text-align:center">
+      Press <kbd>⌘K</kbd> to jump to any candidate, seat, or party.
+    </p>
+
     <footer>
       <p>
         Civicord record · <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
       </p>
     </footer>
+
+    <CommandPalette />
   </body>
 </html>

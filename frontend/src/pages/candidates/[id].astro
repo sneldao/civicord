@@ -1,5 +1,7 @@
 ---
 import { getCollection } from "astro:content";
+import PeekSheet from "../../components/PeekSheet.astro";
+import CommandPalette from "../../components/CommandPalette.astro";
 import { ClientRouter } from "astro:transitions";
 import { partyLiveShare } from "../../lib/cohorts";
 import "../../styles/global.css";
@@ -307,6 +309,9 @@ const compareAvg = compareFound?.[1] ?? null;
       </p>
     </footer>
 
+    <PeekSheet />
+    <CommandPalette />
+
     <script>
       // Copy the ENS name on click (progressive enhancement; view-transition safe).
       document.addEventListener("astro:page-load", () => {
@@ -325,6 +330,20 @@ const compareAvg = compareFound?.[1] ?? null;
           btn.classList.add("copied");
           setTimeout(() => btn.classList.remove("copied"), 1200);
         });
+
+        // Seat hex peeks in place when the sheet is mounted; plain link otherwise.
+        const hex = document.querySelector<HTMLAnchorElement>(".seat-hex");
+        if (hex && document.getElementById("peek-sheet")) {
+          hex.addEventListener("click", (e) => {
+            e.preventDefault();
+            const name = hex.getAttribute("aria-label")?.replace(/^View /, "");
+            window.dispatchEvent(
+              new CustomEvent("civicord:peek", {
+                detail: { slug: hex.getAttribute("href")?.split("/").pop(), name },
+              }),
+            );
+          });
+        }
       });
     </script>
   </body>
