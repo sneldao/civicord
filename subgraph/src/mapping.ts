@@ -49,33 +49,66 @@ function bumpStat(field: string, by: i32 = 1): void {
   stat.save();
 }
 
+function paddedHex(hexRaw: string): string {
+  // Graph's BigInt.toHexString() strips leading zeros (e.g. "0x1"), while
+  // Bytes.toHexString() returns 0x + 64 hex chars. We need 32-byte
+  // zero-padded, lower-case, 0x + 64 hex for every key so the
+  // NodeToCandidate lookup is exact. Odd-length "0x1" would also make
+  // Bytes.fromHexString throw a deterministic indexing error.
+  let lower = hexRaw.toLowerCase();
+  let without = lower.slice(2); // strip 0x
+  if (without.length > 64) {
+    without = without.slice(without.length - 64);
+  }
+  if (without.length == 64) {
+    return "0x" + without;
+  }
+  let zeros = "";
+  for (let i = 0; i < 64 - without.length; i++) {
+    zeros += "0";
+  }
+  return "0x" + zeros + without;
+}
+
 function tokenIdHex(tokenId: BigInt): string {
-  // BigInt.toHexString() on Graph is 0x + 64 hex chars (32 bytes) — lower-case,
-  // same format as Bytes.toHexString(). Use this consistently for node↔candidate
-  // lookup so TextChanged (bytes32 node) matches LabelRegistered (uint256 tokenId).
-  return tokenId.toHexString().toLowerCase();
+  return paddedHex(tokenId.toHexString());
 }
 
 function nodeHex(node: Bytes): string {
-  return node.toHexString().toLowerCase();
+  return paddedHex(node.toHexString());
 }
 
 function emptyResolver(): Bytes {
   return changetype<Bytes>(Address.zero());
 }
 
+function personIdFromLabel(label: string): string {
+  if (label.length > 1 && label.charAt(0) == "p") {
+    return label.slice(1);
+  }
+  return label;
+}
+
 // ── UserRegistry handlers ─────────────────────────────────────────────────────
 
 export function handleLabelRegistered(event: LabelRegisteredEvent): void {
   const label = event.params.label;
-  const personId = label.slice(1); // "p{id}" → "{id}"
+  if (label.length == 0) {
+    return;
+  }
+  const personId = personIdFromLabel(label);
+  if (personId.length == 0) {
+    return;
+  }
   let candidate = Candidate.load(personId);
+
+  const nId = tokenIdHex(event.params.tokenId);
 
   if (candidate === null) {
     candidate = new Candidate(personId);
     candidate.label = label;
     candidate.ensName = label + ".civicord.eth";
-    candidate.node = Bytes.fromHexString(tokenIdHex(event.params.tokenId));
+    candidate.node = Bytes.fromHexString(nId) as Bytes;
     candidate.tokenId = event.params.tokenId;
     candidate.owner = changetype<Bytes>(event.params.owner);
     candidate.resolver = emptyResolver();
@@ -94,7 +127,6 @@ export function handleLabelRegistered(event: LabelRegisteredEvent): void {
 
   // Map the ENS node (tokenId as bytes32 hex) → candidate so TextChanged/
   // ResolverUpdated can resolve it without scanning the registry.
-  const nId = tokenIdHex(event.params.tokenId);
   let nodeMap = NodeToCandidate.load(nId);
   if (nodeMap === null) {
     nodeMap = new NodeToCandidate(nId);

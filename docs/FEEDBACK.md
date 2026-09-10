@@ -18,13 +18,13 @@
 
 ## The Graph — AI Tooling / From Scratch
 
-**What we built:** Subgraph indexing ENSv2 `LabelRegistered/LabelUnregistered/ResolverUpdated` + `TextChanged` on Sepolia from `startBlock 8150000` — schema `Candidate ↔ TextRecord ↔ TextRecordChange + Stat + NodeToCandidate` lookup (because `TextChanged.node` is `bytes32`, not `person_id`). `v0.0.1` `QmTp8yuy…` faulted (`missing NodeToCandidate`, `hasIndexingErrors:true`), **v0.0.2 `QmQqGfVx…` fixes it** (`hasIndexingErrors:false` @ 8149999, syncing 3.5M blocks to `11677k`), endpoint `api.studio.thegraph.com/query/101650/civicord/v0.0.2`.
+**What we built:** Subgraph indexing ENSv2 `LabelRegistered/LabelUnregistered/ResolverUpdated` + `TextChanged` on Sepolia from `startBlock 8150000` — schema `Candidate ↔ TextRecord ↔ TextRecordChange + Stat + NodeToCandidate` lookup (because `TextChanged.node` is `bytes32`, not `person_id`). `v0.0.1` `QmTp8yuy…` faulted then pruned; `v0.0.2` `QmQqGfVx…` faulted @ 11660475 (unpadded `BigInt.toHexString()` → `Bytes.fromHexString` throw on odd-length hex); **v0.0.3 `QmUcjfa4…` fixes it** (`hasIndexingErrors:false` @ 8149999, `paddedHex` 0x+64, syncing 3.5M blocks to `11677k`), endpoint `api.studio.thegraph.com/query/101650/civicord/v0.0.3` (`v0.0.2` kept for forensics).
 
-**What worked:** `graph-cli 0.98 + graph-ts 0.38` codegen/build is solid once `entities: [NodeToCandidate]` is registered; Studio deploy flow (`graph auth` → `graph deploy --node studio --version-label v0.0.2 --output-dir subgraph/build`) is clean. Free `_meta` query is enough for the demo until sync finishes.
+**What worked:** `graph-cli 0.98 + graph-ts 0.38` codegen/build is solid once `entities: [NodeToCandidate]` is registered; Studio deploy flow (`graph auth` → `graph deploy --node studio --version-label v0.0.3 --output-dir subgraph/build`) is clean. Free `_meta` query is enough for the demo until sync finishes.
 
-**Friction:** v0.0.1’s `indexing_error` only surfaced as `hasIndexingErrors:true` + `indexing_error` on entity queries — Logs tab was the only diagnostic; `api.thegraph.com/index-node/graphql` is 404 without auth. A CLI flag to stream `deterministic` error after deploy would have cut a debug hour. Sync of 3.5M blocks is slow — a higher `startBlock` note (why 8150000, not 9M) helps reviewers.
+**Friction:** v0.0.1/v0.0.2 `indexing_error` only surfaced as `hasIndexingErrors:true` + `indexing_error` on entity queries — Logs tab was the only diagnostic; `api.thegraph.com/index-node/graphql` is 404 without auth. The real bug was `BigInt.toHexString()` not zero-padding to 32 bytes, so `Bytes.fromHexString("0x1...")` threw deterministically at a block whose `tokenId` had leading zero bytes. A CLI flag to stream `deterministic` error after deploy would have cut a debug hour. Sync of 3.5M blocks is slow — a higher `startBlock` note (why 8150000, not 9M) helps reviewers.
 
-**Wish:** clearer `bytes32` vs `uint256 tokenId` hex-casing contract (we lower-cased `toHexString()` to align), and an `immutable` entity recommendation in the scaffold.
+**Wish:** clearer `bytes32` vs `uint256 tokenId` hex-casing + padding contract (we now `paddedHex` to 0x+64 lower-case), and an `immutable` entity recommendation in the scaffold.
 
 **Would you fund this dataset via GRT?** Yes — the agent query “which sites went dark since April?” is a Subgraph query, not a scrape.
 

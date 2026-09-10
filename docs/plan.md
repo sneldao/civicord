@@ -1,6 +1,6 @@
 # Plan
 
-Delivery phases, the current sprint, and risks. Last updated 2026-09-11 22:40 BST.
+Delivery phases, the current sprint, and risks. Last updated 2026-09-11 23:05 BST.
 (Day-of-week note: 2026-09-08 is a **Tuesday**; earlier drafts of this file
 labelled it Monday — all day labels below use the corrected mapping.)
 
@@ -63,7 +63,7 @@ Substreams is blockchain ETL; web-archive data can't flow through it.
 | --- | --- |
 | Tue 8 | ✅ Frontend restyle — "Public Record" direction (pending sign-off) — the demo surface |
 | Wed 9 | 🔄 ENSv2 registry + subname mint + `civicord publish` — parent `civicord.eth` live (civicordhq alias), proxies deployed, blast-mode publisher shipped, 348/2,375 minted; paused on deployer gas top-up |
-| Wed 10 | Subgraph in Subgraph Studio + MCP agent demo — **v0.0.1 deployed but faulted** (`hasIndexingErrors:true`, missing `NodeToCandidate` entity), **v0.0.2 redeployed 22:40** (`QmQqGf…`, `hasIndexingErrors:false` @ 8149999, syncing 3.5M blocks to 11677k) (see [ops.md](ops.md)) |
+| Wed 10 | Subgraph in Subgraph Studio + MCP agent demo — **v0.0.1 deployed but faulted** then **pruned**, **v0.0.2 redeployed 22:40 but faulted @ 11660475** (unpadded `toHexString` → `Bytes.fromHexString` throw), **v0.0.3 redeployed 23:05** (`QmUcjfa…`, `hasIndexingErrors:false` @ 8149999, syncing 3.5M blocks to 11677k) (see [ops.md](ops.md)) |
 | Thu 11 | ✅ Bazantic gateway **LIVE** (`civicord-aieyq.bazgateway.com` + `3se6sbx…bazgateway.com`, `MCP Live · 5 tools`, Marketplace *Pending verification* `/services/3se6sbxfgjfh3fw4gjpytkcroa`) + Recipe + 650 stipple deeds + worker alias for extensionless `/api/*` (`cb09faf`/`68950dd3`, `100`/`200` mcents verified) |
 | Fri 12 | Demo video (2–4 min) + FEEDBACK.md per sponsor, AI-attribution pass |
 | Sat 13 | Buffer; submit before 12:00 EDT / 17:00 UK |
@@ -190,7 +190,7 @@ All built at `astro build` — no Maps API, no backend. State lives in the URL; 
 
 **8h path to demo:** `1` fetch AK v5 + ONS BUC + Names V2 → cache `data/boundaries/` · `2` write `build-map.mjs` (join + counts + TopoJSON) · `3` `index.astro` pointillist hero (static `<svg>`+`<clipPath>`+2,375 circles) · `4` `map.astro` + `constituencies/[slug].astro` halftone hex wired to existing filter state + linked brushing + `format=svg` download.
 
-**Day plan update (live — 2026-09-11 22:40 gateway LIVE + subgraph v0.0.2 syncing):** `3031` html + `652` API json (`constituencies` × 650 + list + summary) + `650` stipple deeds (1200×630 SVG, 2.5 MB, `build-og.mjs`) — `34M` `frontend/dist`, `4342` files. `openapi.yaml` + Recipe ([gateway/recipe.md](gateway/recipe.md)) at `gateway/` — `https://civicord-aieyq.bazgateway.com` (handle, `MCP Live · 5 tools` at `/mcp`, Marketplace *Pending verification*) — pay-per-`?constituency=` (x402/MPP `100`/`200` mcents, humans browse free). Worker alias `frontend/public/_worker.js` (`cb09faf`) maps extensionless Bazantic `/api/*` → `…json` with query filtering. Subgraph `v0.0.2` `QmQqGf…` LIVE, `hasIndexingErrors:false` @ 8149999, syncing 3.5M blocks — `v0.0.1` faulted. Remaining: wait for subgraph sync, then demo video.
+**Day plan update (live — 2026-09-11 23:05 gateway LIVE + subgraph v0.0.3 syncing):** `3031` html + `652` API json (`constituencies` × 650 + list + summary) + `650` stipple deeds (1200×630 SVG, 2.5 MB, `build-og.mjs`) — `34M` `frontend/dist`, `4342` files. `openapi.yaml` + Recipe ([gateway/recipe.md](gateway/recipe.md)) at `gateway/` — `https://civicord-aieyq.bazgateway.com` (handle, `MCP Live · 5 tools` at `/mcp`, Marketplace *Pending verification*) — pay-per-`?constituency=` (x402/MPP `100`/`200` mcents, humans browse free). Worker alias `frontend/public/_worker.js` (`cb09faf`) maps extensionless Bazantic `/api/*` → `…json` with query filtering. Subgraph `v0.0.3` `QmUcjfa…` LIVE, `hasIndexingErrors:false` @ 8149999, syncing 3.5M blocks — `v0.0.2` faulted @ 11660475 (unpadded hex), `v0.0.1` pruned. Remaining: wait for subgraph sync, then demo video.
 
 | Thu 11 | ✅ Gateway **LIVE** + Recipe + OG deeds + handle + marketplace pending — subgraph left to you |
 | Fri 12 | Demo video (2–4 min) + FEEDBACK.md — lead with map hook: “Check your constituency: 4/6 sites already gone” |

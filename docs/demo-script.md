@@ -51,8 +51,8 @@ curl -s -H "X-Payment: <x402>" https://civicord-aieyq.bazgateway.com/api/constit
 The Recipe tells an agent when to call it: any UK place name → slug → one call.”
 
 ## 1:55 — Subgraph — the change log agents actually query (40s)
-**Screen:** Studio `thegraph.com/studio/subgraph/civicord` — `v0.0.2` green,
-or terminal `curl` to `api.studio.thegraph.com/query/101650/civicord/v0.0.2`.
+**Screen:** Studio `thegraph.com/studio/subgraph/civicord` — `v0.0.3` green,
+or terminal `curl` to `api.studio.thegraph.com/query/101650/civicord/v0.0.3`.
 **Line:** “The same onchain events a human verifies, an agent can query.”
 ```graphql
 {
@@ -76,7 +76,7 @@ Overlay cards:
 ## B-roll / captions to bake in
 - Lower-third on every URL change: `?constituency=…` / `?status=gone` / `?party=…`
 - x402 `402 → payment-required → 200` flash (2s)
-- Subgraph `block 8149999 → indexing → _meta hasIndexingErrors:false` badge
+- Subgraph `v0.0.3 block 8149999 → indexing → _meta hasIndexingErrors:false` badge (v0.0.2 was faulted — don't show it)
 
 ## What we cut if we hit 4:00
 - Candidate deep-dive (keep only the ynys-mon → st-ives hop)

@@ -8,9 +8,9 @@ snapshot hashes, and liveness status as text records. All writes go through
 [ENSv2](https://docs.ens.domains/ensv2/overview) Enhanced Access Control — only the
 Civicord key can update a candidate's records.
 
-## Status (updated 2026-09-11 22:40 BST — subgraph v0.0.2 + gateway handle live)
+## Status (updated 2026-09-11 23:05 BST — subgraph v0.0.3 + gateway handle live)
 
-> **2026-09-11 22:40:** gateway `civicord-aieyq.bazgateway.com` LIVE (`MCP Live · 5 tools`, Marketplace *Pending verification*, `100`/`200` mcents), subgraph `v0.0.2` `QmQqGfVxLZ…` (`hasIndexingErrors:false` @ 8149999, syncing to 11677k — `v0.0.1` `QmTp8yuy…` faulted with missing `NodeToCandidate`). See [ops.md](ops.md) and [plan.md](plan.md) for verify cURLs.
+> **2026-09-11 23:05:** gateway `civicord-aieyq.bazgateway.com` LIVE (`MCP Live · 5 tools`, Marketplace *Pending verification*, `100`/`200` mcents), subgraph `v0.0.3` `QmUcjfa4x4…` (`hasIndexingErrors:false` @ 8149999, syncing to 11677k — `v0.0.2` `QmQqGfVx…` faulted @ 11660475 due to unpadded `BigInt.toHexString()` → `Bytes.fromHexString` throw, `v0.0.1` pruned). See [ops.md](ops.md) and [plan.md](plan.md) for verify cURLs.
 
 ## Status (2026-09-09 21:30 BST — Alchemy + pending + decode fixes — baseline)
 
@@ -133,4 +133,4 @@ code.
 
 - `civicord publish` CLI subcommand (scripts are run manually)
 - Mainnet, IPNS/contenthash resolution, cross-chain
-- Graph subgraph over these events — **now done:** `v0.0.2` live (see Status note above)
+- Graph subgraph over these events — **now done:** `v0.0.3` live (see Status note above)
