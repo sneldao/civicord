@@ -3,6 +3,8 @@ import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import { cohortStats, statusCohorts } from "../lib/cohorts";
 import HalftoneHexMap from "../components/HalftoneHexMap.astro";
+import PeekSheet from "../components/PeekSheet.astro";
+import CommandPalette from "../components/CommandPalette.astro";
 import "../styles/global.css";
 import constituenciesRaw from "../data/constituencies.json";
 
@@ -417,5 +419,7 @@ const randomIds = candidates.map((c) => c.id);
         }
       });
     </script>
+    <PeekSheet />
+    <CommandPalette />
   </body>
 </html>

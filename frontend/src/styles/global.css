@@ -1000,9 +1000,167 @@ tbody tr:nth-child(-n + 14) { animation-delay: calc(0.4s + var(--row-i, 0) * 24m
   .rp-list { right: auto; left: 0; }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Interaction tier (2026-09-11) — additive only.
+   Peek sheet + command palette + agent view. New classes only; no existing
+   selector is modified. Every piece degrades: dialogs are enhancements over
+   links that already work, and the print rules below hide all three.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Shared dialog chrome */
+.peek, .palette {
+  color: var(--ink);
+  background: var(--paper);
+  padding: 0;
+}
+.peek::backdrop, .palette::backdrop { background: rgba(28, 36, 52, 0.42); }
+.peek:not([open]), .palette:not([open]) { display: none; }
+
+/* ── Peek sheet: a right-hand drawer on desktop, a bottom sheet on phones ── */
+.peek {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0;
+  width: min(30rem, 100vw);
+  max-width: none;
+  max-height: none;
+  height: 100%;
+  border: 0;
+  border-left: 2px solid var(--ink);
+  overflow: hidden;
+}
+.peek[open] { display: flex; flex-direction: column; }
+.peek-inner { display: flex; flex-direction: column; height: 100%; overflow-y: auto; padding: 1rem 1.1rem 1.2rem; }
+.peek-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.7rem; }
+.peek-kicker { margin: 0; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); }
+.peek-title { font-family: var(--serif); font-size: 1.35rem; margin: 0.15rem 0 0; line-height: 1.15; }
+.peek-meta { margin: 0.25rem 0 0; font-size: 0.76rem; color: var(--muted); }
+.peek-close {
+  font: inherit; font-size: 1.15rem; line-height: 1;
+  color: var(--muted); background: transparent;
+  border: 1.5px solid var(--rule); border-radius: 999px;
+  width: 1.9rem; height: 1.9rem; cursor: pointer; flex: 0 0 auto;
+}
+.peek-close:hover { border-color: var(--ink); color: var(--ink); }
+.peek-body { margin: 0.9rem 0 0; flex: 1 1 auto; }
+.peek-share { margin: 0; font-size: 0.88rem; }
+.peek-share b { font-variant-numeric: tabular-nums; }
+.peek-dots { display: flex; align-items: center; gap: 0.28rem; margin: 0.6rem 0 0; }
+.peek-dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--ink); opacity: 0.75; display: inline-block; }
+.peek-dots-label { font-size: 0.72rem; color: var(--muted); margin-left: 0.35rem; }
+.peek-cands { list-style: none; margin: 0.85rem 0 0; padding: 0; display: grid; gap: 0.4rem; }
+.peek-cands li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem; font-size: 0.82rem; border-bottom: 1px solid var(--rule); padding-bottom: 0.4rem; }
+.peek-cands code { font-family: var(--mono); font-size: 0.66rem; color: var(--muted); }
+.peek-foot { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0 0; padding-top: 0.8rem; border-top: 2px solid var(--ink); }
+.peek-note { margin: 0.6rem 0 0; font-size: 0.7rem; }
+.peek-note code { font-family: var(--mono); font-size: 0.68rem; }
+@media (max-width: 640px) {
+  .peek { inset: auto 0 0 0; width: 100%; height: auto; max-height: 82vh; border-left: 0; border-top: 2px solid var(--ink); }
+}
+
+/* ── Command palette ── */
+.palette {
+  position: fixed;
+  inset: 11vh auto auto 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  width: min(38rem, calc(100vw - 1.6rem));
+  max-width: none;
+  max-height: none;
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  box-shadow: 0 18px 50px rgba(28, 36, 52, 0.3);
+  overflow: hidden;
+}
+.palette[open] { display: block; }
+.palette-inner { display: flex; flex-direction: column; max-height: 70vh; }
+.palette-input {
+  font: inherit; font-size: 1rem; color: var(--ink);
+  background: transparent; border: 0; border-bottom: 2px solid var(--ink);
+  border-radius: 0; padding: 0.75rem 0.9rem; width: 100%;
+}
+.palette-input:focus { outline: none; border-bottom-color: var(--accent); }
+.palette-results { list-style: none; margin: 0; padding: 0.3rem 0; overflow-y: auto; flex: 1 1 auto; }
+.palette-row {
+  display: grid;
+  grid-template-columns: 6.4rem 1fr;
+  gap: 0.15rem 0.6rem;
+  padding: 0.42rem 0.9rem;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+.palette-row.is-cursor { background: var(--paper-deep); border-left-color: var(--accent); }
+.pr-kind { grid-row: span 2; align-self: center; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+.pr-label { font-weight: 600; font-size: 0.88rem; }
+.pr-sub { font-size: 0.72rem; }
+.palette-empty { padding: 0.7rem 0.9rem; font-size: 0.84rem; }
+.palette-foot { margin: 0; padding: 0.45rem 0.9rem; border-top: 1px solid var(--rule); font-size: 0.7rem; color: var(--muted); }
+.palette-foot kbd, .palette-trigger kbd {
+  font-family: var(--mono); font-size: 0.66rem; font-weight: 700;
+  border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 3px;
+  padding: 0.02rem 0.28rem; background: #fff; margin-right: 0.12rem;
+}
+.palette-count { float: right; }
+.palette-trigger {
+  position: fixed; right: 1rem; bottom: 1rem; z-index: 9;
+  display: inline-flex; gap: 0.1rem; align-items: center;
+  font: inherit; font-size: 0.72rem; font-weight: 700;
+  color: var(--muted); background: rgba(250, 247, 240, 0.94);
+  border: 1.5px solid var(--rule); border-radius: 999px;
+  padding: 0.32rem 0.62rem; cursor: pointer;
+}
+.palette-trigger:hover { border-color: var(--ink); color: var(--ink); }
+@media (max-width: 640px) { .palette-trigger { display: none; } }
+
+/* ── Agent view (seat pages) ── */
+.agentview {
+  margin: 1.6rem 0 0;
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  background: var(--paper-deep);
+  overflow: hidden;
+}
+.av-summary {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem;
+  cursor: pointer; padding: 0.7rem 0.9rem; list-style: none;
+}
+.av-summary::-webkit-details-marker { display: none; }
+.av-summary:hover { background: rgba(199, 58, 29, 0.05); }
+.av-kicker {
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--accent); border: 1.5px solid var(--accent); border-radius: 3px; padding: 0.05rem 0.35rem;
+}
+.av-title { font-family: var(--serif); font-size: 1rem; font-weight: 700; }
+.av-price { margin-left: auto; font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+.av-body { padding: 0 0.9rem 0.9rem; border-top: 1px solid var(--rule); }
+.av-lede { font-size: 0.84rem; margin: 0.7rem 0 0.8rem; max-width: 48em; }
+.av-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.7rem; }
+.av-card { border: 1px solid var(--rule); border-radius: 5px; background: rgba(255, 255, 255, 0.6); padding: 0.65rem 0.75rem; }
+.av-card h3 { margin: 0 0 0.35rem; font-family: var(--serif); font-size: 0.92rem; display: flex; align-items: center; gap: 0.4rem; }
+.av-n {
+  font-family: var(--mono); font-size: 0.6rem; font-weight: 700; color: var(--accent);
+  border: 1px solid var(--accent); border-radius: 999px;
+  width: 1.05rem; height: 1.05rem; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+}
+.av-url { display: block; font-family: var(--mono); font-size: 0.68rem; word-break: break-all; color: var(--ink); margin-bottom: 0.35rem; }
+.av-note { font-size: 0.74rem; margin: 0 0 0.5rem; }
+.av-note code { font-family: var(--mono); font-size: 0.9em; }
+.av-out, .av-code {
+  font-family: var(--mono); font-size: 0.7rem; line-height: 1.5;
+  white-space: pre-wrap; word-break: break-word;
+  background: var(--paper); border-left: 3px solid var(--rule); border-radius: 3px;
+  padding: 0.5rem 0.6rem; margin: 0.5rem 0 0;
+  max-height: 15rem; overflow: auto;
+}
+.av-out[hidden] { display: none; }
+.av-foot { font-size: 0.74rem; margin: 0.8rem 0 0; }
+.av-foot a { color: var(--accent); }
+
 /* A public record should print as one */
 @media print {
   .progress, .filterbar, .how, .ens-note, .hexmap-tip { display: none !important; }
+  /* Interaction tier is screen-only — a printed record has no dialogs. */
+  .peek, .palette, .agentview, .palette-trigger, .palette-trigger, .region-picker { display: none !important; }
   body { max-width: none; padding: 0; font-size: 11px; background: #fff; }
   tbody tr, .hex { break-inside: avoid; animation: none !important; }
   .hexmap-svg { background: #fff !important; }

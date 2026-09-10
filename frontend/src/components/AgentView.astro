@@ -1,0 +1,201 @@
+---
+// Agent view — "what this page looks like to a machine".
+//
+// Sits on every seat page, where the human URL and the metered resource are the
+// same string (/constituencies/x ↔ /api/constituencies/x), so the abstraction is
+// legible in one glance.
+//
+// Uses <details> for the disclosure itself, so opening it needs no JS. JS only
+// enhances: two user-triggered live fetches (the free same-origin JSON, and the
+// gateway's real 402). Nothing is mocked, nothing fires without a click.
+//
+// The gateway's 402 is CORS-readable and exposes its payment headers, which is
+// what makes the live probe possible at all.
+
+interface Props {
+  slug: string;
+  name: string;
+}
+const { slug, name } = Astro.props;
+
+const GATEWAY = "https://civicord-aieyq.bazgateway.com";
+const mcents = 200; // $0.002 per jurisdiction — the pay-per-seat unit
+const priceUsd = (mcents / 1000 / 100).toFixed(4).replace(/0+$/, "").replace(/\.$/, ".0");
+
+const subgraphQuery = `{
+  candidate(id: "${slug}") {
+    id ensName status url
+  }
+  textRecords(where: { key: "status" }) {
+    id value lastSetAtBlock
+  }
+}`;
+
+// Built as a string so the template braces are content, not expressions.
+const mcpSnippet = `getConstituency(slug="${slug}")
+-> { name: "${name}", stats: { sites, live, livePct, ... }, candidates: [ ... ] }`;
+---
+
+<details class="agentview" data-slug={slug} data-gateway={GATEWAY}>
+  <summary class="av-summary">
+    <span class="av-kicker">Agent view</span>
+    <span class="av-title">What this page looks like to a machine</span>
+    <span class="av-price" title={`${mcents} mcents per call`}>${priceUsd} / seat</span>
+  </summary>
+
+  <div class="av-body">
+    <p class="muted av-lede">
+      Humans read this page for free. Agents pay per jurisdiction — this exact
+      record is one metered call. Everything below is live; nothing here is mocked.
+    </p>
+
+    <div class="av-grid">
+      <section class="av-card">
+        <h3><span class="av-n">1</span> Free, same-origin</h3>
+        <code class="av-url">/api/constituencies/{slug}.json</code>
+        <p class="muted av-note">Plain static JSON, CORS <code>*</code>, no key, 5-minute cache.</p>
+        <button type="button" class="btn-ghost btn-sm" data-av="free">Fetch it</button>
+        <pre class="av-out" data-av-out="free" hidden></pre>
+      </section>
+
+      <section class="av-card">
+        <h3><span class="av-n">2</span> Metered via x402</h3>
+        <code class="av-url">{GATEWAY}/api/constituencies/{slug}</code>
+        <p class="muted av-note">One jurisdiction = one charge. Expect <b>402</b>, not an error.</p>
+        <button type="button" class="btn-ghost btn-sm" data-av="paid">Probe it</button>
+        <pre class="av-out" data-av-out="paid" hidden></pre>
+      </section>
+
+      <section class="av-card">
+        <h3><span class="av-n">3</span> MCP tool</h3>
+        <p class="muted av-note">Same call, as an agent would invoke it over MCP.</p>
+        <pre class="av-code" data-av-out="mcp">{mcpSnippet}</pre>
+      </section>
+
+      <section class="av-card">
+        <h3><span class="av-n">4</span> Change log</h3>
+        <p class="muted av-note">The on-chain record, queryable through The Graph.</p>
+        <pre class="av-code">{subgraphQuery}</pre>
+      </section>
+    </div>
+
+    <p class="muted av-foot">
+      Verify independently: <a href={`https://app.ens.domains/${slug}.civicord.eth`} rel="noopener">ENS</a> ·
+      <a href="https://sepolia.etherscan.io/address/0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67" rel="noopener">resolver</a> ·
+      <a href="/openapi.yaml">openapi.yaml</a> ·
+      <a href="https://github.com/sneldao/civicord" rel="noopener">source</a>
+    </p>
+  </div>
+</details>
+
+<script>
+  const GATEWAY = "https://civicord-aieyq.bazgateway.com";
+  let bound = false;
+
+  function b64json(raw: string | null) {
+    if (!raw) return null;
+    try {
+      const b = raw.replace(/-/g, "+").replace(/_/g, "/");
+      const padded = b + "=".repeat((4 - (b.length % 4)) % 4);
+      const bytes = Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
+      return JSON.parse(new TextDecoder().decode(bytes));
+    } catch {
+      return null;
+    }
+  }
+
+  function trim(value: unknown, max = 900) {
+    let s: string;
+    try {
+      s = JSON.stringify(value, null, 2);
+    } catch {
+      s = String(value);
+    }
+    return s.length > max ? `${s.slice(0, max)}\n… (${s.length - max} more characters)` : s;
+  }
+
+  async function fetchFree(slug: string, out: HTMLElement) {
+    out.hidden = false;
+    out.textContent = "GET /api/constituencies/" + slug + ".json …";
+    try {
+      const res = await fetch(`/api/constituencies/${encodeURIComponent(slug)}.json`, {
+        headers: { accept: "application/json" },
+      });
+      const text = await res.text();
+      let body: unknown = text;
+      try {
+        body = JSON.parse(text);
+      } catch {}
+      out.textContent =
+        `HTTP ${res.status} ${res.headers.get("content-type") ?? ""} · ${text.length} bytes\n\n` +
+        trim(body);
+    } catch (err) {
+      out.textContent = `Request failed: ${(err as Error).message}`;
+    }
+  }
+
+  async function probePaid(slug: string, out: HTMLElement) {
+    out.hidden = false;
+    out.textContent = `GET ${GATEWAY}/api/constituencies/${slug} …`;
+    const url = `${GATEWAY}/api/constituencies/${encodeURIComponent(slug)}`;
+    try {
+      const res = await fetch(url, { headers: { accept: "application/json" } });
+      const lines: string[] = [];
+      lines.push(`HTTP ${res.status} ${res.statusText || ""}`.trim());
+
+      const demand = b64json(res.headers.get("payment-required"));
+      if (demand?.accepts?.[0]) {
+        const a = demand.accepts[0];
+        const usd = a.amount ? `$${(Number(a.amount) / 1e6).toFixed(4)}` : "—";
+        lines.push("");
+        lines.push(`x402Version : ${demand.x402Version}`);
+        lines.push(`resource    : ${demand.resource?.url ?? url}`);
+        lines.push(`scheme      : ${a.scheme}`);
+        lines.push(`network     : ${a.network}  (Base)`);
+        lines.push(`asset       : ${a.asset}  (USDC)`);
+        lines.push(`amount      : ${a.amount}  = ${usd}`);
+        lines.push(`payTo       : ${a.payTo}`);
+      } else {
+        lines.push("");
+        lines.push("(no PAYMENT-REQUIRED header on this response)");
+      }
+
+      const www = res.headers.get("www-authenticate");
+      if (www) {
+        lines.push("");
+        lines.push(`WWW-Authenticate: ${www.slice(0, 160)}${www.length > 160 ? "…" : ""}`);
+      }
+
+      if (res.status === 200) {
+        lines.push("");
+        lines.push("This route answered 200 — it may be free rather than metered.");
+      }
+      out.textContent = lines.join("\n");
+    } catch (err) {
+      out.textContent =
+        `Live probe blocked (${(err as Error).message}).\n\n` +
+        `Reproduce from a terminal:\n\n` +
+        `curl -sD - -o /dev/null ${url}`;
+    }
+  }
+
+  document.addEventListener("astro:page-load", () => {
+    const root = document.querySelector(".agentview") as HTMLElement | null;
+    if (!root) return;
+    const slug = root.dataset.slug ?? "";
+
+    const outFor = (key: string) =>
+      root.querySelector<HTMLElement>(`[data-av-out="${key}"]`);
+
+    root.querySelector<HTMLButtonElement>('[data-av="free"]')?.addEventListener("click", () => {
+      const out = outFor("free");
+      if (out) fetchFree(slug, out);
+    });
+    root.querySelector<HTMLButtonElement>('[data-av="paid"]')?.addEventListener("click", () => {
+      const out = outFor("paid");
+      if (out) probePaid(slug, out);
+    });
+
+    if (!bound) bound = true;
+  });
+</script>

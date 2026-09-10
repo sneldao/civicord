@@ -1,0 +1,168 @@
+---
+// Peek sheet — inspect a jurisdiction in place, without losing your scroll.
+//
+// Progressive disclosure: the map used to navigate away on every click. Now a
+// click opens this sheet, which offers the two real exits (open the full
+// record / filter the ledger) only once you've seen enough.
+//
+// It fetches the *same* static JSON that the Bazantic gateway meters, so the
+// site's own UI is an API client — the public API isn't a side door.
+//
+// No-JS note: the sheet is an enhancement. Every jurisdiction stays reachable
+// without it via /browse, the ledger and the sitemap.
+---
+
+<dialog id="peek-sheet" class="peek" aria-labelledby="peek-title">
+  <div class="peek-inner">
+    <header class="peek-head">
+      <div>
+        <p class="peek-kicker">Jurisdiction</p>
+        <h2 class="peek-title" id="peek-title">Reading…</h2>
+        <p class="peek-meta" id="peek-meta"></p>
+      </div>
+      <button type="button" class="peek-close" id="peek-close" aria-label="Close">×</button>
+    </header>
+
+    <div class="peek-body" id="peek-body">
+      <p class="muted">Reading the public record…</p>
+    </div>
+
+    <footer class="peek-foot">
+      <a class="btn-primary btn-sm" id="peek-open" href="#">Open full record ↗</a>
+      <button type="button" class="btn-ghost btn-sm" id="peek-filter" hidden>Filter the ledger</button>
+      <a class="btn-ghost btn-sm" id="peek-api" href="#" rel="noopener">Its public API ↗</a>
+    </footer>
+    <p class="peek-note muted">Reading <code id="peek-path">/api/…</code> — the same static JSON an agent pays for.</p>
+  </div>
+</dialog>
+
+<script>
+  // Signal to the hex map that peeking is available, so it delegates instead of
+  // navigating. Checked at click time, so script order doesn't matter.
+  (window as any).__CIVICORD_PEEK__ = true;
+
+  const esc = (s: unknown) =>
+    String(s ?? "").replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string)
+    );
+
+  // Same visual language as the map: paper dots = how much is gone.
+  const dotsFor = (pct: number) => (pct >= 66 ? 1 : pct >= 40 ? 2 : 3);
+
+  let currentSlug: string | null = null;
+  let bound = false;
+
+  function render(c: any) {
+    const s = c.stats ?? {};
+    const title = document.getElementById("peek-title");
+    const meta = document.getElementById("peek-meta");
+    const body = document.getElementById("peek-body");
+    const open = document.getElementById("peek-open") as HTMLAnchorElement | null;
+    const api = document.getElementById("peek-api") as HTMLAnchorElement | null;
+    const path = document.getElementById("peek-path");
+    if (!title || !meta || !body) return;
+
+    title.textContent = c.name ?? c.slug ?? "Jurisdiction";
+    const bits = [c.gssCode, c.region || c.country, c.electorate ? `${Number(c.electorate).toLocaleString("en-GB")} electorate` : ""].filter(Boolean);
+    if (meta) meta.textContent = bits.join(" · ");
+
+    if (open) open.href = `/constituencies/${c.slug}`;
+    if (api) api.href = `/api/constituencies/${c.slug}.json`;
+    if (path) path.textContent = `/api/constituencies/${c.slug}.json`;
+
+    const noSites = !s.sites;
+    const share = noSites
+      ? "No candidate site was recorded here in the April 2025 scrape — 17 seats are like this."
+      : `<b>${s.live} of ${s.sites}</b> sites still live (${s.livePct}%) · ${s.gone} gone · ${s.redirected} redirected`;
+
+    const cands: any[] = Array.isArray(c.candidates) ? c.candidates : [];
+    const dotCount = noSites ? 0 : dotsFor(s.livePct ?? 0);
+
+    body.innerHTML = `
+      <p class="peek-share">${share}</p>
+      ${noSites ? "" : `<div class="peek-dots" aria-hidden="true">${Array.from({ length: dotCount })
+        .map(() => `<i class="peek-dot"></i>`)
+        .join("")}<span class="peek-dots-label">${dotCount} ${dotCount === 1 ? "dot" : "dots"} = ${dotCount === 1 ? "mostly holding" : dotCount === 2 ? "half gone" : "mostly gone"}</span></div>`}
+      ${
+        cands.length
+          ? `<ul class="peek-cands">${cands
+              .slice(0, 8)
+              .map(
+                (cd) => `<li>
+                  <span class="badge ${esc(cd.statusClass)}">${esc(cd.statusClass)}</span>
+                  <a href="/candidates/${esc(cd.id)}">${esc(cd.name)}</a>
+                  <span class="muted">${esc(cd.party)}</span>
+                  ${cd.onchain ? `<code title="${esc(cd.onchain.ens)}">${esc(cd.onchain.ens)}</code>` : ""}
+                </li>`
+              )
+              .join("")}${cands.length > 8 ? `<li class="muted">+ ${cands.length - 8} more in the full record</li>` : ""}</ul>`
+          : ""
+      }
+    `;
+  }
+
+  async function open(slug: string, name?: string) {
+    const dlg = document.getElementById("peek-sheet") as HTMLDialogElement | null;
+    const title = document.getElementById("peek-title");
+    const body = document.getElementById("peek-body");
+    const filter = document.getElementById("peek-filter") as HTMLButtonElement | null;
+    if (!dlg) return;
+
+    currentSlug = slug;
+    if (title) title.textContent = name || "Reading…";
+    if (body) body.innerHTML = `<p class="muted">Reading the public record…</p>`;
+    if (filter) filter.hidden = !location.pathname.startsWith("/browse");
+
+    const wasOpen = dlg.open;
+    if (!wasOpen) {
+      try {
+        dlg.showModal();
+      } catch {
+        dlg.setAttribute("open", "");
+      }
+    }
+
+    try {
+      const res = await fetch(`/api/constituencies/${encodeURIComponent(slug)}.json`, {
+        headers: { accept: "application/json" },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      render(await res.json());
+    } catch (err) {
+      if (body) {
+        body.innerHTML = `<p class="muted">Couldn't load this record live (<b>${esc(
+          (err as Error).message
+        )}</b>). The full record still works:</p>
+        <p><a class="btn-ghost btn-sm" href="/constituencies/${esc(slug)}">Open ${esc(name || slug)} ↗</a></p>`;
+      }
+    }
+  }
+
+  document.addEventListener("astro:page-load", () => {
+    const dlg = document.getElementById("peek-sheet") as HTMLDialogElement | null;
+    if (!dlg) return;
+
+    document.getElementById("peek-close")?.addEventListener("click", () => dlg.close());
+
+    // Click the backdrop to dismiss (only when the click lands on the dialog itself).
+    dlg.addEventListener("click", (e) => {
+      if (e.target === dlg) dlg.close();
+    });
+
+    document.getElementById("peek-filter")?.addEventListener("click", () => {
+      if (!currentSlug) return;
+      window.dispatchEvent(new CustomEvent("civicord:constituency", { detail: { slug: currentSlug } }));
+      dlg.close();
+      document.querySelector(".table-wrap")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    if (!bound) {
+      bound = true;
+      // The peek entry point. Anything on the page can fire this.
+      window.addEventListener("civicord:peek", (e: Event) => {
+        const detail = (e as CustomEvent).detail || {};
+        if (detail.slug) open(detail.slug, detail.name);
+      });
+    }
+  });
+</script>

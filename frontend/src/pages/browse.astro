@@ -2,6 +2,8 @@
 import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import HalftoneHexMap from "../components/HalftoneHexMap.astro";
+import PeekSheet from "../components/PeekSheet.astro";
+import CommandPalette from "../components/CommandPalette.astro";
 import "../styles/global.css";
 import constituenciesRaw from "../data/constituencies.json";
 
@@ -146,7 +148,7 @@ function slugify(name: string): string {
       <button type="button" id="random-browse" class="btn-ghost btn-sm">Surprise me — random record 🎲</button>
       <button type="button" id="copy-link" class="btn-ghost btn-sm">Copy filtered link</button>
       <span id="copy-toast" class="copy-toast" hidden role="status" aria-live="polite"></span>
-      <span class="toolbar-hint muted">Press <kbd>/</kbd> to search, <kbd>Esc</kbd> to clear · Click a hex to filter by seat</span>
+      <span class="toolbar-hint muted">Press <kbd>/</kbd> to search, <kbd>⌘K</kbd> to jump anywhere, <kbd>Esc</kbd> to clear · Click a hex to peek at the seat</span>
     </div>
 
     <div class="table-wrap">
@@ -635,5 +637,7 @@ function slugify(name: string): string {
         }
       });
     </script>
+    <PeekSheet />
+    <CommandPalette />
   </body>
 </html>
