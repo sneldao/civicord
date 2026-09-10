@@ -4,13 +4,13 @@ Infrastructure and deployment notes for Civicord. This doc is **internal** —
 it's safe to commit (no secrets), but unlike `architecture.md` /
 `onchain-plan.md` it documents *how we run* the project rather than what it is.
 
-Last updated: 2026-09-10 — frontend map layer deployed, subgraph AS compile fixed, subgraph deploy pending Studio creation.
+Last updated: 2026-09-11 — gateway + OG deeds landed, still to deploy; subgraph left to owner.
 
 ## Hosting topology
 
 | Layer | Service | Notes |
 | --- | --- | --- |
-| Frontend (2,381 static pages) | Cloudflare Pages — project `civicord` | Live at https://civicord.pages.dev; **deployed manually** from local `frontend/dist` with `wrangler pages deploy` (see below) |
+| Frontend (3,031 html + 652 api json + 650 deeds, `34M` dist) | Cloudflare Pages — project `civicord` | Live at https://civicord.pages.dev; **deployed manually** from local `frontend/dist` with `wrangler pages deploy` (see below) |
 | Data snapshots | Cloudflare R2 — bucket `civicord-data` (account e738) | Served same-origin at `/data/*` by `frontend/public/_worker.js` (5-min cache) |
 | Legacy/unused | Vercel (`civicord.vercel.app`) | `vercel.json` still present; superseded by Pages — delete when confident |
 | Future | VPS available for pipeline cron + FastAPI search API | Not yet used |
@@ -204,20 +204,23 @@ R2 snapshot at `https://civicord.pages.dev/data/candidates.json` → committed
 `src/data/candidates.json`. R2 snapshot: ~2.5 MB (`candidates.json`), alias at
 `civicord.pages.dev/data/candidates.json`.
 
-## Frontend deploy state (2026-09-10 — map layer built, awaiting manual deploy)
+## Frontend deploy state (2026-09-11 — gateway + deeds built, not yet deployed)
 
-- **Built:** `frontend/dist` 2,381 pages (2,375 candidates + `cohorts/{live,gone,redirected}` + `methodology` + `index` + `browse` + sitemap) — ~6–11 s (Astro 7.3). `cd frontend && npx astro build` (not `npx --prefix frontend wrangler pages deploy dist` — that gives `ENOENT dist` / `UNRESOLVED_ENTRY`).
-- **Pages deploys:** `https://ce51b262.civicord.pages.dev` and `https://61556895.civicord.pages.dev` (both 200), alias `https://civicord.pages.dev`. Smoke-tested: `/` has narrative hero + 3 cohort feature cards (Gone/Redirected/Live → `/cohorts/[status]`) and no ledger wall (0 `row-st-` rows); `/browse/` is the paginated ledger (50/page, `?q`/`?party`/`?status`/`?page`, fuzzy `farrage→Farage`, `data-party` joined on `|` — fixed tonight from space-join bug that made `?party=labour%20party` return 0 rows); `cohorts/gone` → *The graveyard*, `cohorts/redirected` → *Top destinations*, `/candidates/3454` + `/candidates/9` → `compare-line` + `timeline` present; `party` and `q` deep-links verified on live.
+- **Built:** `frontend/dist` — `3031` html (`2375` candidates + `650` constituencies + `6` static), `+ 652` API json (`650` × `/api/constituencies/{slug}.json` + `/api/constituencies.json` + `/api/summary.json`), `+ 650` OG deeds (`/og/constituencies/{slug}.svg`, 1200×630, 2.5 MB via `public/og/`), `+ openapi.yaml` — `34M`, `4342` files, sitemap `3031` html. `cd frontend && npm run build` (chain: `build-data.mjs` → `build-map.mjs` → `build-og.mjs` → `astro build`). Previously `2381` html before map.
+- **API (static, Bazantic-metered):** `GET /api/constituencies/{slug}` is the pay-per-`?constituency=` unit (x402/MPP via Bazantic; humans still browse free at `/browse?constituency=`). `GET /api/summary` free. `GET /og/constituencies/{slug}.svg` free deed. `GET /openapi.yaml` (277 lines) + Recipe at `gateway/recipe.md` — gateway creation is the only remaining Bazantic-dashboard step.
+- **OG:** every `/constituencies/{slug}` now has `og:image → /og/constituencies/{slug}.svg` (`summary_large_image`, 1200×630, `image/svg+xml`) + `twitter:image` — share test: paste a seat URL in Slack/X.
+- **Last live deploys:** `ce51b262` / `61556895` (pre-gateway+og). Next deploy must push the `+652+650+1` new static files. Verify:
+  ```bash
+  curl -s -o /dev/null -w '%{http_code}\n' https://civicord.pages.dev/api/constituencies/st-ives.json
+  curl -s https://civicord.pages.dev/api/summary.json | jq .
+  curl -s -o /dev/null -w '%{http_code}\n' https://civicord.pages.dev/openapi.yaml
+  curl -s -o /dev/null -w '%{http_code}\n' https://civicord.pages.dev/og/constituencies/st-ives.svg
+  curl -s https://civicord.pages.dev/constituencies/st-ives/ | grep -q 'og:image' && echo "og live" || echo "no og"
+  ```
 - **R2 snapshot:** `frontend/src/data/candidates.json` (2,412,060 bytes) uploaded via
   `scripts/upload_snapshot.sh` to `civicord-data/candidates.json` — `https://civicord.pages.dev/data/candidates.json`
   returns 200; `candidates 2375 onchain 2375` in committed JSON (manifest-driven
   — on-chain record *content* is still catching up at `p185` in the in-flight `records-only` pass, see ENS section above).
-- **Map layer (2026-09-10):** `frontend/src/pages/constituencies/[slug].astro` +
-  `frontend/src/components/HalftoneHexMap.astro` + `frontend/scripts/build-map.mjs`
-  generate 650 constituency pages and the halftone hex map at build time from
-  `data/out/*.csv` + `data/boundaries/ak-v5.geojson`. Built and deployed to
-  Cloudflare Pages on 2026-09-10 — `https://civicord.pages.dev` now serves
-  the map and all 650 constituency pages.
 
 - **Gotchas hit & fixed tonight:**
   - `npx --prefix frontend wrangler pages deploy dist` fails (`ENOENT dist` / `[UNRESOLVED_ENTRY]`). Use `cd frontend && npm run build && npx wrangler pages deploy dist` (see **Deploying the frontend** above).
@@ -261,7 +264,7 @@ npx graph deploy --node https://api.studio.thegraph.com/deploy/ \
 ### Current status (2026-09-10)
 
 - `npx graph build` now passes after the AS compile fix.
-- IPFS upload succeeded during the first deploy attempt (manifest QmTp8yuyk6GFZJKB9KckxmSzjSHQM3CBEbTatZC1VnMKpM), but the deploy itself failed with `Subgraph not found` because `civicord` has not yet been created in the Studio account. Create it via the Studio UI and re-run the `graph deploy` command above.
+- IPFS upload succeeds (manifest QmTp8yuyk6GFZJKB9KckxmSzjSHQM3CBEbTatZC1VnMKpM), but the deploy is still failing with `Deploy key not found` against `https://api.studio.thegraph.com/deploy/` even after `npx graph auth <key>`. The supplied key is probably a Studio API/query key rather than the subgraph-specific **Deploy Key**. Get the actual deploy key from the `civicord` subgraph page in Studio and re-run the `graph deploy` command above.
 
 ## Sizes to keep an eye on
 
