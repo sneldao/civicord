@@ -164,8 +164,13 @@ the ledger; no panning of a slippy map — *search + click* wins for 650 seats.
 - **Jurisdiction UX** — `/constituencies/[slug]` (650 static pages, one per
   `posts`) shows halftone thumb + `n/m sites live`, ENS names, `?format=svg`
   embed. Nation pills England/Scotland/Wales/NI + fuzzy autocomplete for Welsh
-  names (`Ynys Môn`). `/candidates/[id]` now shows its constituency + party
-  live-share compare.
+  names (`Ynys Môn`). `/candidates/[id]` shows seat-context (shipped 2026-09-10,
+  `frontend/src/pages/candidates/[id].astro`): hex thumb (colour + dot-size
+  double-encoded via `thumbFills(livePct)`), `n of m live · gone · redirected` +
+  GSS code / region / electorate, deep links to seat + `?constituency=` filtered
+  ledger; multi-seat candidates list `Also stood in:`; 1,607/2,375 have a
+  constituency (768 are local/PCC posts with no 650-seat mapping — expected) —
+  plus party live-share compare line (`partyLiveShare()`).
 - **A11y/print (must):** 4.5:1 text, 3:1 graphic neighbours, never colour-only,
   `<title>` per hex, `aria-pressed` legend, `Tab` traverses hexes,
   `prefers-reduced-motion` disables stagger, print hides sticky bar & forces

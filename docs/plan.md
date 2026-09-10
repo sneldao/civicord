@@ -1,6 +1,6 @@
 # Plan
 
-Delivery phases, the current sprint, and risks. Last updated 2026-09-09 23:35 BST.
+Delivery phases, the current sprint, and risks. Last updated 2026-09-10 19:04 BST.
 (Day-of-week note: 2026-09-08 is a **Tuesday**; earlier drafts of this file
 labelled it Monday — all day labels below use the corrected mapping.)
 
@@ -190,9 +190,9 @@ All built at `astro build` — no Maps API, no backend. State lives in the URL; 
 
 **8h path to demo:** `1` fetch AK v5 + ONS BUC + Names V2 → cache `data/boundaries/` · `2` write `build-map.mjs` (join + counts + TopoJSON) · `3` `index.astro` pointillist hero (static `<svg>`+`<clipPath>`+2,375 circles) · `4` `map.astro` + `constituencies/[slug].astro` halftone hex wired to existing filter state + linked brushing + `format=svg` download.
 
-**Day plan update:**
+**Day plan update (live — 2026-09-10 17:05 shipped):** `3031` pages (`2375` candidates + `650` constituencies + `6` static), AK v5 hex + halftone wired (`build-map.mjs` + `HalftoneHexMap.astro`), `/constituencies/[slug]` + candidate seat-context (1,607/2,375) + `civicord.pages.dev` deploy. Remaining: `~30` manual `posts→PCON24NM` polish, nation pills, OG stipple cards.
 
-| Thu 11 | Halftone hex + constituency pages spike (AK v5 + BUC join) — `build-map.mjs` + `/map` toggle + 10 manual constituency spot-checks |
-| Fri 12 | Pointillist hero + per-constituency OG stipple cards + demo video (2–4 min), FEEDBACK.md |
+| Thu 11 | Subgraph / Hedera go/no-go (The Graph vs x402 fallback) + Bazantic gateway + Recipe |
+| Fri 12 | Demo video (2–4 min) + FEEDBACK.md — lead with map hook: “Check your constituency: 4/6 sites already gone” |
 
 Existing Thu Bazantic slot shifts to co-deliver with the map (gateway + Recipe remain); Fri video leads with the map hook: “Check your constituency: 4/6 sites already gone.”
