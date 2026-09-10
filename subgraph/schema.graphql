@@ -22,7 +22,7 @@ type TextRecord @entity(immutable: false) {
   id: ID! # node + "/" + key
   candidate: Candidate!
   key: String!
-  value: String
+  value: String!
   lastSetAtBlock: BigInt!
   lastSetAt: BigInt! # block timestamp
 }
@@ -46,4 +46,12 @@ type Stat @entity(immutable: false) {
   goneCount: BigInt! # unregistered OR status records showing dead sites
   textRecordCount: BigInt!
   textRecordChangeCount: BigInt!
+}
+
+# Helper lookup from ENSv2 namehash node (bytes32 as hex) to the candidate person ID.
+# Created by LabelRegistered so TextChanged/ResolverUpdated can find the candidate
+# without scanning the whole registry.
+type NodeToCandidate @entity(immutable: false) {
+  id: ID! # node.toHexString()
+  candidate: Candidate!
 }

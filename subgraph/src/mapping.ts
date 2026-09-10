@@ -1,4 +1,9 @@
 import {
+  BigInt,
+  Bytes,
+  Address,
+} from "@graphprotocol/graph-ts";
+import {
   LabelRegistered as LabelRegisteredEvent,
   LabelUnregistered as LabelUnregisteredEvent,
   ResolverUpdated as ResolverUpdatedEvent,
@@ -6,14 +11,11 @@ import {
 import { TextChanged as TextChangedEvent } from "../generated/PermissionedResolver/PermissionedResolver";
 import {
   Candidate,
+  NodeToCandidate,
   TextRecord,
   TextRecordChange,
   Stat,
 } from "../generated/schema";
-import {
-  getNodeForLabel,
-  getPersonIdForNode,
-} from "./nodes";
 
 const STAT_ID = "civicord";
 
@@ -32,147 +34,154 @@ function ensureStat(): Stat {
   return stat as Stat;
 }
 
-function bumpStat(field: "candidateCount" | "goneCount" | "textRecordCount" | "textRecordChangeCount", by: i32 = 1): void {
+function bumpStat(field: string, by: i32 = 1): void {
   const stat = ensureStat();
-  if (field == "candidateCount") stat.candidateCount = stat.candidateCount.plus(BigInt.fromI32(by));
-  else if (field == "goneCount") stat.goneCount = stat.goneCount.plus(BigInt.fromI32(by));
-  else if (field == "textRecordCount") stat.textRecordCount = stat.textRecordCount.plus(BigInt.fromI32(by));
-  else stat.textRecordChangeCount = stat.textRecordChangeCount.plus(BigInt.fromI32(by));
+  if (field == "candidateCount") {
+    stat.candidateCount = stat.candidateCount.plus(BigInt.fromI32(by));
+  } else if (field == "goneCount") {
+    stat.goneCount = stat.goneCount.plus(BigInt.fromI32(by));
+  } else if (field == "textRecordCount") {
+    stat.textRecordCount = stat.textRecordCount.plus(BigInt.fromI32(by));
+  } else {
+    stat.textRecordChangeCount = stat.textRecordChangeCount.plus(BigInt.fromI32(by));
+  }
   stat.save();
+}
+
+function nodeId(tokenId: BigInt): string {
+  return tokenId.toHexString();
+}
+
+function emptyResolver(): Bytes {
+  return changetype<Bytes>(Address.zero());
 }
 
 // ── UserRegistry handlers ─────────────────────────────────────────────────────
 
-// LabelRegistered(uint256 indexed tokenId, bytes32 indexed labelHash,
-//                 string label, address owner, uint64 expiry, address indexed sender)
 export function handleLabelRegistered(event: LabelRegisteredEvent): void {
   const label = event.params.label;
-  const node = getNodeForLabel(label);
-  if (node === null) {
-    // Not one of our candidates (p{personId}.civicord.eth)
-    return;
-  }
-
-  const candidateId = label.slice(1); // "p{personId}" → "{personId}"
-  let candidate = Candidate.load(candidateId);
+  const personId = label.slice(1); // "p{id}" → "{id}"
+  let candidate = Candidate.load(personId);
 
   if (candidate === null) {
-    candidate = new Candidate(candidateId);
+    candidate = new Candidate(personId);
     candidate.label = label;
-    candidate.ensName = label.concat(".civicord.eth");
-    candidate.node = node;
+    candidate.ensName = label + ".civicord.eth";
+    candidate.node = Bytes.fromHexString(event.params.tokenId.toHexString());
+    candidate.tokenId = event.params.tokenId;
+    candidate.owner = changetype<Bytes>(event.params.owner);
+    candidate.resolver = emptyResolver();
+    candidate.registeredAtBlock = event.block.number;
+    candidate.registeredAt = event.block.timestamp;
+    candidate.unregisteredAtBlock = null;
     candidate.textRecordCount = BigInt.fromI32(0);
     bumpStat("candidateCount", 1);
+  } else {
+    candidate.owner = changetype<Bytes>(event.params.owner);
+    candidate.registeredAtBlock = event.block.number;
+    candidate.registeredAt = event.block.timestamp;
+    candidate.unregisteredAtBlock = null;
   }
-
-  candidate.tokenId = event.params.tokenId;
-  candidate.owner = event.params.owner;
-  candidate.registeredAtBlock = event.block.number;
-  candidate.registeredAt = event.block.timestamp;
-  candidate.unregisteredAtBlock = null;
   candidate.save();
+
+  // Map the ENS node (tokenId) to the candidate so TextChanged/ResolverUpdated
+  // can resolve it without scanning the registry.
+  const nId = nodeId(event.params.tokenId);
+  let nodeMap = NodeToCandidate.load(nId);
+  if (nodeMap === null) {
+    nodeMap = new NodeToCandidate(nId);
+    nodeMap.candidate = personId;
+    nodeMap.save();
+  }
 }
 
-// LabelUnregistered(uint256 indexed tokenId, address indexed sender)
 export function handleLabelUnregistered(event: LabelUnregisteredEvent): void {
-  // TokenId is a truncated labelhash — we can't reverse it to personId directly.
-  // Instead: scan for the Candidate whose tokenId matches this one.
-  // (This is O(n) but only fires on unregistration — rare.)
-  for (let i = 0; i < 2375; i++) {
-    // The nodes module exports the array; we use a workaround via the registry's
-    // label field to avoid scanning all candidates.
-    // Practical shortcut: LabelRegistered already set unregisteredAtBlock = null.
-    // We can emit a dummy entity keyed by tokenId to track gone names.
+  const nId = nodeId(event.params.tokenId);
+  const nodeMap = NodeToCandidate.load(nId);
+  if (nodeMap !== null) {
+    const candidate = Candidate.load(nodeMap.candidate);
+    if (candidate !== null) {
+      candidate.unregisteredAtBlock = event.block.number;
+      candidate.save();
+    }
   }
-  // Simpler approach: store a "gone" entity keyed by tokenId string.
-  // The agent query "which sites went dark" can scan these.
   bumpStat("goneCount", 1);
 }
 
-// ResolverUpdated(uint256 indexed tokenId, address resolver, address indexed sender)
 export function handleResolverUpdated(event: ResolverUpdatedEvent): void {
-  // Link registry tokenId → resolver address.  Join is O(n) — fire only on
-  // resolvers we care about (civicord-owned names).  We identify those by
-  // checking if any Candidate.tokenId matches.
-  for (let i = 0; i < 2375; i++) {
-    // Compiled-out at codegen time — see note above.
+  const nId = nodeId(event.params.tokenId);
+  const nodeMap = NodeToCandidate.load(nId);
+  if (nodeMap === null) {
+    return;
   }
+  const candidate = Candidate.load(nodeMap.candidate);
+  if (candidate === null) {
+    return;
+  }
+  candidate.resolver = changetype<Bytes>(event.params.resolver);
+  candidate.save();
 }
 
 // ── PermissionedResolver handlers ─────────────────────────────────────────────
 
-// TextChanged(bytes32 indexed node, string indexed indexedKey,
-//             string key, string value)
 export function handleTextChanged(event: TextChangedEvent): void {
-  const node = event.params.node;
-  const key = event.params.key;
-  const newValue = event.params.value;
-  const oldValue = event.params.oldValue;
-
-  // Only process events for civicord candidate nodes
-  const personId = getPersonIdForNode(node);
-  if (personId === null) {
-    // Per-account resolver serves all deployer-owned names.  We only index
-    // civicord's own set, so non-civicord nodes are ignored.
+  const nId = event.params.node.toHexString();
+  const nodeMap = NodeToCandidate.load(nId);
+  if (nodeMap === null) {
+    // Not one of our candidate names.
     return;
   }
 
-  const candidateId = personId;
-  let candidate = Candidate.load(candidateId);
+  const personId = nodeMap.candidate;
+  let candidate = Candidate.load(personId);
   if (candidate === null) {
-    // Resolver event fired before LabelRegistered was indexed — create a stub.
-    // getPersonIdForNode confirmed this is ours; getNodeForLabel gives the node.
-    candidate = new Candidate(candidateId);
-    const label = "p" + candidateId;
-    candidate.label = label;
-    candidate.ensName = label.concat(".civicord.eth");
-    candidate.node = node;
-    candidate.textRecordCount = BigInt.fromI32(0);
-    candidate.tokenId = BigInt.fromI32(0); // unknown at this point
-    candidate.owner = new Uint8Array(0);
-    candidate.registeredAtBlock = event.block.number;
-    candidate.registeredAt = event.block.timestamp;
-    bumpStat("candidateCount", 1);
+    return;
   }
 
-  // Upsert TextRecord
-  const recordId = node.toHexString().concat("/").concat(key);
+  const key = event.params.key;
+  const value = event.params.value;
+  const recordId = nId + "/" + key;
+
   let record = TextRecord.load(recordId);
-  const isNew = record === null;
-  if (isNew) {
+  let oldValue: string = "";
+  if (record === null) {
     record = new TextRecord(recordId);
-    record.candidate = candidateId;
+    record.candidate = personId;
     record.key = key;
+    record.value = value;
+    record.lastSetAtBlock = event.block.number;
+    record.lastSetAt = event.block.timestamp;
+    record.save();
     candidate.textRecordCount = candidate.textRecordCount.plus(BigInt.fromI32(1));
     bumpStat("textRecordCount", 1);
+  } else {
+    oldValue = record.value;
+    record.value = value;
+    record.lastSetAtBlock = event.block.number;
+    record.lastSetAt = event.block.timestamp;
+    record.save();
   }
 
-  record.value = newValue;
-  record.lastSetAtBlock = event.block.number;
-  record.lastSetAt = event.block.timestamp;
-  record.save();
-
-  // Record the change for the change-log story
-  const changeId = recordId.concat("/").concat(event.block.number.toString());
+  const changeId = recordId + "/" + event.block.number.toString();
   const change = new TextRecordChange(changeId);
-  change.candidate = candidateId;
+  change.candidate = personId;
   change.textRecord = recordId;
   change.key = key;
   change.oldValue = oldValue;
-  change.newValue = newValue;
+  change.newValue = value;
   change.blockNumber = event.block.number;
   change.timestamp = event.block.timestamp;
   change.txHash = event.transaction.hash;
   change.save();
+
   bumpStat("textRecordChangeCount", 1);
 
-  // Sync convenience fields on Candidate
   if (key == "url") {
-    candidate.url = newValue;
+    candidate.url = value;
   } else if (key == "status") {
-    candidate.status = newValue;
+    candidate.status = value;
   } else if (key == "vnd.civicord.person_name") {
-    candidate.personName = newValue;
+    candidate.personName = value;
   }
   candidate.save();
 }

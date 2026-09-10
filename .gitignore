@@ -47,3 +47,8 @@ scripts/publish/.abi-cache/
 # Root npm (graph tooling dev deps — commit package.json, ignore lock)
 node_modules/
 package-lock.json
+
+# Subgraph build output (regenerate with `npx graph build`)
+subgraph/build/
+# Note: subgraph/generated/ is intentionally tracked so `npx graph build`
+# works without codegen in a fresh clone.
