@@ -238,6 +238,25 @@ R2 snapshot at `https://civicord.pages.dev/data/candidates.json` → committed
   - `python -m http.server` single-threaded dies on `ClientRouter` prefetch `BrokenPipeError` (every Chromium view-transition kills the server). Fix: threaded server `socketserver.ThreadingMixIn` + `except (BrokenPipeError, ConnectionResetError): pass` in `/tmp/serve.py` and bind `0.0.0.0` for `agent-browser` (needs LAN IP `192.168.0.74:4321`, not `127.0.0.1`).
   - Bare `python scripts/publish/publish.py` buffers `>> /tmp/records-blast.log` (4K file buffering) — stall at `p1067` looked like a hang but was unflushed output. Fix: `python -u` (wrapper now `python -u publish.py --blast --records-only`).
 
+## Agent surfaces (2026-09-12 — WebMCP + discovery)
+
+The site is agent-first in three layers, all served from `civicord.pages.dev`:
+
+1. **Discovery (no JS):** `/robots.txt` (allows all + sitemap pointer), `/llms.txt` (agent site guide: data model, endpoints, x402 metering, citation format), `/openapi.yaml`, `sitemap-index.xml`.
+2. **Browser-agent tools (WebMCP):** `WebMCP.astro` on **all six page templates** registers six read-only tools on `document.modelContext` — `search_civicord`, `get_constituency`, `get_summary`, `get_candidate`, `filter_ledger`, `get_metered_demand` (probes the gateway's live 402 `PAYMENT-REQUIRED` — never pays). Native WebMCP (Chrome origin trial ≥149) is used when present; otherwise the **self-hosted** polyfill (`/vendor/webmcp-polyfill.iife.js`, `@mcp-b/webmcp-polyfill@5` MIT, 24 KB) is injected on demand. No third-party requests, no npm dependency, no eager load for humans.
+3. **Metered API (x402):** the Bazantic gateway (see Frontend deploy state above) — MCP server at `/mcp`.
+
+WebMCP standard: `webmachinelearning.github.io/webmcp` (W3C WG draft; Chrome+Microsoft, origin trial from Chrome 149). Tools return the same static JSON the gateway meters — nothing mocked. Build cost: `+4` files (`robots.txt`, `llms.txt`, vendor polyfill, `WebMCP` bundle 6 KB), counts otherwise unchanged (`3031+653+650`, `4348` files).
+
+Verify:
+```bash
+curl -s https://civicord.pages.dev/llms.txt | head -5
+curl -s https://civicord.pages.dev/robots.txt | grep -i sitemap
+curl -s https://civicord.pages.dev/vendor/webmcp-polyfill.iife.js | head -c 80
+# In Chrome (chrome://flags/#enable-webmcp-testing) or with the Model Context
+# Tool Inspector extension: open the site → 6 tools should list.
+```
+
 ## Subgraph (The Graph)
 
 Indexing the on-chain ENSv2 `LabelRegistered`/`TextChanged` events on **sepolia**

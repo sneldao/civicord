@@ -42,6 +42,8 @@
 
 **Would you use Bazantic again for pay-per-jurisdiction data?** Yes — humans free, agents pay, one line in the Recipe.
 
+*Addendum (2026-09-12):* we went further agent-native than the gateway alone — the **site itself** now registers six read-only WebMCP tools on `document.modelContext` (W3C draft, Chrome origin trial ≥149; `@mcp-b/webmcp-polyfill@5` self-hosted as fallback), incl. `get_metered_demand` which shows a real gateway 402 demand in-browser. `/robots.txt` + `/llms.txt` carry discovery for JS-less agents. The story for your catalog: every Civicord page is both human UI *and* an agent-ready tool surface.
+
 ---
 
 ## General — ETHGlobal tooling

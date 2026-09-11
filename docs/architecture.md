@@ -98,6 +98,27 @@ alongside `?constituency=` — not a new schema, and not a URL break. The landin
 page (`frontend/src/pages/index.astro`) states the abstraction explicitly via a
 region picker and an *“Add your region”* section.
 
+### Agent interface (2026-09-12)
+
+Agents get the same data through three coaxial surfaces — a judge can enter at
+any layer and find the others:
+
+- **No-JS discovery:** `/robots.txt` + `/llms.txt` (agent site guide) +
+  `/openapi.yaml` + sitemap.
+- **Browser-agent tools:** `frontend/src/components/WebMCP.astro` registers six
+  read-only tools on `document.modelContext` (W3C WebMCP draft, Chrome ≥149
+  native; self-hosted `@mcp-b/webmcp-polyfill@5` vendored at `/vendor/` as
+  fallback, injected only when native support is absent). Tools wrap the same
+  static JSON the site serves — `search_civicord`, `get_constituency`,
+  `get_summary`, `get_candidate`, `filter_ledger`, and `get_metered_demand`,
+  which surfaces the gateway's real x402 `PAYMENT-REQUIRED` demand without ever
+  paying.
+- **Metered MCP/x402:** the Bazantic gateway (`civicord-aieyq.bazgateway.com`,
+  MCP at `/mcp`) — the priced, after-hours version of the same resources.
+
+Design rule: agent affordances are progressive enhancements over the same
+endpoints humans use — there is no separate agent backend, no key, no mock.
+
 ## Pipeline phases
 
 ```
