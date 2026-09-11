@@ -27,6 +27,7 @@ const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
 const GONE_CLASSES = ["dns_error", "connection_error"];
 const gone = audited.filter((w) => GONE_CLASSES.includes(w.audit?.statusClass ?? ""));
 const liveAndRedirected = live.filter((w) => w.audit?.redirected).length;
+const onchain = candidates.filter((c) => c.onchain);
 const sampleOnchain =
   onchain.find((c) => c.id === "5693") ??
   (onchain.length ? onchain[Math.floor(onchain.length / 2)] : null);
