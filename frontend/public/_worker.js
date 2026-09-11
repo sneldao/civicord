@@ -4,6 +4,8 @@
 //   /api/constituencies       -> /api/constituencies.json
 //   /api/constituencies/<slug> -> /api/constituencies/<slug>.json
 //   /api/summary              -> /api/summary.json
+//   /api/candidates/<id>      -> /api/candidates/<id>.json
+// Unknown /api/* ids          -> JSON 404 (not the SPA HTML fallback)
 // All other requests fall through to the static Astro assets.
 export default {
   async fetch(request, env) {
@@ -79,11 +81,37 @@ export default {
       } else {
         const newRequest = new Request(newUrl.toString(), request);
         const res = await env.ASSETS.fetch(newRequest);
+        // Missing .json on disk serves the SPA HTML fallback as 200 — normalize
+        // unknown /api/* ids to a JSON 404 (same contract as known-bad ids).
+        if ((res.headers.get("content-type") || "").includes("text/html") && pathname.startsWith("/api/")) {
+          return new Response(JSON.stringify({ error: "not found", path: pathname }, null, 2), {
+            status: 404,
+            headers: {
+              "content-type": "application/json; charset=utf-8",
+              "cache-control": "public, max-age=60",
+              "access-control-allow-origin": "*",
+            },
+          });
+        }
         if (res.status !== 404) return res;
       }
       // else fall through to original handling below
     }
 
-    return env.ASSETS.fetch(request);
+    const res = await env.ASSETS.fetch(request);
+    // Static hosting builds no per-ID 404 file: unknown /api/* ids fall through
+    // to the SPA HTML fallback. Normalize to JSON so agents get a real 404
+    // (same contract the prerendered endpoints return for known-bad ids).
+    if (pathname.startsWith("/api/") && (res.headers.get("content-type") || "").includes("text/html")) {
+      return new Response(JSON.stringify({ error: "not found", path: pathname }, null, 2), {
+        status: 404,
+        headers: {
+          "content-type": "application/json; charset=utf-8",
+          "cache-control": "public, max-age=60",
+          "access-control-allow-origin": "*",
+        },
+      });
+    }
+    return res;
   },
 };
