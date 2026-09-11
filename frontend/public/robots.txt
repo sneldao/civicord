@@ -1,0 +1,14 @@
+# Civicord — the permanent public record for political websites.
+# Humans read every page free. Agents have first-class surfaces:
+
+User-agent: *
+Allow: /
+
+Sitemap: https://civicord.pages.dev/sitemap-index.xml
+
+# Machine-readable surfaces (all same-origin, no key needed):
+#   /openapi.yaml                 — the static API, incl. the metered x402 unit
+#   /api/summary.json             — free: dataset totals
+#   /api/constituencies.json      — 650 jurisdictions (filterable: ?country=&region=&limit=)
+#   /api/constituencies/{slug}.json — per-seat record incl. candidates + ENS names
+#   /llms.txt                     — agent-oriented site guide

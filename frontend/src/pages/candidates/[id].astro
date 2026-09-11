@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import PeekSheet from "../../components/PeekSheet.astro";
 import CommandPalette from "../../components/CommandPalette.astro";
+import WebMCP from "../../components/WebMCP.astro";
 import { ClientRouter } from "astro:transitions";
 import { partyLiveShare } from "../../lib/cohorts";
 import "../../styles/global.css";
@@ -311,6 +312,7 @@ const compareAvg = compareFound?.[1] ?? null;
 
     <PeekSheet />
     <CommandPalette />
+    <WebMCP />
 
     <script>
       // Copy the ENS name on click (progressive enhancement; view-transition safe).

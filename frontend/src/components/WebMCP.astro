@@ -1,0 +1,232 @@
+---
+// WebMCP — the page itself speaks agent.
+//
+// Registers browser-agent tools on document.modelContext (W3C draft,
+// webmachinelearning.github.io/webmcp; Chrome origin trial from 149) so an
+// agent sitting next to the user can act on this page: search the record,
+// get the current seat or candidate as JSON, or fetch the metered x402
+// demand — the same surfaces the site sells through the gateway.
+//
+// Discipline held:
+//  - Progressive in both directions. Browsers with native WebMCP load nothing
+//    extra; everyone else gets the 24 KB self-hosted polyfill (MIT, vendored at
+//    /vendor/) injected only because it is what makes tools visible today.
+//    If either path fails, nothing happens — zero cost to humans, no UI.
+//  - Nothing here mocks. Tools return the same static JSON the gateway meters.
+//  - Read-only hints on every tool; nothing consequential without the user.
+//  - JS-off / no-JS agents: unaffected — /robots.txt, /llms.txt, /openapi.yaml
+//    and the sitemap carry discovery the old way.
+
+const GATEWAY = "https://civicord-aieyq.bazgateway.com";
+---
+
+<script>
+  // Native WebMCP if the browser has it; otherwise inject the vendored
+  // polyfill (self-hosted, same-origin — no third-party request). Resolves
+  // true when document.modelContext is usable, false if all paths fail.
+  async function ensureContext(): Promise<boolean> {
+    if ("modelContext" in document) return true;
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = "/vendor/webmcp-polyfill.iife.js";
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error("polyfill failed to load"));
+        document.head.appendChild(s);
+      });
+    } catch {
+      return false;
+    }
+    for (let i = 0; i < 40; i++) {
+      if ((document as any).modelContext) return true;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    return false;
+  }
+
+  type Tool = {
+    name: string;
+    title?: string;
+    description: string;
+    inputSchema: Record<string, unknown>;
+    execute: (args: any, options?: { signal?: AbortSignal }) => Promise<unknown>;
+    annotations?: { readOnlyHint?: boolean };
+  };
+
+  function currentSeatSlug(): string {
+    return location.pathname.match(/^\/constituencies\/([^/]+)/)?.[1] ?? "";
+  }
+  function currentCandidateId(): string {
+    return location.pathname.match(/^\/candidates\/([^/]+)/)?.[1] ?? "";
+  }
+
+  async function getJSON(url: string): Promise<unknown> {
+    const res = await fetch(url, { headers: { accept: "application/json" } });
+    if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+    return res.json();
+  }
+
+  function pageTools(): Tool[] {
+    const tools: Tool[] = [
+      {
+        name: "search_civicord",
+        title: "Search the record",
+        description:
+          "Fuzzy-search 2,375 UK parliamentary candidates, 650 constituencies and 87 parties. Returns matching candidates (with /candidates/{id} paths), seats (with /constituencies/{slug} paths) and party filter links.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            query: { type: "string", description: "Free text: a name, seat, or party. e.g. 'farage', 'ynys mon', 'green party'" },
+            limit: { type: "number", description: "Max results per kind (default 5)" },
+          },
+          required: ["query"],
+        },
+        annotations: { readOnlyHint: true },
+        execute: async ({ query, limit }: { query: string; limit?: number }) => {
+          const max = Math.min(Math.max(limit ?? 5, 1), 20);
+          const res = await fetch("/search-index.json", { headers: { accept: "application/json" } });
+          if (!res.ok) throw new Error(`search index unavailable: HTTP ${res.status}`);
+          const d = await res.json();
+          const q = String(query).toLowerCase();
+          const parties: string[] = d.parties ?? [];
+          const seats = (d.seats ?? []) as [string, string, string, number, number, number][];
+          const people = (d.people ?? []) as [string, string, number, string][];
+          const hit = (s: string) => s.toLowerCase().includes(q);
+          return {
+            query,
+            candidates: people.filter(([, name]) => hit(name)).slice(0, max).map(([id, name, pid, seat]) => ({ id, name, party: parties[pid] ?? "", seat, path: `/candidates/${id}` })),
+            constituencies: seats.filter(([, name]) => hit(name)).slice(0, max).map(([slug, name, region, livePct, sites]) => ({ slug, name, region, livePct, sites, path: `/constituencies/${slug}` })),
+            parties: parties.filter((n) => n && hit(n)).slice(0, max).map((n) => ({ name: n, path: `/browse?party=${encodeURIComponent(n.toLowerCase())}` })),
+          };
+        },
+      },
+      {
+        name: "get_constituency",
+        title: "Get constituency record",
+        description:
+          "Return the full record for one UK parliamentary constituency: live/gone/redirected site counts and every candidate with their website URL, audit status and ENS name. Same JSON the site serves at /api/constituencies/{slug}.json.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            slug: { type: "string", description: "Constituency slug, e.g. 'st-ives' or 'ynys-mon'. Omit to use the constituency page you are on." },
+          },
+        },
+        annotations: { readOnlyHint: true },
+        execute: async ({ slug }: { slug?: string }) => {
+          const s = slug || currentSeatSlug();
+          if (!s) throw new Error("No slug given and this page is not a constituency page.");
+          return getJSON(`/api/constituencies/${encodeURIComponent(s)}.json`);
+        },
+      },
+      {
+        name: "get_summary",
+        title: "Get dataset summary",
+        description:
+          "Return dataset totals: candidates tracked, websites audited, live/gone/redirected counts, constituencies, audit date. Free, no key.",
+        inputSchema: { type: "object", properties: {} },
+        annotations: { readOnlyHint: true },
+        execute: async () => getJSON("/api/summary.json"),
+      },
+      {
+        name: "get_candidate",
+        title: "Get candidate page data",
+        description:
+          "Return the key facts from the current candidate record page: name, ENS name, website status and constituency. Works on /candidates/{id} pages.",
+        inputSchema: { type: "object", properties: {} },
+        annotations: { readOnlyHint: true },
+        execute: async () => {
+          const id = currentCandidateId();
+          if (!id) throw new Error("This is not a candidate page.");
+          const name = document.querySelector<HTMLElement>(".record-head h1, h1")?.textContent?.trim() ?? "";
+          const ens = document.querySelector(".ens-copy")?.getAttribute("data-copy") ?? "";
+          const status = document.querySelector(".verdict")?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+          const seatLink = document.querySelector<HTMLAnchorElement>(".seat-line a")?.getAttribute("href") ?? "";
+          return { id, name, ens, status, seat: seatLink, page: location.pathname };
+        },
+      },
+      {
+        name: "filter_ledger",
+        title: "Filter the ledger",
+        description:
+          "Navigate the on-page ledger (/browse) to a filtered view. The URL encodes the view, so the result is shareable and works without JS.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            constituency: { type: "string", description: "Constituency slug to filter by, e.g. 'ynys-mon'" },
+            status: { type: "string", enum: ["live", "gone", "redirected"], description: "Website status filter" },
+            query: { type: "string", description: "Free-text search inside the ledger" },
+          },
+        },
+        annotations: { readOnlyHint: true },
+        execute: async (args: { constituency?: string; status?: string; query?: string }) => {
+          const qs = new URLSearchParams();
+          if (args.constituency) qs.set("constituency", args.constituency);
+          if (args.status) qs.set("status", args.status);
+          if (args.query) qs.set("q", args.query);
+          const target = `/browse${qs.toString() ? `?${qs}` : ""}`;
+          location.href = target; // the URL encodes the view — shareable, JS-optional
+          return { navigatedTo: target };
+        },
+      },
+      {
+        name: "get_metered_demand",
+        title: "Show the x402 price for a seat",
+        description:
+          `Probe the Civicord payment gateway (${GATEWAY}) for one constituency record and return the live x402 PAYMENT-REQUIRED demand: chain, asset, amount in USDC and pay-to address. Demonstrates pay-per-jurisdiction pricing ($0.002/seat). Read-only; it never pays.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            slug: { type: "string", description: "Constituency slug. Omit to use the current constituency page." },
+          },
+        },
+        annotations: { readOnlyHint: true },
+        execute: async ({ slug }: { slug?: string }) => {
+          const s = slug || currentSeatSlug();
+          if (!s) throw new Error("No slug given and this page is not a constituency page.");
+          const res = await fetch(`${GATEWAY}/api/constituencies/${encodeURIComponent(s)}`, {
+            headers: { accept: "application/json" },
+          });
+          const demandRaw = res.headers.get("payment-required");
+          if (res.status !== 402 || !demandRaw) {
+            return { status: res.status, note: "No payment demand on this response — the route may be free.", body: res.headers.get("content-type")?.includes("json") ? await res.json().catch(() => null) : null };
+          }
+          const b64 = demandRaw.replace(/-/g, "+").replace(/_/g, "/");
+          const demand = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b64 + "=".repeat((4 - (b64.length % 4)) % 4)), (c) => c.charCodeAt(0))));
+          const a = demand?.accepts?.[0] ?? {};
+          return {
+            status: 402,
+            x402Version: demand.x402Version,
+            resource: demand.resource?.url,
+            scheme: a.scheme,
+            network: a.network,
+            asset: a.asset,
+            amount: a.amount,
+            amountUsd: a.amount ? `$${(Number(a.amount) / 1e6).toFixed(4)}` : undefined,
+            payTo: a.payTo,
+            wwwAuthenticate: res.headers.get("www-authenticate") ?? undefined,
+          };
+        },
+      },
+    ];
+    return tools;
+  }
+
+  async function register(): Promise<void> {
+    try {
+      if (!(await ensureContext())) return;
+      const ctx = (document as any).modelContext;
+      if (!ctx || typeof ctx.registerTool !== "function") return;
+      for (const tool of pageTools()) {
+        try {
+          await ctx.registerTool(tool);
+        } catch {
+          /* duplicate name on bfcache restore etc. — a missing tool beats a broken page */
+        }
+      }
+    } catch {
+      /* WebMCP is an enhancement; any failure here is silent for humans. */
+    }
+  }
+
+  register();
+</script>

@@ -1,0 +1,58 @@
+# Civicord
+
+> The permanent public record for political websites. Campaign sites are
+> scraped, audited for liveness, and recorded as ENS names
+> (`{person}.civicord.eth`) so the record of what was promised can't be
+> quietly edited or deleted. A public good — free to read, AGPL-3.0.
+
+Genesis dataset: **2,375 UK parliamentary candidate sites (April 2025)** across
+**650 constituencies**, re-audited September 2026 — 64% still live, 36% gone or
+redirected. Built to extend to any democracy; the data model is
+candidate → website → jurisdiction.
+
+## How to use this site (agents)
+
+Every page is static, fast, and readable without JS. The quickest surfaces:
+
+- `/api/summary.json` — totals: candidates, live/gone/redirected, audit date.
+- `/api/constituencies.json` — all 650 jurisdictions. Query params:
+  `?country=Scotland`, `?region=London`, `?limit=2` (filtering in the edge worker).
+- `/api/constituencies/{slug}.json` — one seat: stats + all candidates with
+  website URLs and audit status. Slugs are `st-ives`, `ynys-mon`, `westminster-north`, etc.
+- `/constituencies/{slug}` — the human page for that same JSON (same data, rendered).
+- `/browse?constituency={slug}` / `/browse?status=live|gone|redirected` — the ledger, filterable.
+- `/candidates/{id}` — per-candidate record; Democracy Club person ID is the stable key.
+- `/og/constituencies/{slug}.svg` — shareable deed image per seat (free).
+
+Cite records as `{person_id}.civicord.eth` — resolvable via ENS (Sepolia for
+now), independently verifiable without this site.
+
+## Metered agent access (x402)
+
+The same per-seat JSON is sold through the Bazantic gateway at
+`https://civicord-aieyq.bazgateway.com` — pay-per-jurisdiction over x402 on
+Base (USDC). `GET /api/summary` is free there; `GET /api/constituencies/{slug}`
+answers `402` with a `PAYMENT-REQUIRED` header describing the exact price
+($0.002/seat). The gateway also exposes MCP tools at `/mcp`
+(`getConstituency`, `getSummary`, `listConstituencies`, …):
+
+```
+claude mcp add --transport http civicord https://civicord-aieyq.bazgateway.com/mcp
+```
+
+Full contract: `/openapi.yaml`. This site itself registers browser-agent tools
+via WebMCP (`document.modelContext`) when supported — try an agent with the
+Model Context Tool Inspector extension.
+
+## Changes to records
+
+Website liveness/status changes are recorded on-chain per candidate; the
+change log is queryable via The Graph subgraph
+(`https://api.studio.thegraph.com/query/101650/civicord/v0.0.3` — entities:
+`candidate`, `textRecord`, `textRecordChange`, `stat`).
+
+## Docs
+
+- Methodology and limits: `/methodology`
+- Architecture and the jurisdiction abstraction: `docs/architecture.md` in the repo
+- Source (AGPL-3.0): https://github.com/sneldao/civicord

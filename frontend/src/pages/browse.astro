@@ -4,6 +4,7 @@ import { ClientRouter } from "astro:transitions";
 import HalftoneHexMap from "../components/HalftoneHexMap.astro";
 import PeekSheet from "../components/PeekSheet.astro";
 import CommandPalette from "../components/CommandPalette.astro";
+import WebMCP from "../components/WebMCP.astro";
 import "../styles/global.css";
 import constituenciesRaw from "../data/constituencies.json";
 
@@ -639,5 +640,6 @@ function slugify(name: string): string {
     </script>
     <PeekSheet />
     <CommandPalette />
+    <WebMCP />
   </body>
 </html>
