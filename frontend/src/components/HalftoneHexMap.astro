@@ -86,11 +86,15 @@ const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
       </div>
     </div>
     <div class="hexmap-frame">
+      <p class="visually-hidden" id="hexmap-kbd-hint">
+        Keyboard: Tab moves to the map, arrow keys move between constituencies, Enter opens one. The full data table below (Browse the ledger) is the accessible alternative.
+      </p>
       <svg
         class="hexmap-svg"
         viewBox={viewBox}
         role="img"
         aria-label="United Kingdom jurisdiction hex map, halftone by site survival"
+        aria-describedby="hexmap-kbd-hint"
         preserveAspectRatio="xMidYMid meet"
       >
         <title>United Kingdom — 650 Westminster jurisdictions, halftone by candidate-site survival</title>
@@ -151,7 +155,7 @@ const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
         <b id="hexmap-tip-name"></b> <span id="hexmap-tip-stats"></span>
       </div>
     </div>
-    <p class="muted hexmap-foot">Halftone: more / larger paper dots = more gone. <span class="hexmap-empty-note">{emptyCount} seats had no candidate site in the scrape (so nothing to audit).</span> <a href="/methodology">Methodology ↗</a> · Built from Automatic Knowledge v5 (OGL) + ONS boundaries. <a href="/browse">Browse ledger ↗</a></p>
+    <p class="muted hexmap-foot">Halftone: more / larger paper dots = more gone. <span class="hexmap-empty-note">{emptyCount} seats had no candidate site in the scrape (so nothing to audit).</span> Arrow keys move between hexes; <a href="/browse">the ledger is the data-table alternative</a>. <a href="/methodology">Methodology ↗</a> · Built from Automatic Knowledge v5 (OGL) + ONS boundaries. <a href="/browse">Browse ledger ↗</a></p>
     <p class="muted hexmap-region-note">Shown: <b>United Kingdom</b> · genesis dataset. The same halftone encoding reads a jurisdiction with a colour and a dot density — no basemap, no tile server, nothing region-specific in the drawing.</p>
   </section>
 ) : (
@@ -168,6 +172,47 @@ const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
     const tipStats = document.getElementById("hexmap-tip-stats");
     const hexes = [...document.querySelectorAll<HTMLElement>("[data-slug].hex")];
     if (!hexes.length || !tip || !tipName || !tipStats) return;
+
+    // Roving tabindex: one hex in the tab order; ↑↓←→/Home/End move focus
+    // between neighbouring hexes in DOM (map) order. Without this, Tab would
+    // march through 650 stops before reaching the ledger below.
+    let rovedIndex = 0;
+    const setRoved = (i: number) => {
+      hexes.forEach((h, j) => h.setAttribute("tabindex", j === i ? "0" : "-1"));
+      rovedIndex = i;
+    };
+    setRoved(0);
+
+    const moveFocus = (from: number, dcol: number, drow: number, jump = false) => {
+      // Nearest-hex search in SVG space: compare centres of every other hex to
+      // the one we're leaving, pick the closest in the requested direction.
+      const cur = hexes[from].querySelector(".hex-poly") as SVGPolygonElement | null;
+      if (!cur) return;
+      const bbox = cur.getBBox();
+      const cx = bbox.x + bbox.width / 2;
+      const cy = bbox.y + bbox.height / 2;
+      let best = -1;
+      let bestScore = Infinity;
+      for (let j = 0; j < hexes.length; j++) {
+        if (j === from) continue;
+        const b = (hexes[j].querySelector(".hex-poly") as SVGPolygonElement | null)?.getBBox();
+        if (!b) continue;
+        const dx = b.x + b.width / 2 - cx;
+        const dy = b.y + b.height / 2 - cy;
+        const forward = dcol !== 0 ? Math.sign(dx) === dcol && Math.abs(dx) > Math.abs(dy) * 0.5 : Math.sign(dy) === drow && Math.abs(dy) > Math.abs(dx) * 0.5;
+        if (!forward) continue;
+        const dist = dx * dx + dy * dy;
+        if (dist < bestScore) {
+          bestScore = dist;
+          best = j;
+        }
+      }
+      if (best >= 0) {
+        setRoved(best);
+        hexes[best].focus();
+        show(hexes[best]);
+      }
+    };
 
     const show = (el: HTMLElement) => {
       const name = el.dataset.name || "";
@@ -218,9 +263,19 @@ const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
         }
       });
       el.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          (el as HTMLElement).click();
+        const i = hexes.indexOf(el);
+        switch (e.key) {
+          case "Enter":
+          case " ":
+            e.preventDefault();
+            el.click();
+            break;
+          case "ArrowRight": e.preventDefault(); moveFocus(i, 1, 0); break;
+          case "ArrowLeft": e.preventDefault(); moveFocus(i, -1, 0); break;
+          case "ArrowDown": e.preventDefault(); moveFocus(i, 0, 1); break;
+          case "ArrowUp": e.preventDefault(); moveFocus(i, 0, -1); break;
+          case "Home": e.preventDefault(); setRoved(0); hexes[0].focus(); show(hexes[0]); break;
+          case "End": e.preventDefault(); setRoved(hexes.length - 1); hexes[hexes.length - 1].focus(); show(hexes[hexes.length - 1]); break;
         }
       });
     }

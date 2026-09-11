@@ -114,6 +114,10 @@ const findPartyShare = (name: string): [string, number] | null => {
 const compareFound = parties.map(findPartyShare).find((x) => x !== null) ?? null;
 const compareParty = compareFound?.[0] ?? null;
 const compareAvg = compareFound?.[1] ?? null;
+// Pre-computed for the compare line: keeps the template free of ternaries the
+// Astro parser mis-reads as fragment shorthand (astro(1002)).
+const personShareText =
+  personShare === null ? "" : personShare >= 1 ? "live" : personShare <= 0 ? "gone" : `${Math.round(personShare * 100)}% live`;
 ---
 
 <html lang="en-GB">
@@ -133,6 +137,7 @@ const compareAvg = compareFound?.[1] ?? null;
     <ClientRouter />
   </head>
   <body class="reveal-root">
+    <a class="skip-link" href="#main">Skip to content</a>
     <p class="crumb">
       <a href="/">Civicord</a> · <a href="/browse">Browse</a> / {party}{primarySeatInfo?.constituency ? <> / <a href={`/constituencies/${primarySeatInfo.constituency.slug}`}>{seat}</a></> : seat ? <> / {seat}</> : null} / <b>{person.name}</b>
     </p>
@@ -142,6 +147,7 @@ const compareAvg = compareFound?.[1] ?? null;
       scraped April 2025, audited September 2026.
     </p>
 
+    <main id="main" tabindex="-1">
     <header class="record-head">
       <h1>{person.name}</h1>
       <ul class="chips">
@@ -154,10 +160,10 @@ const compareAvg = compareFound?.[1] ?? null;
       <b>{verdictCopy[verdict][0]}</b> — {verdictCopy[verdict][1]}
     </p>
 
-    {compareAvg !== null && personShare !== null && (
+    {compareAvg !== null && personShare !== null && compareParty && (
       <p class="compare-line">
-        {compareParty}: <b>{Math.round(compareAvg * 100)}% of sites live</b> across the party ·{" "}
-        this candidate: <b>{personShare >= 1 ? "live" : personShare <= 0 ? "gone" : `${Math.round(personShare * 100)}% live`}</b>.{" "}
+        {compareParty}: <b>{Math.round(compareAvg * 100)}% of sites live</b> across the party ·
+        this candidate: <b>{personShareText}</b>.
         <a href={`/browse?party=${encodeURIComponent(compareParty.toLowerCase())}`}>See the cohort ↗</a>
       </p>
     )}
@@ -301,6 +307,7 @@ const compareAvg = compareFound?.[1] ?? null;
       <a href="/browse">Browse ledger</a>
       {nextId ? <a href={`/candidates/${nextId}`}>Next candidate →</a> : <span />}
     </nav>
+    </main>
 
     <footer>
       <p>

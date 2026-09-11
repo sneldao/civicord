@@ -51,10 +51,12 @@ const blurb: Record<StatusCohort["slug"], string> = {
     <ClientRouter />
   </head>
   <body class="reveal-root">
+    <a class="skip-link" href="#main">Skip to content</a>
     <p class="crumb">
       <a href="/">Public record index</a> / <b>{cohort.title}</b>
     </p>
 
+    <main id="main" tabindex="-1">
     <header class="masthead">
       <h1 class="wordmark">{cohort.title}<span class="dot">.</span></h1>
       <p class="lede">{cohort.lede}</p>
@@ -95,6 +97,7 @@ const blurb: Record<StatusCohort["slug"], string> = {
     <p class="cohort-cta muted">
       <a href="/methodology">How the audit works ↗</a>
     </p>
+    </main>
 
     <p class="toolbar-hint muted" style="text-align:center">
       Press <kbd>⌘K</kbd> to jump to any candidate, seat, or party.

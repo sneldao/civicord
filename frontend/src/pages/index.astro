@@ -59,6 +59,7 @@ const randomIds = candidates.map((c) => c.id);
     <ClientRouter />
   </head>
   <body class="reveal-root">
+    <a class="skip-link" href="#main">Skip to content</a>
     <div class="progress" aria-hidden="true"><b id="progress-bar"></b></div>
 
     <header class="masthead">
@@ -120,6 +121,7 @@ const randomIds = candidates.map((c) => c.id);
       </ul>
     </header>
 
+    <main id="main" tabindex="-1">
     <p class="dataset-badge">
       <span class="db-live">Live</span>
       <b>United Kingdom</b> — genesis dataset, the first of many
@@ -332,6 +334,7 @@ const randomIds = candidates.map((c) => c.id);
         Press <kbd>/</kbd> to focus search, <kbd>Esc</kbd> to clear, <kbd>⌘K</kbd> to jump anywhere, or let us surprise you.
       </p>
     </section>
+    </main>
 
     <footer>
       <p>

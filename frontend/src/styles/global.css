@@ -48,6 +48,23 @@ a:hover { text-decoration-color: var(--accent); color: var(--accent); }
   white-space: nowrap; border: 0;
 }
 
+/* Skip link — first tab stop on every page, appears on focus only */
+.skip-link {
+  position: fixed;
+  left: 0.75rem;
+  top: -3.5rem;
+  z-index: 100;
+  padding: 0.5rem 0.9rem;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-decoration: none;
+  border-radius: 0 0 6px 6px;
+  transition: top 0.15s ease;
+}
+.skip-link:focus { top: 0; color: #fff; outline: 2px solid var(--accent); outline-offset: -2px; }
+
 /* Masthead */
 .masthead { border-top: 3px solid var(--ink); padding-top: 1.2rem; }
 .wordmark {
@@ -330,6 +347,11 @@ tbody td {
   font-variant-numeric: tabular-nums;
   vertical-align: baseline;
 }
+
+/* CSS-only virtualization for the 2,689-row ledger: the browser skips layout
+   and paint for offscreen rows (no JS, no-JS users and crawlers still get the
+   full table in the DOM). contain-intrinsic-size keeps the scrollbar honest. */
+.table-wrap tbody tr { content-visibility: auto; contain-intrinsic-size: auto 2.6rem; }
 tbody tr:hover td { background: rgba(199, 58, 29, 0.045); }
 tbody tr[hidden] { display: none; }
 

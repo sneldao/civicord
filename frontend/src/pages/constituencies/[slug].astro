@@ -63,9 +63,11 @@ const ogDesc = c.stats.sites ? `${c.name}: ${shareLine}. Permanent record on civ
     <ClientRouter />
   </head>
   <body class="reveal-root">
+    <a class="skip-link" href="#main">Skip to content</a>
     <p class="crumb"><a href="/">Civicord</a> · <a href="/browse">Browse</a> / <b>{c.name}</b></p>
     <p class="context-line">{c.name} · {c.gssCode} · {c.region}{c.country ? ` · ${c.country}` : ""} · {c.electorate ? `${c.electorate.toLocaleString("en-GB")} electorate` : ""}</p>
 
+    <main id="main" tabindex="-1">
     <header class="record-head">
       <h1>{c.name}</h1>
       <ul class="chips">
@@ -144,6 +146,7 @@ const ogDesc = c.stats.sites ? `${c.name}: ${shareLine}. Permanent record on civ
     </div>
 
     <p class="muted browse-hint">Share: copy the URL — it encodes your view · Press <kbd>⌘K</kbd> to jump anywhere. This seat's hex is equal-weight (Automatic Knowledge v5, OGL) · <a href="/methodology">How we checked →</a></p>
+    </main>
 
     <AgentView slug={c.slug} name={c.name} />
     <WebMCP />

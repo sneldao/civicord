@@ -96,6 +96,7 @@ function slugify(name: string): string {
     <ClientRouter />
   </head>
   <body class="reveal-root">
+    <a class="skip-link" href="#main">Skip to content</a>
     <div class="progress" aria-hidden="true"><b id="progress-bar"></b></div>
 
     <p class="crumb"><a href="/">Civicord</a> / <b>Browse</b></p>
@@ -109,6 +110,7 @@ function slugify(name: string): string {
       </p>
     </header>
 
+    <main id="main" tabindex="-1">
     <HalftoneHexMap />
 
     <div id="constituency-banner" class="constituency-banner" hidden>
@@ -208,6 +210,7 @@ function slugify(name: string): string {
     </div>
 
     <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
+    </main>
 
     <footer>
       <p>
