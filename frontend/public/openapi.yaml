@@ -114,6 +114,31 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: constituency not found, slug: bad-slug }
+  /api/candidates/{id}:
+    get:
+      operationId: getCandidate
+      summary: Candidate record by id
+      description: |
+        Full per-candidate record — same data as /candidates/{id} on the site, served
+        from static JSON so it is deterministic and readable by agents without scraping
+        the DOM. p{id}.civicord.eth is the permanent ENS name.
+      tags: [candidates]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Democracy Club person ID (stable key, e.g. 3454)
+          schema: { type: string, pattern: '^[0-9]+$' }
+          example: '3454'
+      responses:
+        '200':
+          description: Candidate record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Candidate'
+        '404':
+          description: Candidate not found
 
   /api/summary:
     get:
@@ -210,6 +235,60 @@ components:
             candidates:
               type: array
               items: { $ref: '#/components/schemas/CandidateInSeat' }
+
+    Candidate:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string, example: '3454' }
+        name: { type: string, example: A. Gent Chinners }
+        parties: { type: array, items: { type: string }, example: [The Official Monster Raving Loony Party] }
+        elections: { type: array, items: { type: string } }
+        verdict: { type: string, enum: [live, mixed, gone, unknown], description: overall status across the recorded websites }
+        verdictCopy: { type: array, items: { type: string }, example: ['Gone ✕', 'campaign sites no longer resolve'] }
+        seat:
+          type: object
+          nullable: true
+          properties:
+            name: { type: string }
+            constituency:
+              type: object
+              nullable: true
+              properties:
+                slug: { type: string }
+                name: { type: string }
+            electorate: { type: integer, nullable: true }
+        ens: { type: string, example: p3454.civicord.eth }
+        onchain:
+          type: object
+          properties:
+            ens: { type: string }
+            status: { type: string, nullable: true }
+        websites:
+          type: array
+          items:
+            type: object
+            properties:
+              url: { type: string, format: uri }
+              status: { type: string }
+              statusCode: { type: string, nullable: true }
+              nameFound: { type: boolean, nullable: true }
+              redirected: { type: boolean }
+              finalUrl: { type: string }
+              elections: { type: array, items: { type: string } }
+              parties: { type: array, items: { type: string } }
+              posts: { type: array, items: { type: string } }
+        pages:
+          type: array
+          items:
+            type: object
+            properties:
+              key: { type: string }
+              chars: { type: integer }
+              snippet: { type: string }
+        recordUrl: { type: string, example: /candidates/3454 }
+        ogImage: { type: string, nullable: true, example: https://civicord.pages.dev/og/candidates/3454.svg }
+        source: { type: string }
 
     CandidateInSeat:
       type: object

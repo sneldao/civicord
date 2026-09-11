@@ -22,6 +22,7 @@ Every page is static, fast, and readable without JS. The quickest surfaces:
 - `/constituencies/{slug}` — the human page for that same JSON (same data, rendered).
 - `/browse?constituency={slug}` / `/browse?status=live|gone|redirected` — the ledger, filterable.
 - `/candidates/{id}` — per-candidate record; Democracy Club person ID is the stable key.
+- `/api/candidates/{id}.json` — same record as JSON (verdict, websites with audit status, ENS name, seat context) — deterministic for agents, no DOM scraping.
 - `/og/constituencies/{slug}.svg` — shareable deed image per seat (free).
 
 Cite records as `{person_id}.civicord.eth` — resolvable via ENS (Sepolia for

@@ -110,7 +110,7 @@ any layer and find the others:
   native; self-hosted `@mcp-b/webmcp-polyfill@5` vendored at `/vendor/` as
   fallback, injected only when native support is absent). Tools wrap the same
   static JSON the site serves — `search_civicord`, `get_constituency`,
-  `get_summary`, `get_candidate`, `filter_ledger`, and `get_metered_demand`,
+  `get_summary`, `get_candidate` (reads `/api/candidates/{id}.json`, optional id or current page), `filter_ledger`, and `get_metered_demand`,
   which surfaces the gateway's real x402 `PAYMENT-REQUIRED` demand without ever
   paying.
 - **Metered MCP/x402:** the Bazantic gateway (`civicord-aieyq.bazgateway.com`,
@@ -154,10 +154,10 @@ endpoints humans use — there is no separate agent backend, no key, no mock.
   (1-liveShare)*3.5px`, colour + size double-encoding for accessibility/print.
   Inset = ONS BUC TopoJSON. See cartography §3 for the full static stack and
   size budget (`34M` dist, `4342` files incl. 650 OG).
-- **gateway** (static, 2026-09-11 — **LIVE**) — `openapi.yaml` (`frontend/public/openapi.yaml`,
-  277 lines) + Recipe (`gateway/recipe.md`) + static API routes
+- **gateway** (static, 2026-09-11 — **LIVE**) — `openapi.yaml` (`frontend/public/openapi.yaml`) + Recipe (`gateway/recipe.md`) + static API routes
   `GET /api/constituencies`, `GET /api/constituencies/{slug}` (650 prerendered
   JSON, the x402/MPP pay-per-`?constituency=` unit `100`/`200` mcents),
+  `GET /api/candidates/{id}` (2,375 prerendered JSON — same record as `/candidates/{id}`, the deterministic source for WebMCP `get_candidate`),
   `GET /api/summary` (free), `GET /og/constituencies/{slug}.svg` (free,
   1200×630 deed). No backend — Cloudflare Pages serves prerendered JSON/SVG
   (extensionless `GET /api/*` aliased via `frontend/public/_worker.js`,

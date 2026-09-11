@@ -11,4 +11,5 @@ Sitemap: https://civicord.pages.dev/sitemap-index.xml
 #   /api/summary.json             — free: dataset totals
 #   /api/constituencies.json      — 650 jurisdictions (filterable: ?country=&region=&limit=)
 #   /api/constituencies/{slug}.json — per-seat record incl. candidates + ENS names
+#   /api/candidates/{id}.json      — per-candidate record (verdict, websites, ENS, seat context)
 #   /llms.txt                     — agent-oriented site guide

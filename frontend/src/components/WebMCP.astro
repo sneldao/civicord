@@ -131,17 +131,15 @@ const GATEWAY = "https://civicord-aieyq.bazgateway.com";
         name: "get_candidate",
         title: "Get candidate page data",
         description:
-          "Return the key facts from the current candidate record page: name, ENS name, website status and constituency. Works on /candidates/{id} pages.",
-        inputSchema: { type: "object", properties: {} },
+          "Return the full record for one UK parliamentary candidate (same shape as the HTML page): name, parties, website statuses with audit outcome, ENS name, seat context, on-chain status. Works from /api/candidates/{id}.json — the static API endpoint — so it is deterministic and needs no DOM scraping.",
+        inputSchema: {
+          type: "object",
+          properties: { id: { type: "string", description: 'Democracy Club person ID, e.g. "3454". Omit to use the current candidate page.' } } },
         annotations: { readOnlyHint: true },
-        execute: async () => {
-          const id = currentCandidateId();
-          if (!id) throw new Error("This is not a candidate page.");
-          const name = document.querySelector<HTMLElement>(".record-head h1, h1")?.textContent?.trim() ?? "";
-          const ens = document.querySelector(".ens-copy")?.getAttribute("data-copy") ?? "";
-          const status = document.querySelector(".verdict")?.textContent?.replace(/\s+/g, " ").trim() ?? "";
-          const seatLink = document.querySelector<HTMLAnchorElement>(".seat-line a")?.getAttribute("href") ?? "";
-          return { id, name, ens, status, seat: seatLink, page: location.pathname };
+        execute: async ({ id: tpId }: { id?: string }) => {
+          const cid = tpId || currentCandidateId();
+          if (!cid) throw new Error("No candidate id given and this page is not a candidate page.");
+          return getJSON(`/api/candidates/${encodeURIComponent(cid)}.json`);
         },
       },
       {

@@ -37,6 +37,8 @@ export default {
       }
     } else if (pathname === "/api/summary" || pathname === "/api/summary/") {
       rewritten = "/api/summary.json";
+    } else if (pathname.startsWith("/api/candidates/") && !pathname.endsWith(".json") && pathname.split("/").length === 4) {
+      rewritten = pathname + ".json";
     }
 
     if (rewritten) {
