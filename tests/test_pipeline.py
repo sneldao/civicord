@@ -10,6 +10,7 @@ from civicord.campaignlab import (
     normalize_url,
     parse_candidate_json,
     parse_candidates_csv,
+    wayback_cdx_url,
     websites_from_candidacies,
 )
 
@@ -110,6 +111,14 @@ def test_parse_candidate_json(tmp_path):
     assert pages[0].person_id == "116117"
     assert pages[0].char_count == len("My plan for Stockton West...")
     assert pages[1].char_count == 0
+
+
+def test_wayback_cdx_url_shapes_query():
+    url = wayback_cdx_url("https://www.joedancey.co.uk/", from_ts="20250401", to_ts="20250501")
+    assert url.startswith("https://web.archive.org/cdx/search/cdx?")
+    assert "url=https%3A%2F%2Fwww.joedancey.co.uk%2F" in url
+    assert "from=20250401" in url and "to=20250501" in url
+    assert "filter=statuscode%3A200" in url or "filter=statuscode:200" in url
 
 
 def _client(handler):

@@ -33,6 +33,17 @@ def cmd_download(args: argparse.Namespace) -> None:
             if not dest.exists():
                 campaignlab.download_file(p, dest)
         logger.info("JSONs saved under %s", raw / "assets" / "json")
+    if args.large_json:
+        # Phase-0 gap (docs/plan.md): ~1,300 candidates' full page text lives in
+        # assets/large_json, not assets/json. Downloaded here so `ingest` picks
+        # both directories up.
+        paths = campaignlab.list_json_files(large=True)
+        logger.info("Downloading %d large_json candidate JSONs...", len(paths))
+        for p in paths:
+            dest = raw / p
+            if not dest.exists():
+                campaignlab.download_file(p, dest)
+        logger.info("large_json saved under %s", raw / campaignlab.LARGE_JSON_DIR)
 
 
 def cmd_ingest(args: argparse.Namespace) -> None:
@@ -87,15 +98,24 @@ def cmd_ingest(args: argparse.Namespace) -> None:
                 ]
             )
 
-    json_dir = raw / "assets" / "json"
+    json_dirs = [raw / "assets" / "json", raw / campaignlab.LARGE_JSON_DIR]
     page_count = 0
+    seen_page_keys: set[tuple[str, str]] = set()
     with open(out / "pages.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["person_id", "page_key", "char_count", "text"])
-        if json_dir.exists():
+        for json_dir in json_dirs:
+            if not json_dir.exists():
+                continue
             for jf in sorted(json_dir.glob("*.json")):
                 person_id = jf.name.split("_")[0]
                 for page in campaignlab.parse_candidate_json(jf, person_id=person_id):
+                    # large_json supersedes the stubbed assets/json entry for the
+                    # same person+page — dedupe on (person_id, page_key), last wins.
+                    key = (page.person_id, page.page_key)
+                    if key in seen_page_keys:
+                        continue
+                    seen_page_keys.add(key)
                     w.writerow([page.person_id, page.page_key, page.char_count, page.text])
                     page_count += 1
 
@@ -221,6 +241,11 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("download", help="Download Campaign Lab scrape data")
     p.add_argument(
         "--json-limit", type=int, default=0, help="Also download first N candidate JSONs (0 = none)"
+    )
+    p.add_argument(
+        "--large-json",
+        action="store_true",
+        help="Also download assets/large_json (full page text for ~1,300 candidates)",
     )
     p.add_argument("--full", action="store_true", help="Also download the ~30MB candidatesfull CSV")
     p.set_defaults(func=cmd_download)

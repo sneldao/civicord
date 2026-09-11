@@ -24,6 +24,7 @@ BRANCH = "main"
 RAW_BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 CANDIDATES_CSV = "assets/data/candidates.csv"
 CANDIDATES_FULL_CSV = "assets/data/candidatesfull_25-12-12.csv"
+LARGE_JSON_DIR = "assets/large_json"
 
 USER_AGENT = "civicord/0.1 (+https://github.com/sneldao/civicord)"
 
@@ -134,8 +135,14 @@ def parse_candidate_json(path: Path, person_id: str | None = None) -> list[PageT
     return pages
 
 
-def list_json_files(limit: int | None = None) -> list[str]:
-    """List assets/json/*.json paths via the GitHub git-trees API."""
+def list_json_files(limit: int | None = None, large: bool = False) -> list[str]:
+    """List per-candidate JSON paths via the GitHub git-trees API.
+
+    large=True selects assets/large_json/ (the ~1,300 candidates' full page
+    text that assets/json/ only stubs), closing the ingest coverage gap in
+    docs/plan.md. Both directories use the same {person_id}_{Name}.json scheme.
+    """
+    prefix = f"{LARGE_JSON_DIR}/" if large else "assets/json/"
     url = f"https://api.github.com/repos/{REPO}/git/trees/{BRANCH}?recursive=1"
     resp = httpx.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
     resp.raise_for_status()
@@ -144,11 +151,29 @@ def list_json_files(limit: int | None = None) -> list[str]:
         entry["path"]
         for entry in tree
         if entry.get("type") == "blob"
-        and entry["path"].startswith("assets/json/")
+        and entry["path"].startswith(prefix)
         and entry["path"].endswith(".json")
     ]
     paths.sort()
     return paths[:limit] if limit else paths
+
+
+def wayback_cdx_url(url: str, from_ts: str = "20250401", to_ts: str = "20250501") -> str:
+    """Build a Wayback CDX query URL for one page (Phase 1 backfill stub).
+
+    Phase 1 (docs/plan.md): for the ~863 non-live sites, query the CDX API for
+    snapshots around the April 2025 scrape, then fetch with the `id_` suffix to
+    strip the Wayback toolbar and sha256 the body. This helper only builds the
+    query — fetching/hashing lands with the Phase 1 wayback module.
+    """
+    from urllib.parse import quote
+
+    return (
+        "https://web.archive.org/cdx/search/cdx"
+        f"?url={quote(url, safe='')}&from={from_ts}&to={to_ts}"
+        "&output=json&fl=timestamp,original,statuscode,digest&filter=statuscode:200"
+        "&collapse=timestamp:6"
+    )
 
 
 def download_file(repo_path: str, dest: Path) -> Path:
