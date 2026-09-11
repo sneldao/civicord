@@ -14,6 +14,8 @@ candidate → website → jurisdiction.
 
 Every page is static, fast, and readable without JS. The quickest surfaces:
 
+- `/` — mission front door (any democracy) + region picker.
+- `/uk` — United Kingdom genesis dataset: stats, cohorts, hex map, party board.
 - `/api/summary.json` — totals: candidates, live/gone/redirected, audit date.
 - `/api/constituencies.json` — all 650 jurisdictions. Query params:
   `?country=Scotland`, `?region=London`, `?limit=2` (filtering in the edge worker).

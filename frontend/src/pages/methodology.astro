@@ -21,12 +21,12 @@ const onchain = candidates.filter((c) => c.onchain);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="How Civicord is built: Campaign Lab's 2025 scrape of 2,375 UK candidate websites, an independent liveness audit, and permanent ENS-anchored public records."
+      content="How Civicord is built: Campaign Lab's 2025 scrape of 2,375 UK candidate websites, an independent liveness audit, and tamper-evident ENS-anchored public records (Sepolia today; mainnet next)."
     />
     <meta property="og:title" content="Methodology — Civicord" />
     <meta
       property="og:description"
-      content="Where Civicord's data comes from, how the liveness audit works, and what the on-chain public record means."
+      content="Where Civicord's data comes from, how the liveness audit works, and what the on-chain public record means today."
     />
     <meta property="og:type" content="article" />
     <meta name="twitter:card" content="summary" />
@@ -36,7 +36,7 @@ const onchain = candidates.filter((c) => c.onchain);
   </head>
   <body class="reveal-root method">
     <a class="skip-link" href="#main">Skip to content</a>
-    <p class="crumb"><a href="/">← Public record index</a></p>
+    <p class="crumb"><a href="/">← Civicord</a> · <a href="/uk">United Kingdom</a></p>
 
     <main id="main" tabindex="-1">
     <header class="masthead">
@@ -73,18 +73,19 @@ const onchain = candidates.filter((c) => c.onchain);
         </tbody>
       </table>
 
-      <h2>3. The permanent record: ENS names</h2>
+      <h2>3. The public record: ENS names</h2>
       <p>
         <b>{onchain.length.toLocaleString("en-GB")} of {candidates.length.toLocaleString("en-GB")} candidates</b> have
-        a permanent public name of the form <code>p1234.civicord.eth</code> on the
-        Ethereum Name Service (Sepolia testnet). Each name carries three public text
+        a public name of the form <code>p5693.civicord.eth</code> on the
+        Ethereum Name Service (Sepolia testnet today). Each name carries three public text
         records — the campaign website URL, the audit status, and the candidate's
         name — readable by anyone, without an account, a wallet, or our permission.
       </p>
       <p>
-        Once written, records can't be quietly edited or deleted: any change is a
+        On the resolver, records can't be quietly edited or deleted: any change is a
         new on-chain transaction with a public history. That is the whole point —
         a candidate (or anyone else) cannot rewrite what their site once said.
+        Today that history lives on Sepolia; the mainnet path is in <a href="#permanence">§4</a>.
       </p>
       <p>
         To verify a record yourself: open any candidate page, follow “Verify on the
@@ -94,7 +95,7 @@ const onchain = candidates.filter((c) => c.onchain);
         exactly.
       </p>
 
-      <h2>4. Permanence, honestly: testnet today, mainnet next</h2>
+      <h2 id="permanence">4. Permanence, honestly: testnet today, mainnet next</h2>
       <p>
         Records currently live on the <b>Sepolia testnet</b> — free and public, but a
         test network. The path to a permanent home is deliberately boring and

@@ -64,7 +64,7 @@ const ogDesc = c.stats.sites ? `${c.name}: ${shareLine}. Permanent record on civ
   </head>
   <body class="reveal-root">
     <a class="skip-link" href="#main">Skip to content</a>
-    <p class="crumb"><a href="/">Civicord</a> · <a href="/browse">Browse</a> / <b>{c.name}</b></p>
+    <p class="crumb"><a href="/">Civicord</a> · <a href="/uk">UK</a> · <a href="/browse">Browse</a> / <b>{c.name}</b></p>
     <p class="context-line">{c.name} · {c.gssCode} · {c.region}{c.country ? ` · ${c.country}` : ""} · {c.electorate ? `${c.electorate.toLocaleString("en-GB")} electorate` : ""}</p>
 
     <main id="main" tabindex="-1">
@@ -142,7 +142,7 @@ const ogDesc = c.stats.sites ? `${c.name}: ${shareLine}. Permanent record on civ
     <div class="browse-actions" style="margin-top:1.2rem">
       <a class="btn-primary" href={`/browse?constituency=${c.slug}`}>Open filtered ledger — {c.stats.sites} sites ↗</a>
       <a class="btn-ghost" href="/browse">Browse all 2,375 ↗</a>
-      <a class="btn-ghost" href="/">Overview ←</a>
+      <a class="btn-ghost" href="/uk">UK overview ←</a>
     </div>
 
     <p class="muted browse-hint">Share: copy the URL — it encodes your view · Press <kbd>⌘K</kbd> to jump anywhere. This seat's hex is equal-weight (Automatic Knowledge v5, OGL) · <a href="/methodology">How we checked →</a></p>

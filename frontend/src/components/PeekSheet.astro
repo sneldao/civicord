@@ -37,8 +37,8 @@
 </dialog>
 
 <script>
-  // Signal to the hex map that peeking is available, so it delegates instead of
-  // navigating. Checked at click time, so script order doesn't matter.
+  import { openDialog, closeDialog, bindDialogChrome } from "../lib/dialog-motion";
+
   (window as any).__CIVICORD_PEEK__ = true;
 
   const esc = (s: unknown) =>
@@ -46,7 +46,9 @@
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string)
     );
 
-  // Same visual language as the map: paper dots = how much is gone.
+  const reduced = () =>
+    typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   const dotsFor = (pct: number) => (pct >= 66 ? 1 : pct >= 40 ? 2 : 3);
 
   let currentSlug: string | null = null;
@@ -101,7 +103,41 @@
     `;
   }
 
-  async function open(slug: string, name?: string) {
+  /** Continuity morph: ink stamp flies from the hex to the peek sheet. */
+  function morphFromHex(hexEl: HTMLElement | null, dlg: HTMLDialogElement) {
+    if (!hexEl || reduced()) return;
+    const from = hexEl.getBoundingClientRect();
+    const to = dlg.getBoundingClientRect();
+    if (!from.width || !to.width) return;
+
+    const ghost = document.createElement("div");
+    ghost.className = "peek-morph";
+    ghost.setAttribute("aria-hidden", "true");
+    const size = Math.max(from.width, from.height) * 0.85;
+    const x0 = from.left + from.width / 2 - size / 2;
+    const y0 = from.top + from.height / 2 - size / 2;
+    const x1 = to.left + 28;
+    const y1 = to.top + 36;
+    ghost.style.width = `${size}px`;
+    ghost.style.height = `${size}px`;
+    ghost.style.left = `${x0}px`;
+    ghost.style.top = `${y0}px`;
+    document.body.appendChild(ghost);
+
+    // Origin for the sheet itself — opens as if expanding from the hex.
+    const dx = from.left + from.width / 2 - (to.left + to.width * 0.15);
+    const dy = from.top + from.height / 2 - (to.top + 72);
+    dlg.style.setProperty("--peek-from-x", `${dx}px`);
+    dlg.style.setProperty("--peek-from-y", `${dy}px`);
+
+    requestAnimationFrame(() => {
+      ghost.style.transform = `translate(${x1 - x0}px, ${y1 - y0}px) scale(${Math.max(18, to.width * 0.08) / size})`;
+      ghost.style.opacity = "0";
+    });
+    window.setTimeout(() => ghost.remove(), 420);
+  }
+
+  async function open(slug: string, name?: string, hexEl?: HTMLElement | null) {
     const dlg = document.getElementById("peek-sheet") as HTMLDialogElement | null;
     const title = document.getElementById("peek-title");
     const body = document.getElementById("peek-body");
@@ -113,14 +149,8 @@
     if (body) body.innerHTML = `<p class="muted">Reading the public record…</p>`;
     if (filter) filter.hidden = !location.pathname.startsWith("/browse");
 
-    const wasOpen = dlg.open;
-    if (!wasOpen) {
-      try {
-        dlg.showModal();
-      } catch {
-        dlg.setAttribute("open", "");
-      }
-    }
+    openDialog(dlg);
+    morphFromHex(hexEl ?? null, dlg);
 
     try {
       const res = await fetch(`/api/constituencies/${encodeURIComponent(slug)}.json`, {
@@ -142,26 +172,35 @@
     const dlg = document.getElementById("peek-sheet") as HTMLDialogElement | null;
     if (!dlg) return;
 
-    document.getElementById("peek-close")?.addEventListener("click", () => dlg.close());
+    const notifyClosed = () => {
+      dlg.style.removeProperty("--peek-from-x");
+      dlg.style.removeProperty("--peek-from-y");
+      window.dispatchEvent(new CustomEvent("civicord:peek-close"));
+    };
 
-    // Click the backdrop to dismiss (only when the click lands on the dialog itself).
+    bindDialogChrome(dlg, { onClosed: notifyClosed });
+
+    document.getElementById("peek-close")?.addEventListener("click", () => {
+      void closeDialog(dlg);
+    });
+
     dlg.addEventListener("click", (e) => {
-      if (e.target === dlg) dlg.close();
+      if (e.target === dlg) void closeDialog(dlg);
     });
 
     document.getElementById("peek-filter")?.addEventListener("click", () => {
       if (!currentSlug) return;
       window.dispatchEvent(new CustomEvent("civicord:constituency", { detail: { slug: currentSlug } }));
-      dlg.close();
-      document.querySelector(".table-wrap")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      void closeDialog(dlg).then(() => {
+        document.querySelector(".table-wrap")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
     });
 
     if (!bound) {
       bound = true;
-      // The peek entry point. Anything on the page can fire this.
       window.addEventListener("civicord:peek", (e: Event) => {
         const detail = (e as CustomEvent).detail || {};
-        if (detail.slug) open(detail.slug, detail.name);
+        if (detail.slug) open(detail.slug, detail.name, detail.hexEl ?? null);
       });
     }
   });

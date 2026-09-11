@@ -1,10 +1,8 @@
 ---
 import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
-import { cohortStats, statusCohorts } from "../lib/cohorts";
-import HalftoneHexMap from "../components/HalftoneHexMap.astro";
-import PeekSheet from "../components/PeekSheet.astro";
 import CommandPalette from "../components/CommandPalette.astro";
+import DoorField from "../components/DoorField.astro";
 import WebMCP from "../components/WebMCP.astro";
 import "../styles/global.css";
 import constituenciesRaw from "../data/constituencies.json";
@@ -16,27 +14,16 @@ try {
   if (arr.length) constituencies = arr;
 } catch {}
 const withSites = constituencies.filter((c) => c.stats.sites > 0).length;
-const constituenciesForSearch = constituencies.slice(0, 650).map((c) => ({ slug: c.slug, name: c.name }));
+const seatsTotal = constituencies.length || 650;
+const seatsWithSites = withSites || seatsTotal - 17;
 
-// Validated at build time by src/content.config.ts
 const all = await getCollection("candidates");
-const candidates = all.map((e) => e.data).sort((a, b) => a.name.localeCompare(b.name));
+const candidates = all.map((e) => e.data);
 const websites = candidates.flatMap((c) => c.websites);
 const audited = websites.filter((w) => w.audit);
 const live = audited.filter((w) => w.audit?.statusClass === "live");
-const dead = audited.filter((w) => w.audit?.statusClass === "dns_error");
-const redirected = audited.filter((w) => w.audit?.redirected);
-const onchain = candidates.filter((c) => c.onchain);
 const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
-// The story is time, not just geography — the same record read at two dates.
-const livePctNow = audited.length ? pct(live.length, audited.length) : 0;
-
-const stats = await cohortStats();
-const board = stats.parties.slice(0, 8);
-const maxBoard = Math.max(...board.map((r) => r.sites), 1);
-const cohorts = await statusCohorts();
-const bySlug = Object.fromEntries(cohorts.map((c) => [c.slug, c]));
-const randomIds = candidates.map((c) => c.id);
+const livePct = audited.length ? pct(live.length, audited.length) : 0;
 ---
 
 <html lang="en-GB">
@@ -45,385 +32,111 @@ const randomIds = candidates.map((c) => c.id);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Political websites disappear the day after the election. Civicord gives candidates a permanent, publicly verifiable record — who they were, what they published, and whether it's still there. Starting with the UK: 2,375 candidate sites, 650 jurisdictions."
+      content="Political websites disappear the day after the election. Civicord makes that record tamper-evident, verifiable and citable — for any democracy. The UK is the genesis dataset."
     />
-    <meta property="og:title" content="Civicord — the permanent public record for political websites" />
+    <meta property="og:title" content="Civicord — the public record for political websites" />
     <meta
       property="og:description"
-      content="A permanent, verifiable record of what candidates published — and what happened to it. Built as a public good; the UK is the genesis dataset."
+      content="A tamper-evident, verifiable record of what candidates published — and what happened to it. Built as a public good; designed for any democracy."
     />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Civicord — the permanent public record for political websites</title>
+    <title>Civicord — the public record for political websites</title>
     <ClientRouter />
   </head>
-  <body class="reveal-root">
+  <body class="reveal-root door-page">
     <a class="skip-link" href="#main">Skip to content</a>
-    <div class="progress" aria-hidden="true"><b id="progress-bar"></b></div>
 
-    <header class="masthead">
-      <div class="masthead-top">
+    <div class="door-hero">
+      <header class="masthead door-masthead">
         <h1 class="wordmark">Civicord<span class="dot">.</span></h1>
+        <p class="lede door-lede">
+          Political websites disappear the day after the election. Civicord makes that
+          record tamper-evident, verifiable and citable — for any democracy.
+        </p>
+        <p class="tagline door-support">
+          No account, no wallet, nothing to take on trust. The UK is where we proved it end to end.
+        </p>
+        <div class="door-cta" role="group" aria-label="Get started">
+          <a class="btn-primary" href="/uk">Explore the UK genesis dataset →</a>
+          <a class="btn-ghost" href="/methodology">How it works</a>
+        </div>
+        <ul class="good-strip door-strip">
+          <li><b>Public good</b><span>free to read, tamper-evident</span></li>
+          <li><b>Open</b><span>AGPL-3.0 code · OGL boundaries</span></li>
+          <li><b>Verifiable</b><span>every claim links to its source</span></li>
+        </ul>
+      </header>
 
-        <!-- Region picker — a native disclosure element, no JS. One deployment
-             today; the shape is deliberately region-agnostic so others can be
-             added without touching routes or data. -->
-        <details class="region-picker">
-          <summary>
-            <span class="rp-kicker">Region</span>
-            <span class="rp-current">UK · genesis</span>
-            <span class="rp-caret" aria-hidden="true">▾</span>
-          </summary>
-          <ul class="rp-list">
-            <li class="rp-is-live">
-              <span class="rp-status">Live</span>
-              <b>United Kingdom</b>
-              <span class="rp-meta">{candidates.length.toLocaleString("en-GB")} candidates · {constituencies.length || 650} jurisdictions</span>
-            </li>
-            <li>
-              <span class="rp-status rp-soon">Propose</span>
-              <b>France</b>
-              <span class="rp-meta">577 circonscriptions</span>
-            </li>
-            <li>
-              <span class="rp-status rp-soon">Propose</span>
-              <b>United States</b>
-              <span class="rp-meta">435 districts</span>
-            </li>
-            <li>
-              <span class="rp-status rp-soon">Propose</span>
-              <b>Your democracy</b>
-              <span class="rp-meta">bring a roster + a crawl</span>
-            </li>
-          </ul>
-          <p class="rp-foot">
-            The UK is the first deployment, not the boundary of the idea.
-            <a href="/#add-region">See what a region needs →</a>
-          </p>
-        </details>
-      </div>
-
-      <p class="lede">
-        Political websites disappear the day after the election. So does the record
-        of what was promised, and what was quietly removed. Civicord makes that
-        record permanent, verifiable and citable — for any democracy.
-      </p>
-      <p class="tagline">
-        Starting with the UK: every one of the {candidates.length.toLocaleString("en-GB")} candidate
-        campaign sites scraped in April 2025, re-checked {audited.length ? "17 months" : "after the election"} later, and
-        recorded as permanent public names. No account, no wallet, nothing to take on trust.
-      </p>
-      <ul class="good-strip">
-        <li><b>Public good</b><span>free to read, permanently</span></li>
-        <li><b>Open</b><span>AGPL-3.0 code · OGL boundaries</span></li>
-        <li><b>Verifiable</b><span>every claim links to its source</span></li>
-      </ul>
-    </header>
+      <a class="door-visual" href="/uk" aria-label={`United Kingdom genesis dataset — ${livePct}% of sites still live`}>
+        <DoorField livePct={livePct} candidates={candidates.length} />
+        <span class="door-visual-cta">Open the UK record ↗</span>
+      </a>
+    </div>
 
     <main id="main" tabindex="-1">
-    <p class="dataset-badge">
-      <span class="db-live">Live</span>
-      <b>United Kingdom</b> — genesis dataset, the first of many
-    </p>
-
-    <section class="stats" aria-label="Audit summary">
-      <div class="stat"><b>{candidates.length.toLocaleString("en-GB")}</b><span>Candidates</span></div>
-      <div class="stat"><b>{websites.length.toLocaleString("en-GB")}</b><span>Websites</span></div>
-      <div class="stat"><b>{audited.length ? pct(live.length, audited.length) : "—"}%</b><span>Still live</span></div>
-      <div class="stat"><b>{dead.length.toLocaleString("en-GB")}</b><span>Domains gone</span></div>
-      <div class="stat"><b>{redirected.length.toLocaleString("en-GB")}</b><span>Redirected</span></div>
-    </section>
-
-    <p class="decay-line" aria-label="Decay over time">
-      <span class="decay-when"><b>April 2025</b> — campaign ends, {websites.length.toLocaleString("en-GB")} sites captured</span>
-      <span class="decay-arrow" aria-hidden="true">→</span>
-      <span class="decay-when"><b>September 2026</b> — <b class="decay-now">{livePctNow}%</b> still live, {100 - livePctNow}% gone or broken</span>
-    </p>
-
-    <section class="how" aria-label="How Civicord works">
-      <h2>How it works</h2>
-      <p class="how-lede muted">
-        The same five steps work for any democracy: a public roster, a crawl of the
-        campaign web, and a permanent place to put the result.
-      </p>
-      <ol>
-        <li>
-          <b>Collect.</b> Start from a national roster (the UK's is Democracy Club)
-          and a crawl of candidate sites — Campaign Lab captured every one in April 2025.
-        </li>
-        <li>
-          <b>Audit.</b> Re-request every URL and record what actually happened. “Live”
-          is deliberately strict: the site answers <em>and</em> still mentions the candidate.
-          Some are live, some have vanished, some now sell insurance.
-        </li>
-        <li>
-          <b>Record.</b> Each candidate gets a permanent public name —
-          <code>p1234.civicord.eth</code> — holding their website, status, and
-          archived evidence. Once written, records can't be quietly edited or deleted.
-        </li>
-        <li>
-          <b>Index.</b> Publish the change log so the record can be queried, not just
-          browsed — by researchers, journalists, and increasingly by agents.
-        </li>
-        <li>
-          <b>Verify.</b> You don't need an account, a wallet, or our permission.
-          Every claim on this site links to the public record behind it — check it
-          yourself, any time, forever.
-        </li>
-      </ol>
-
-      <!-- Infra homage: the record is held by public infrastructure, and you can
-           check each piece directly. Concrete addresses, not “web3”. -->
-      <div class="infra-strip">
-        <p class="infra-title">The record is held by public infrastructure — not our servers alone</p>
-        <ul class="infra-list">
-          <li>
-            <span class="infra-k">ENSv2 registry</span>
-            <code>0x0895…2aa9</code>
-            <a href="https://sepolia.etherscan.io/address/0x08953da0c2ff527a825686a24a12c7bb2ae22aa9" rel="noopener">verify ↗</a>
-          </li>
-          <li>
-            <span class="infra-k">PermissionedResolver</span>
-            <code>0x340d…ee67</code>
-            <a href="https://sepolia.etherscan.io/address/0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67" rel="noopener">verify ↗</a>
-          </li>
-          <li>
-            <span class="infra-k">Change log (Subgraph)</span>
-            <code>QmUcjfa…</code>
-            <a href="https://thegraph.com/studio/subgraph/civicord" rel="noopener">verify ↗</a>
-          </li>
-          <li>
-            <span class="infra-k">Agent gateway</span>
-            <code>civicord-aieyq</code>
-            <a href="https://civicord-aieyq.bazgateway.com/api/summary" rel="noopener">try it ↗</a>
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- Cohort feature cards: narrative entry points instead of a wall -->
-    <section class="cohort-features" aria-label="Explore by outcome">
-      <h2>What happened to the sites?</h2>
-      <p class="muted">Three stories from the audit — pick one, then drill to the ledger and the evidence.</p>
-      <div class="feature-grid">
-        <a class="feature-card f-gone" href="/cohorts/gone">
-          <span class="f-label">Gone</span>
-          <b class="f-num">{bySlug.gone.sites.toLocaleString("en-GB")}</b>
-          <span class="f-meta">{bySlug.gone.share}% of audited sites · domains that died with the campaign</span>
-          <span class="f-cta">The graveyard ↗</span>
+      <section class="door-uk-teaser" aria-label="United Kingdom genesis dataset">
+        <a class="door-uk-card" href="/uk">
+          <span class="door-uk-kicker"><span class="db-live">Live</span> Genesis dataset</span>
+          <b class="door-uk-title vt-uk-title">United Kingdom</b>
+          <span class="door-uk-meta">
+            {candidates.length.toLocaleString("en-GB")} candidates · {seatsTotal} jurisdictions · {livePct}% still live
+          </span>
+          <span class="door-uk-story">
+            April 2025 scrape → September 2026 audit. Sites that vanished, redirected, or survived — permanently indexed.
+          </span>
+          <span class="door-uk-cta">Explore stats, map, and ledger ↗</span>
         </a>
-        <a class="feature-card f-redirected" href="/cohorts/redirected">
-          <span class="f-label">Redirected</span>
-          <b class="f-num">{bySlug.redirected.sites.toLocaleString("en-GB")}</b>
-          <span class="f-meta">{bySlug.redirected.share}% · now a party page, a new venture, or a squatter</span>
-          <span class="f-cta">Where they went ↗</span>
-        </a>
-        <a class="feature-card f-live" href="/cohorts/live">
-          <span class="f-label">Still live</span>
-          <b class="f-num">{bySlug.live.sites.toLocaleString("en-GB")}</b>
-          <span class="f-meta">{bySlug.live.share}% · still respond and still mention the candidate</span>
-          <span class="f-cta">The survivors ↗</span>
-        </a>
-      </div>
-    </section>
+      </section>
 
-    <HalftoneHexMap />
-
-    <section class="cohorts" aria-label="Survival by party">
-      <h2>Which parties' sites survived?</h2>
-      <p class="muted">Share of each party's campaign sites still live — click a row to filter the ledger. Map above: every hex is one constituency (650 equal), halftone dots = how much vanished.</p>
-      <ol class="board">
-        {board.map((r) => (
-          <li>
-            <a href={`/browse?party=${encodeURIComponent(r.party.toLowerCase())}`} data-party-link={r.party.toLowerCase()}>
-              <span class="board-party">{r.party}</span>
-              <span class="board-bar" aria-hidden="true">
-                <b style={`width:${Math.round((r.sites / maxBoard) * 100)}%`} class={r.livePct >= 60 ? "ok" : r.livePct >= 40 ? "mid" : "low"}></b>
-              </span>
-              <span class="board-num"><b>{r.livePct}%</b> live · {r.sites.toLocaleString("en-GB")} sites</span>
-            </a>
-          </li>
-        ))}
-      </ol>
-    </section>
-
-    <p class="method">
-      Liveness audited 2026-09-07, ~17 months after the scrape — 36% of sites are already
-      gone or broken. “Live” means responding <em>and</em> still mentioning the candidate;
-      ↳ marks URLs that now redirect elsewhere.
-      <a href="/methodology">Methodology ↗</a>
-    </p>
-
-    {onchain.length > 0 && (
-      <p class="ens-note">
-        <b>{onchain.length.toLocaleString("en-GB")} of {candidates.length.toLocaleString("en-GB")}</b>
-        candidates already have a permanent public name. Look for
-        <span class="onchain-chip">On-chain ✓</span> in the ledger.
-      </p>
-    )}
-
-    <!-- Region-agnostic future: what the project is for, beyond this dataset. -->
-    <section class="future" id="add-region" aria-label="Add your region">
-      <h2>Built for one election. Designed for any.</h2>
-      <p class="muted future-lede">
-        Any democracy needs three things to run this: a <b>public roster</b> to key on,
-        a <b>crawl</b> of the campaign web, and a <b>place to keep the record</b>. The
-        UK is where we proved it end to end. Everything else is already built, openly
-        licensed, and documented.
-      </p>
-      <div class="future-grid">
-        <a class="future-card is-live" href="/browse">
-          <span class="fc-status">Live now</span>
-          <b>United Kingdom</b>
-          <span class="fc-meta">{candidates.length.toLocaleString("en-GB")} candidates · {constituencies.length || 650} jurisdictions · audited Sept 2026</span>
-          <span class="fc-cta">Browse the ledger ↗</span>
-        </a>
-        <a class="future-card" href="https://github.com/sneldao/civicord/issues">
-          <span class="fc-status">Propose</span>
-          <b>France</b>
-          <span class="fc-meta">577 circonscriptions · a roster exists; needs a crawl</span>
-          <span class="fc-cta">Start a region ↗</span>
-        </a>
-        <a class="future-card" href="https://github.com/sneldao/civicord/issues">
-          <span class="fc-status">Propose</span>
-          <b>United States</b>
-          <span class="fc-meta">435 districts · LoC + EDGI are close cousins</span>
-          <span class="fc-cta">Start a region ↗</span>
-        </a>
-        <a class="future-card" href="/methodology">
-          <span class="fc-status">Blueprint</span>
-          <b>Your democracy</b>
-          <span class="fc-meta">Read the method, then bring a roster and a crawl</span>
-          <span class="fc-cta">How it works ↗</span>
-        </a>
-      </div>
-      <p class="future-foot muted">
-        Read the method: <a href="/methodology">Methodology</a> · code
-        <a href="https://github.com/sneldao/civicord" rel="noopener">AGPL-3.0</a> ·
-        boundaries OGL · <a href="https://github.com/sneldao/civicord/issues" rel="noopener">propose a region ↗</a>
-      </p>
-    </section>
-
-    <section class="browse-cta" aria-label="Search and browse the ledger">
-      <div class="search-hero" role="search">
-        <input
-          id="q-hero"
-          type="search"
-          placeholder="Search 2,375 candidates — try “Farage”, “Leeds Central” or “labour.org.uk”"
-          autocomplete="off"
-          aria-label="Search candidates"
-          list="hero-constituencies"
-        />
-        <datalist id="hero-constituencies">
-          {constituenciesForSearch.map((c) => <option value={c.name}></option>)}
-        </datalist>
-        <button type="button" id="q-go">Search ledger →</button>
-      </div>
-      <div class="browse-actions" style="margin-top:0.55rem">
-        <a class="btn-ghost" href="/browse">Browse ledger ↗</a>
-        <span class="muted" style="font-size:0.82rem">or explore <b>{withSites}</b> constituencies — try <a href="/constituencies/ynys-mon">Ynys Môn</a>, <a href="/constituencies/holborn-and-st-pancras">Holborn</a>, <a href="/constituencies/bangor-aberconwy">Bangor Aberconwy</a></span>
-      </div>
-      <div class="browse-actions">
-        <a class="btn-primary" href="/browse">Browse full ledger — {candidates.length.toLocaleString("en-GB")} entries ↗</a>
-        <a class="btn-ghost" href="/methodology">How we checked →</a>
-        <button type="button" id="random-home" class="btn-ghost">Surprise me — random record 🎲</button>
-      </div>
-      <p class="muted browse-hint">
-        Fuzzy search, party &amp; status filters, and pagination live on the next page — this page stays a readable overview.
-        Press <kbd>/</kbd> to focus search, <kbd>Esc</kbd> to clear, <kbd>⌘K</kbd> to jump anywhere, or let us surprise you.
-      </p>
-    </section>
+      <section class="future door-regions" id="regions" aria-label="Regions">
+        <h2>Built for one election. Designed for any.</h2>
+        <p class="muted future-lede">
+          Any democracy needs three things: a <b>public roster</b>, a <b>crawl</b> of the campaign web,
+          and a <b>place to keep the record</b>. Pick a region — or bring your own.
+        </p>
+        <div class="future-grid">
+          <a class="future-card is-live" href="/uk">
+            <span class="fc-status">Live now</span>
+            <b>United Kingdom</b>
+            <span class="fc-meta">{candidates.length.toLocaleString("en-GB")} candidates · {seatsWithSites} of {seatsTotal} seats with sites · audited Sept 2026</span>
+            <span class="fc-cta">Explore the dataset ↗</span>
+          </a>
+          <a class="future-card" href="https://github.com/sneldao/civicord/issues">
+            <span class="fc-status">Propose</span>
+            <b>France</b>
+            <span class="fc-meta">577 circonscriptions · a roster exists; needs a crawl</span>
+            <span class="fc-cta">Start a region ↗</span>
+          </a>
+          <a class="future-card" href="https://github.com/sneldao/civicord/issues">
+            <span class="fc-status">Propose</span>
+            <b>United States</b>
+            <span class="fc-meta">435 districts · LoC + EDGI are close cousins</span>
+            <span class="fc-cta">Start a region ↗</span>
+          </a>
+          <a class="future-card" href="/methodology">
+            <span class="fc-status">Blueprint</span>
+            <b>Your democracy</b>
+            <span class="fc-meta">Read the method, then bring a roster and a crawl</span>
+            <span class="fc-cta">How it works ↗</span>
+          </a>
+        </div>
+        <p class="future-foot muted">
+          Method: <a href="/methodology">Methodology</a> · code
+          <a href="https://github.com/sneldao/civicord" rel="noopener">AGPL-3.0</a> ·
+          boundaries OGL · <a href="https://github.com/sneldao/civicord/issues" rel="noopener">propose a region ↗</a>
+        </p>
+      </section>
     </main>
 
     <footer>
-      <p>
-        Data: Campaign Lab candidate-website scrape (April 2025) · Democracy Club person
-        IDs · Liveness audit 2026-09-07 · Wayback history (in progress). Code AGPL-3.0 ·
-        <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
-      </p>
       <p class="footer-good">
         Built as a public good — free to read, openly licensed, citable, and designed to
-        outlive the election it documents. The UK dataset is the first deployment; any
-        democracy can run the same pipeline. <a href="/#add-region">See what a region needs →</a>
+        outlive the election it documents.
       </p>
     </footer>
 
-    <script define:vars={{ randomIds, constituenciesForSearch }}>
-      const HOME_IDS = randomIds;
-      const CONS = constituenciesForSearch;
-      const consByNameLower = new Map(CONS.map((c) => [c.name.toLowerCase(), c.slug]));
-      const consNamesLower = new Set(consByNameLower.keys());
-      document.addEventListener("astro:page-load", () => {
-        // hero search → /browse?q=… or direct to /constituencies/[slug] if exact constituency name
-        const input = document.getElementById("q-hero");
-        const btn = document.getElementById("q-go");
-        const go = () => {
-          const raw = (input?.value ?? "").trim().slice(0, 120);
-          const v = raw.trim();
-          if (!v) { location.href = "/browse"; return; }
-          const slug = consByNameLower.get(v.toLowerCase());
-          if (slug) { location.href = `/constituencies/${slug}`; return; }
-          location.href = `/browse?q=${encodeURIComponent(v)}`;
-        };
-        if (input && btn) {
-          input.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
-          btn.addEventListener("click", go);
-        }
-
-        // Surprise me — random candidate (no build cost, one line of delight).
-        const randBtn = document.getElementById("random-home");
-        const surprise = () => {
-          const id = HOME_IDS[Math.floor(Math.random() * HOME_IDS.length)];
-          location.href = `/candidates/${id}`;
-        };
-        randBtn?.addEventListener("click", surprise);
-
-        // Keyboard: / focuses search (when not already typing), Esc clears.
-        document.addEventListener("keydown", (e) => {
-          const tag = (document.activeElement?.tagName ?? "").toLowerCase();
-          const typing = tag === "input" || tag === "textarea" || tag === "select" || (document.activeElement?.isContentEditable);
-          if (e.key === "/" && !typing) {
-            e.preventDefault();
-            input?.focus();
-          }
-          if (e.key === "Escape" && typing && document.activeElement === input) {
-            input.value = "";
-            input.blur();
-          }
-        });
-
-        // scroll progress line
-        const bar = document.getElementById("progress-bar");
-        if (bar) {
-          const onScroll = () => {
-            const max = document.documentElement.scrollHeight - innerHeight;
-            bar.style.width = `${max > 0 ? Math.min(100, (scrollY / max) * 100) : 0}%`;
-          };
-          addEventListener("scroll", onScroll, { passive: true });
-          onScroll();
-        }
-
-        // stat count-up (skipped for reduced-motion users)
-        if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          for (const el of document.querySelectorAll(".stat b")) {
-            const raw = el.textContent?.trim() ?? "";
-            if (raw.includes("%")) continue;
-            const target = Number(raw.replace(/,/g, ""));
-            if (!Number.isFinite(target)) continue;
-            const t0 = performance.now();
-            const tick = (t) => {
-              const p = Math.min(1, (t - t0) / 900);
-              const eased = 1 - Math.pow(1 - p, 3);
-              el.textContent = Math.round(target * eased).toLocaleString("en-GB");
-              if (p < 1) requestAnimationFrame(tick);
-            };
-            requestAnimationFrame(tick);
-          }
-        }
-      });
-    </script>
-    <PeekSheet />
     <CommandPalette />
     <WebMCP />
   </body>
