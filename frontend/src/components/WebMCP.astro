@@ -16,11 +16,13 @@
 //  - Read-only hints on every tool; nothing consequential without the user.
 //  - JS-off / no-JS agents: unaffected — /robots.txt, /llms.txt, /openapi.yaml
 //    and the sitemap carry discovery the old way.
-
-const GATEWAY = "https://civicord-aieyq.bazgateway.com";
 ---
 
 <script>
+  // Gateway host for the live x402 probe below (browser scope — frontmatter
+  // consts are template-time only, so this is declared here, once).
+  const GATEWAY: string = "https://civicord-aieyq.bazgateway.com";
+
   // Native WebMCP if the browser has it; otherwise inject the vendored
   // polyfill (self-hosted, same-origin — no third-party request). Resolves
   // true when document.modelContext is usable, false if all paths fail.

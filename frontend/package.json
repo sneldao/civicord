@@ -8,11 +8,17 @@
     "dev": "astro dev",
     "prebuild": "node scripts/build-data.mjs && node scripts/build-map.mjs && node scripts/build-og.mjs && node scripts/build-search.mjs",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "npm run build && node scripts/check-links.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.3.1",
     "csv-parse": "^7.0.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "typescript": "^5.9.3"
   }
 }
