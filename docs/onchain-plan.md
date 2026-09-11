@@ -129,8 +129,36 @@ code.
 - `scripts/publish/publish.py` — batch registration + text records + manifest
 - `scripts/publish/README.md` — usage + record schema
 
+## Sepolia → mainnet permanence path
+
+Sepolia is the rehearsal floor, not the final record. The migration is a
+scripted re-run, not a rewrite — nothing in the frontend changes except the
+verify links:
+
+1. **What carries over unchanged:** the publisher's idempotent flow
+   (`register()` when `getResolver(label) == 0`, `setText()` when the on-chain
+   `url` doesn't match), the PermissionedResolver role model, the manifest →
+   frontend data join, and the subgraph schema (re-pointed at mainnet
+   `startBlock`).
+2. **What changes:** RPC endpoint + chain id, the parent registration via
+   mainnet ETHRegistrar (commit-reveal, ~0.005 ETH + gas), and per-candidate
+   funding: `register()` ≈ 1.20M gas + 3 × `setText()` ≈ 0.30M gas ≈ **2.1M gas
+   (~0.002 ETH per candidate @ 1 gwei)** → ~5 ETH for all 2,375 at today's gas;
+   materially less below 0.3 gwei.
+3. **Sequencing:** mainnet parent name first, verify `factory.verifyContract`
+   for both proxies, then a `--network mainnet` flag on `publish.py` (same
+   blast publisher), then re-point `app.ens.domains` + Etherscan links in the
+   frontend data build.
+4. **Honesty contract (mirrored on /methodology):** until that re-run happens,
+   the site says "Sepolia" wherever permanence is claimed. The tamper-evidence
+   claim is true today; the *permanence* claim becomes true at the mainnet run.
+5. **Evidence beyond the chain:** raw-HTML `sha256`s go into resolver text
+   records **and** are mirrored to Arweave/IPFS, so snapshot evidence survives
+   independently of both this project and any single chain.
+
 ## Out of scope this week
 
 - `civicord publish` CLI subcommand (scripts are run manually)
-- Mainnet, IPNS/contenthash resolution, cross-chain
+- Mainnet migration run itself (path above is scoped; gas-funded run is post-sprint)
+- IPNS/contenthash resolution, cross-chain
 - Graph subgraph over these events — **now done:** `v0.0.3` live (see Status note above)

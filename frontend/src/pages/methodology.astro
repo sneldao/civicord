@@ -35,8 +35,10 @@ const onchain = candidates.filter((c) => c.onchain);
     <ClientRouter />
   </head>
   <body class="reveal-root method">
+    <a class="skip-link" href="#main">Skip to content</a>
     <p class="crumb"><a href="/">← Public record index</a></p>
 
+    <main id="main" tabindex="-1">
     <header class="masthead">
       <h1 class="wordmark">Method<span class="dot">.</span></h1>
       <p class="lede">What Civicord claims, where it comes from, and how you can check it yourself.</p>
@@ -92,15 +94,33 @@ const onchain = candidates.filter((c) => c.onchain);
         exactly.
       </p>
 
-      <h2>4. Limits and honesty</h2>
+      <h2>4. Permanence, honestly: testnet today, mainnet next</h2>
+      <p>
+        Records currently live on the <b>Sepolia testnet</b> — free and public, but a
+        test network. The path to a permanent home is deliberately boring and
+        already scoped in <a href="https://github.com/sneldao/civicord/blob/main/docs/onchain-plan.md">docs/onchain-plan.md</a>:
+      </p>
+      <ol>
+        <li><b>Now (Sepolia):</b> every write is real, tamper-evident, and publicly verifiable on Etherscan. The record format, resolver roles, and change-log indexing are proven end to end.</li>
+        <li><b>Next (mainnet):</b> re-register the 2,375 names under <code>civicord.eth</code> on Ethereum mainnet via the same ENSv2 contracts — a scripted, idempotent re-run of the publisher, funded per-candidate (~0.002 ETH each at 1 gwei). Sepolia records are rehearsal data, not the citable record of truth.</li>
+        <li><b>Parallel (anchored evidence):</b> raw HTML snapshots get their <code>sha256</code> written into the same resolver records <em>and</em> mirrored to Arweave/IPFS, so the evidence survives even if this project doesn't. Verify the hash on either store.</li>
+      </ol>
+      <p>
+        The claim we make today is the narrow, checkable one: <b>the record exists, it is
+        tamper-evident, and anyone can verify it without trusting us.</b> Where it lives
+        (testnet → mainnet) is an operational question, and the migration is a script,
+        not a rewrite.
+      </p>
+
+      <h2>5. Limits and honesty</h2>
       <ul>
         <li>The scrape is a snapshot: it shows what sites said in April 2025, not today.</li>
         <li>The audit is a snapshot too: a site marked “timed out” may simply have been down that day.</li>
-        <li>Records live on the Sepolia testnet — free and public, but a test network, not mainnet.</li>
+        <li>Records live on the Sepolia testnet — free and public, but a test network, not mainnet (see §4 for the migration path).</li>
         <li>Civicord tracks campaign websites only, not social media, leaflets, or hustings claims.</li>
       </ul>
 
-      <h2>5. Reproduce it</h2>
+      <h2>6. Reproduce it</h2>
       <p>
         Pipeline, audit, frontend, and publishing scripts are open source
         (AGPL-3.0) at <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>.
@@ -108,6 +128,7 @@ const onchain = candidates.filter((c) => c.onchain);
         scripted and re-runnable.
       </p>
     </article>
+    </main>
 
     <footer>
       <p>
