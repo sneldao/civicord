@@ -55,18 +55,11 @@ const livePct = audited.length ? pct(live.length, audited.length) : 0;
           Political websites disappear the day after the election. Civicord makes that
           record tamper-evident, verifiable and citable — for any democracy.
         </p>
-        <p class="tagline door-support">
-          No account, no wallet, nothing to take on trust. The UK is where we proved it end to end.
-        </p>
+        <p class="tagline door-support">No account, no wallet. UK first.</p>
         <div class="door-cta" role="group" aria-label="Get started">
           <a class="btn-primary" href="/uk">Explore the UK genesis dataset →</a>
           <a class="btn-ghost" href="/methodology">How it works</a>
         </div>
-        <ul class="good-strip door-strip">
-          <li><b>Public good</b><span>free to read, tamper-evident</span></li>
-          <li><b>Open</b><span>AGPL-3.0 code · OGL boundaries</span></li>
-          <li><b>Verifiable</b><span>every claim links to its source</span></li>
-        </ul>
       </header>
 
       <a class="door-visual" href="/uk" aria-label={`United Kingdom genesis dataset — ${livePct}% of sites still live`}>
@@ -76,66 +69,39 @@ const livePct = audited.length ? pct(live.length, audited.length) : 0;
     </div>
 
     <main id="main" tabindex="-1">
-      <section class="door-uk-teaser" aria-label="United Kingdom genesis dataset">
-        <a class="door-uk-card" href="/uk">
-          <span class="door-uk-kicker"><span class="db-live">Live</span> Genesis dataset</span>
-          <b class="door-uk-title vt-uk-title">United Kingdom</b>
-          <span class="door-uk-meta">
-            {candidates.length.toLocaleString("en-GB")} candidates · {seatsTotal} jurisdictions · {livePct}% still live
-          </span>
-          <span class="door-uk-story">
-            April 2025 scrape → September 2026 audit. Sites that vanished, redirected, or survived — permanently indexed.
-          </span>
-          <span class="door-uk-cta">Explore stats, map, and ledger ↗</span>
-        </a>
-      </section>
-
       <section class="future door-regions" id="regions" aria-label="Regions">
         <h2>Built for one election. Designed for any.</h2>
         <p class="muted future-lede">
-          Any democracy needs three things: a <b>public roster</b>, a <b>crawl</b> of the campaign web,
-          and a <b>place to keep the record</b>. Pick a region — or bring your own.
+          Roster + crawl + a place to keep the record. Pick a region.
         </p>
         <div class="future-grid">
           <a class="future-card is-live" href="/uk">
             <span class="fc-status">Live now</span>
-            <b>United Kingdom</b>
-            <span class="fc-meta">{candidates.length.toLocaleString("en-GB")} candidates · {seatsWithSites} of {seatsTotal} seats with sites · audited Sept 2026</span>
+            <b class="vt-uk-title">United Kingdom</b>
+            <span class="fc-meta">{candidates.length.toLocaleString("en-GB")} candidates · {seatsWithSites} of {seatsTotal} seats · Sept 2026</span>
             <span class="fc-cta">Explore the dataset ↗</span>
           </a>
           <a class="future-card" href="https://github.com/sneldao/civicord/issues">
             <span class="fc-status">Propose</span>
             <b>France</b>
-            <span class="fc-meta">577 circonscriptions · a roster exists; needs a crawl</span>
+            <span class="fc-meta">577 circonscriptions</span>
             <span class="fc-cta">Start a region ↗</span>
           </a>
           <a class="future-card" href="https://github.com/sneldao/civicord/issues">
             <span class="fc-status">Propose</span>
             <b>United States</b>
-            <span class="fc-meta">435 districts · LoC + EDGI are close cousins</span>
+            <span class="fc-meta">435 districts</span>
             <span class="fc-cta">Start a region ↗</span>
           </a>
           <a class="future-card" href="/methodology">
             <span class="fc-status">Blueprint</span>
             <b>Your democracy</b>
-            <span class="fc-meta">Read the method, then bring a roster and a crawl</span>
+            <span class="fc-meta">Bring a roster and a crawl</span>
             <span class="fc-cta">How it works ↗</span>
           </a>
         </div>
-        <p class="future-foot muted">
-          Method: <a href="/methodology">Methodology</a> · code
-          <a href="https://github.com/sneldao/civicord" rel="noopener">AGPL-3.0</a> ·
-          boundaries OGL · <a href="https://github.com/sneldao/civicord/issues" rel="noopener">propose a region ↗</a>
-        </p>
       </section>
     </main>
-
-    <footer>
-      <p class="footer-good">
-        Built as a public good — free to read, openly licensed, citable, and designed to
-        outlive the election it documents.
-      </p>
-    </footer>
 
     <CommandPalette />
     <WebMCP />

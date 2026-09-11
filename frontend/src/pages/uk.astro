@@ -15,7 +15,6 @@ try {
   const arr = Array.isArray(raw) ? raw : Array.isArray(raw?.default) ? raw.default : [];
   if (arr.length) constituencies = arr;
 } catch {}
-const withSites = constituencies.filter((c) => c.stats.sites > 0).length;
 const constituenciesForSearch = constituencies.slice(0, 650).map((c) => ({ slug: c.slug, name: c.name }));
 
 const all = await getCollection("candidates");
@@ -24,20 +23,14 @@ const websites = candidates.flatMap((c) => c.websites);
 const audited = websites.filter((w) => w.audit);
 const live = audited.filter((w) => w.audit?.statusClass === "live");
 const redirected = audited.filter((w) => w.audit?.redirected);
-const onchain = candidates.filter((c) => c.onchain);
 const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
-// Partition (sums to audited): live + gone + errored. `redirected` is cross-cutting.
 const GONE_CLASSES = ["dns_error", "connection_error"];
 const gone = audited.filter((w) => GONE_CLASSES.includes(w.audit?.statusClass ?? ""));
-const errored = audited.filter(
-  (w) => w.audit?.statusClass !== "live" && !GONE_CLASSES.includes(w.audit?.statusClass ?? "")
-);
 const liveAndRedirected = live.filter((w) => w.audit?.redirected).length;
 const sampleOnchain =
   onchain.find((c) => c.id === "5693") ??
   (onchain.length ? onchain[Math.floor(onchain.length / 2)] : null);
 const seatsTotal = constituencies.length || 650;
-const seatsWithSites = withSites || seatsTotal - 17;
 const livePctNow = audited.length ? pct(live.length, audited.length) : 0;
 
 const stats = await cohortStats();
@@ -54,12 +47,12 @@ const randomIds = candidates.map((c) => c.id);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="UK genesis dataset: 2,375 candidate campaign sites scraped April 2025, re-checked 17 months later, recorded under public names. 64% still live — browse the ledger, map, and cohorts."
+      content="UK genesis dataset: candidate campaign sites scraped April 2025, re-checked 17 months later, recorded under public names. Browse the ledger, map, and cohorts."
     />
     <meta property="og:title" content="United Kingdom — Civicord genesis dataset" />
     <meta
       property="og:description"
-      content="Every one of 2,375 UK candidate campaign sites, audited and recorded. Browse the ledger, map 650 seats, and verify each claim."
+      content="UK candidate campaign sites, audited and recorded. Browse the ledger, map the seats, and verify each claim."
     />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
@@ -86,7 +79,7 @@ const randomIds = candidates.map((c) => c.id);
             <li class="rp-is-live">
               <span class="rp-status">Live</span>
               <b>United Kingdom</b>
-              <span class="rp-meta">{candidates.length.toLocaleString("en-GB")} candidates · {seatsTotal} jurisdictions ({seatsWithSites} with sites)</span>
+              <span class="rp-meta">{seatsTotal} seats</span>
             </li>
             <li>
               <span class="rp-status rp-soon">Propose</span>
@@ -117,14 +110,12 @@ const randomIds = candidates.map((c) => c.id);
       <p class="crumb region-crumb"><a href="/">Civicord</a> / <b>United Kingdom</b></p>
       <h1 class="region-title vt-uk-title">United Kingdom</h1>
       <p class="lede region-lede">
-        Genesis dataset — every one of the {candidates.length.toLocaleString("en-GB")} candidate
-        campaign sites scraped in April 2025, re-checked 17 months later, and recorded under
-        public names.
+        Genesis dataset — candidate sites scraped April 2025, audited 17 months later,
+        recorded under public names.
       </p>
       <p class="tagline">
-        <b>{onchain.length.toLocaleString("en-GB")} of {candidates.length.toLocaleString("en-GB")}</b> names
-        live on the Sepolia testnet today — the rehearsal before the mainnet record
-        (<a href="/methodology#permanence">why testnet first ↗</a>). No account, no wallet, nothing to take on trust.
+        Names on Sepolia today — mainnet next
+        (<a href="/methodology#permanence">why testnet first ↗</a>). No account, no wallet.
       </p>
     </header>
 
@@ -134,7 +125,7 @@ const randomIds = candidates.map((c) => c.id);
         <input
           id="q-hero-top"
           type="search"
-          placeholder={`Search ${candidates.length.toLocaleString("en-GB")} candidates — try “Farage”, “Leeds Central” or “labour.org.uk”`}
+          placeholder={`Search candidates — try “Farage”, “Leeds Central” or “labour.org.uk”`}
           autocomplete="off"
           aria-label="Search candidates"
           list="hero-constituencies-top"
@@ -145,72 +136,103 @@ const randomIds = candidates.map((c) => c.id);
         <button type="button" id="q-go-top">Search ledger →</button>
       </div>
       <div class="browse-actions" style="margin-top:0.55rem">
-        <a class="btn-primary" href="/browse">Browse full ledger — {candidates.length.toLocaleString("en-GB")} entries ↗</a>
+        <a class="btn-primary" href="/browse">Browse the ledger ↗</a>
         <button type="button" id="random-home-top" class="btn-ghost">Surprise me — random record 🎲</button>
       </div>
     </section>
 
+    <!-- Stats strip owns the corpus numbers — first and only summary. -->
     <section class="stats" aria-label="Audit summary">
       <div class="stat"><b>{candidates.length.toLocaleString("en-GB")}</b><span>Candidates</span></div>
       <div class="stat"><b>{websites.length.toLocaleString("en-GB")}</b><span>Websites</span></div>
       <div class="stat"><b>{audited.length ? pct(live.length, audited.length) : "—"}%</b><span>Still live</span></div>
       <div class="stat"><b>{gone.length.toLocaleString("en-GB")}</b><span>Gone</span></div>
-      <div class="stat"><b>{redirected.length.toLocaleString("en-GB")}</b><span>Redirect elsewhere</span></div>
+      <div class="stat" title={`Redirect cuts across outcomes — ${liveAndRedirected.toLocaleString("en-GB")} still count as live`}>
+        <b>{redirected.length.toLocaleString("en-GB")}</b><span>Redirect elsewhere</span>
+      </div>
     </section>
-    <p class="denominator-note muted">
-      Partition: <b>{live.length.toLocaleString("en-GB")} live</b> + <b>{gone.length.toLocaleString("en-GB")} gone</b> +{" "}
-      <b>{errored.length.toLocaleString("en-GB")} errored</b> = {audited.length.toLocaleString("en-GB")}.{" "}
-      Redirect ({redirected.length.toLocaleString("en-GB")}) cuts across — {liveAndRedirected.toLocaleString("en-GB")} still count as live.
-    </p>
 
     <p class="decay-line" aria-label="Decay over time">
-      <span class="decay-when"><b>April 2025</b> — campaign ends, {websites.length.toLocaleString("en-GB")} sites captured</span>
+      <span class="decay-when"><b>April 2025</b></span>
       <span class="decay-arrow" aria-hidden="true">→</span>
-      <span class="decay-when"><b>September 2026</b> — <b class="decay-now">{livePctNow}%</b> still live, {100 - livePctNow}% gone or broken</span>
+      <span class="decay-when"><b>September 2026</b> — <b class="decay-now">{livePctNow}%</b> still live</span>
     </p>
 
-    <section class="how" aria-label="How Civicord works">
-      <h2>How it works</h2>
-      <p class="how-lede muted">
-        The same five steps work for any democracy: a public roster, a crawl of the
-        campaign web, and a place to keep the record.
-      </p>
+    <section class="cohort-features" aria-label="Explore by outcome">
+      <h2>What happened to the sites?</h2>
+      <p class="muted">Pick a lane, then drill to the ledger.</p>
+      <div class="feature-grid">
+        <a class="feature-card f-gone" href="/cohorts/gone">
+          <span class="f-label">Gone</span>
+          <b class="f-num">{bySlug.gone.sites.toLocaleString("en-GB")}</b>
+          <span class="f-meta">{bySlug.gone.share}% · domains that died with the campaign</span>
+          <span class="f-cta">The graveyard ↗</span>
+        </a>
+        <a class="feature-card f-redirected" href="/cohorts/redirected">
+          <span class="f-label">Redirected</span>
+          <b class="f-num">{bySlug.redirected.sites.toLocaleString("en-GB")}</b>
+          <span class="f-meta">{bySlug.redirected.share}% · cross-cutting · {liveAndRedirected.toLocaleString("en-GB")} still live</span>
+          <span class="f-cta">Where they went ↗</span>
+        </a>
+        <a class="feature-card f-live" href="/cohorts/live">
+          <span class="f-label">Still live</span>
+          <b class="f-num">{bySlug.live.sites.toLocaleString("en-GB")}</b>
+          <span class="f-meta">{bySlug.live.share}% · still respond and still mention the candidate</span>
+          <span class="f-cta">The survivors ↗</span>
+        </a>
+      </div>
+    </section>
+
+    <HalftoneHexMap />
+
+    <section class="cohorts" aria-label="Survival by party">
+      <h2>Which parties' sites survived?</h2>
+      <p class="muted">Click a row to filter the ledger.</p>
+      <ol class="board" id="party-board">
+        {board.map((r) => (
+          <li>
+            <a href={`/browse?party=${encodeURIComponent(r.party.toLowerCase())}`} data-party-link={r.party.toLowerCase()}>
+              <span class="board-party">{r.party}</span>
+              <span class="board-bar" aria-hidden="true">
+                <b style={`--w:${Math.round((r.sites / maxBoard) * 100)}%;--live:${r.livePct}%`} class={r.livePct >= 60 ? "ok" : r.livePct >= 40 ? "mid" : "low"}></b>
+              </span>
+              <span class="board-num"><b>{r.livePct}%</b> live · {r.sites.toLocaleString("en-GB")} sites</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <details class="how how-disclosure">
+      <summary>How the record is made</summary>
       <ol>
         <li>
-          <b>Collect.</b> Start from a national roster (the UK's is Democracy Club)
-          and a crawl of candidate sites — Campaign Lab captured every one in April 2025.
+          <b>Collect.</b> National roster (Democracy Club) + Campaign Lab’s April 2025 crawl of every candidate site.
         </li>
         <li>
-          <b>Audit.</b> Re-request every URL and record what actually happened. “Live”
-          is deliberately strict: the site answers <em>and</em> still mentions the candidate.
-          <a href="/candidates/5693">Dawn Furness</a>'s site now lists her domain for sale
-          on expireddomains.com; <a href="/candidates/111463">Adam Pugh</a>'s personal domain
-          forwards to an about.me profile — both caught, both citable.
+          <b>Audit.</b> Re-request every URL. “Live” means the site answers <em>and</em> still mentions the candidate —
+          <a href="/candidates/5693">Dawn Furness</a> now lists for sale;
+          <a href="/candidates/111463">Adam Pugh</a> forwards to about.me.
         </li>
         <li>
           <b>Record.</b> Each candidate gets a public name —
           {sampleOnchain?.onchain ? (
-            <><code>{(sampleOnchain.onchain as any).ens}</code> — <a href={`/candidates/${sampleOnchain.id}`}>see this record ↗</a> —</>
+            <><code>{(sampleOnchain.onchain as any).ens}</code> (<a href={`/candidates/${sampleOnchain.id}`}>see record ↗</a>)</>
           ) : (
-            <><code>p5693.civicord.eth</code> —</>
-          )}{" "}
-          holding their website, status, and archived evidence. Records live on the
-          Sepolia testnet today (tamper-evident, publicly verifiable); the mainnet
-          run makes them permanent (<a href="/methodology#permanence">the path ↗</a>).
+            <code>p5693.civicord.eth</code>
+          )}
+          — website, status, evidence. Mainnet path in <a href="/methodology#permanence">Methodology</a>.
         </li>
         <li>
-          <b>Index.</b> Publish the change log so the record can be queried, not just
-          browsed — by researchers, journalists, and increasingly by agents.
+          <b>Index.</b> Publish a change log so the record can be queried — by researchers, journalists, and agents.
         </li>
         <li>
-          <b>Verify.</b> You don't need an account, a wallet, or our permission.
-          Every claim on this site links to the public record behind it — check it
-          yourself, any time, forever.
+          <b>Verify.</b> No account, no wallet, no permission. Every claim links to the public record behind it.
         </li>
       </ol>
 
       <div class="infra-strip">
-        <p class="infra-title">The record is held by public infrastructure — not our servers alone</p>
+        <p class="infra-title">Held by public infrastructure</p>
         <ul class="infra-list">
           <li>
             <span class="infra-k">ENSv2 registry</span>
@@ -234,97 +256,14 @@ const randomIds = candidates.map((c) => c.id);
           </li>
         </ul>
       </div>
-    </section>
-
-    <section class="cohort-features" aria-label="Explore by outcome">
-      <h2>What happened to the sites?</h2>
-      <p class="muted">Three overlapping stories — pick one, then drill to the ledger. Gone + live + errored partition the {audited.length.toLocaleString("en-GB")}; redirected cuts across.</p>
-      <div class="feature-grid">
-        <a class="feature-card f-gone" href="/cohorts/gone">
-          <span class="f-label">Gone</span>
-          <b class="f-num">{bySlug.gone.sites.toLocaleString("en-GB")}</b>
-          <span class="f-meta">{bySlug.gone.share}% of audited sites · domains that died with the campaign</span>
-          <span class="f-cta">The graveyard ↗</span>
-        </a>
-        <a class="feature-card f-redirected" href="/cohorts/redirected">
-          <span class="f-label">Redirected</span>
-          <b class="f-num">{bySlug.redirected.sites.toLocaleString("en-GB")}</b>
-          <span class="f-meta">{bySlug.redirected.share}% · cross-cutting — party page, new venture, or squatter ({liveAndRedirected.toLocaleString("en-GB")} still live)</span>
-          <span class="f-cta">Where they went ↗</span>
-        </a>
-        <a class="feature-card f-live" href="/cohorts/live">
-          <span class="f-label">Still live</span>
-          <b class="f-num">{bySlug.live.sites.toLocaleString("en-GB")}</b>
-          <span class="f-meta">{bySlug.live.share}% · still respond and still mention the candidate</span>
-          <span class="f-cta">The survivors ↗</span>
-        </a>
-      </div>
-    </section>
-
-    <HalftoneHexMap />
-
-    <section class="cohorts" aria-label="Survival by party">
-      <h2>Which parties' sites survived?</h2>
-      <p class="muted">Share of each party's campaign sites still live — click a row to filter the ledger. Map: {seatsTotal} seats, {seatsWithSites} with scraped sites.</p>
-      <ol class="board" id="party-board">
-        {board.map((r) => (
-          <li>
-            <a href={`/browse?party=${encodeURIComponent(r.party.toLowerCase())}`} data-party-link={r.party.toLowerCase()}>
-              <span class="board-party">{r.party}</span>
-              <span class="board-bar" aria-hidden="true">
-                <b style={`--w:${Math.round((r.sites / maxBoard) * 100)}%;--live:${r.livePct}%`} class={r.livePct >= 60 ? "ok" : r.livePct >= 40 ? "mid" : "low"}></b>
-              </span>
-              <span class="board-num"><b>{r.livePct}%</b> live · {r.sites.toLocaleString("en-GB")} sites</span>
-            </a>
-          </li>
-        ))}
-      </ol>
-    </section>
-
-    <p class="method">
-      Liveness audited 2026-09-07, ~17 months after the scrape — 36% of sites are already
-      gone or broken. “Live” means responding <em>and</em> still mentioning the candidate;
-      ↳ marks URLs that now redirect elsewhere.
-      <a href="/methodology">Methodology ↗</a>
-    </p>
-
-    {onchain.length > 0 && (
-      <p class="ens-note">
-        <b>{onchain.length.toLocaleString("en-GB")} of {candidates.length.toLocaleString("en-GB")}</b>{" "}
-        candidates have a tamper-evident public name on the Sepolia testnet — the rehearsal
-        before the mainnet record (<a href="/methodology#permanence">the path ↗</a>). Look for{" "}
-        <span class="onchain-chip">On-chain ✓</span> in the ledger.
-      </p>
-    )}
-
-    <section class="browse-cta" aria-label="Browse the ledger">
-      <div class="browse-actions">
-        <a class="btn-primary" href="/browse">Browse full ledger — {candidates.length.toLocaleString("en-GB")} entries ↗</a>
-        <a class="btn-ghost" href="/methodology">How we checked →</a>
-        <button type="button" id="random-home" class="btn-ghost">Surprise me — random record 🎲</button>
-      </div>
-      <p class="muted browse-hint" style="margin-top:0.7rem">
-        Or explore <b>{seatsWithSites} of {seatsTotal}</b> constituencies — try
-        <a href="/constituencies/ynys-mon">Ynys Môn</a>,
-        <a href="/constituencies/holborn-and-st-pancras">Holborn</a>,
-        <a href="/constituencies/bangor-aberconwy">Bangor Aberconwy</a>.
-        Press <kbd>/</kbd> to search, <kbd>⌘K</kbd> to jump.
-      </p>
-    </section>
-
-    <p class="region-back muted">
-      Civicord is built for any democracy. <a href="/#regions">See what a region needs →</a>
-    </p>
+    </details>
     </main>
 
     <footer>
       <p>
-        Data: Campaign Lab candidate-website scrape (April 2025) · Democracy Club person
-        IDs · Liveness audit 2026-09-07 · Wayback history (in progress). Code AGPL-3.0 ·
-        <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
-      </p>
-      <p class="footer-good">
-        Built as a public good — free to read, openly licensed, citable.
+        Data: Campaign Lab April 2025 · Democracy Club IDs · Audit 2026-09-07 · Wayback (in progress).
+        Code <a href="https://github.com/sneldao/civicord">AGPL-3.0</a> ·
+        <a href="/methodology">Methodology</a> ·
         <a href="/">← Civicord home</a>
       </p>
     </footer>
@@ -352,12 +291,10 @@ const randomIds = candidates.map((c) => c.id);
         };
         const input = wireSearch("q-hero-top", "q-go-top");
 
-        const surprise = () => {
+        document.getElementById("random-home-top")?.addEventListener("click", () => {
           const id = HOME_IDS[Math.floor(Math.random() * HOME_IDS.length)];
           location.href = `/candidates/${id}`;
-        };
-        document.getElementById("random-home")?.addEventListener("click", surprise);
-        document.getElementById("random-home-top")?.addEventListener("click", surprise);
+        });
 
         document.addEventListener("keydown", (e) => {
           const tag = (document.activeElement?.tagName ?? "").toLowerCase();

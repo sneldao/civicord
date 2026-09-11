@@ -109,6 +109,24 @@ a:hover { text-decoration-color: var(--accent); color: var(--accent); }
   font-size: 1.15rem;
   margin: 0 0 0.5rem;
 }
+.how-disclosure > summary {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+  color: var(--ink);
+}
+.how-disclosure > summary::-webkit-details-marker { display: none; }
+.how-disclosure > summary::after {
+  content: " ▾";
+  color: var(--muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+.how-disclosure[open] > summary::after { content: " ▴"; }
+.how-disclosure > summary:hover { color: var(--accent); }
+.how-disclosure[open] > summary { margin-bottom: 0.55rem; }
 .how ol {
   margin: 0;
   padding: 0;
