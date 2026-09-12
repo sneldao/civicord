@@ -140,6 +140,54 @@ paths:
         '404':
           description: Candidate not found
 
+  /api/graph:
+    get:
+      operationId: describeGraphProxy
+      summary: Describe the live The Graph proxy
+      description: |
+        Same-origin proxy to Civicord's Subgraph Studio endpoint. Free, unmetered.
+        POST GraphQL for live on-chain Candidate / TextRecord / TextRecordChange data.
+      tags: [graph]
+      responses:
+        '200':
+          description: Proxy usage + Studio endpoint
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  endpoint: { type: string }
+                  usage: { type: string }
+                  docs: { type: string }
+    post:
+      operationId: queryGraph
+      summary: Live GraphQL against The Graph Studio (proxied)
+      description: |
+        **Free.** Forwards the body to `api.studio.thegraph.com/query/101650/civicord/v0.0.4`.
+        Use person id as `Candidate.id` (e.g. `"5693"`), never a constituency slug.
+        Pair with `/api/candidates/{id}` for audit outcomes (or WebMCP `compare_onchain_to_ledger`).
+      tags: [graph]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query: { type: string }
+                variables: { type: object, additionalProperties: true }
+            example:
+              query: '{ _meta { block { number } hasIndexingErrors } candidate(id: "5693") { id ensName status textRecordCount } }'
+      responses:
+        '200':
+          description: GraphQL response from Studio
+          content:
+            application/json:
+              schema: { type: object }
+        '502':
+          description: Upstream Studio failure
+
   /api/summary:
     get:
       operationId: getSummary

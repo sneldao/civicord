@@ -2,6 +2,8 @@ import {
   BigInt,
   Bytes,
   Address,
+  ByteArray,
+  crypto,
 } from "@graphprotocol/graph-ts";
 import {
   LabelRegistered as LabelRegisteredEvent,
@@ -18,6 +20,11 @@ import {
 } from "../generated/schema";
 
 const STAT_ID = "civicord";
+// namehash("civicord.eth") — ENSv2 TextChanged.node is namehash(label + "." + parent),
+// NOT the registry tokenId / labelhash.
+const PARENT_NODE = Bytes.fromHexString(
+  "0x58cd121c6585c4277ede8c4346da1debf473ececccbc87b788e669ed80392499"
+);
 
 // ── helpers ────────────────────────────────────────────────────────────────────
 
@@ -78,6 +85,12 @@ function nodeHex(node: Bytes): string {
   return paddedHex(node.toHexString());
 }
 
+/** Full ENS node = keccak256(parentNode ‖ labelHash). */
+function nodeFromLabelHash(labelHash: Bytes): Bytes {
+  const packed = PARENT_NODE.concat(labelHash);
+  return Bytes.fromByteArray(crypto.keccak256(changetype<ByteArray>(packed)));
+}
+
 function emptyResolver(): Bytes {
   return changetype<Bytes>(Address.zero());
 }
@@ -102,13 +115,15 @@ export function handleLabelRegistered(event: LabelRegisteredEvent): void {
   }
   let candidate = Candidate.load(personId);
 
-  const nId = tokenIdHex(event.params.tokenId);
+  // TextChanged.node is namehash("p{id}.civicord.eth"), not tokenId/labelHash.
+  const nodeBytes = nodeFromLabelHash(changetype<Bytes>(event.params.labelHash));
+  const nId = nodeHex(nodeBytes);
 
   if (candidate === null) {
     candidate = new Candidate(personId);
     candidate.label = label;
     candidate.ensName = label + ".civicord.eth";
-    candidate.node = Bytes.fromHexString(nId) as Bytes;
+    candidate.node = nodeBytes;
     candidate.tokenId = event.params.tokenId;
     candidate.owner = changetype<Bytes>(event.params.owner);
     candidate.resolver = emptyResolver();
@@ -119,23 +134,28 @@ export function handleLabelRegistered(event: LabelRegisteredEvent): void {
     bumpStat("candidateCount", 1);
   } else {
     candidate.owner = changetype<Bytes>(event.params.owner);
+    candidate.node = nodeBytes;
+    candidate.tokenId = event.params.tokenId;
     candidate.registeredAtBlock = event.block.number;
     candidate.registeredAt = event.block.timestamp;
     candidate.unregisteredAtBlock = null;
   }
   candidate.save();
 
-  // Map the ENS node (tokenId as bytes32 hex) → candidate so TextChanged/
-  // ResolverUpdated can resolve it without scanning the registry.
-  let nodeMap = NodeToCandidate.load(nId);
-  if (nodeMap === null) {
-    nodeMap = new NodeToCandidate(nId);
-    nodeMap.candidate = personId;
-    nodeMap.save();
-  } else if (nodeMap.candidate != personId) {
-    // Re-registered under same tokenId but different person — update.
-    nodeMap.candidate = personId;
-    nodeMap.save();
+  // Dual keys: namehash node (TextChanged) + tokenId hex (ResolverUpdated / Unregister).
+  const tokenKey = tokenIdHex(event.params.tokenId);
+  const keys = [nId, tokenKey];
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    let nodeMap = NodeToCandidate.load(key);
+    if (nodeMap === null) {
+      nodeMap = new NodeToCandidate(key);
+      nodeMap.candidate = personId;
+      nodeMap.save();
+    } else if (nodeMap.candidate != personId) {
+      nodeMap.candidate = personId;
+      nodeMap.save();
+    }
   }
 }
 

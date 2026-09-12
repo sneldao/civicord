@@ -1,17 +1,90 @@
 // Pages advanced-mode worker: serves pipeline data snapshots from R2 at
-// /data/*, and normalizes Bazantic gateway extensionless routes to the
-// static .json assets Astro actually builds:
+// /data/*, proxies live The Graph Studio at /api/graph, and normalizes
+// Bazantic gateway extensionless routes to the static .json assets Astro
+// actually builds:
 //   /api/constituencies       -> /api/constituencies.json
 //   /api/constituencies/<slug> -> /api/constituencies/<slug>.json
 //   /api/summary              -> /api/summary.json
 //   /api/candidates/<id>      -> /api/candidates/<id>.json
+//   /api/graph                -> POST → Subgraph Studio (live)
 // Unknown /api/* ids          -> JSON 404 (not the SPA HTML fallback)
 // All other requests fall through to the static Astro assets.
+
+const SUBGRAPH_STUDIO =
+  "https://api.studio.thegraph.com/query/101650/civicord/v0.0.4";
+
+const corsJson = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET, POST, OPTIONS",
+  "access-control-allow-headers": "content-type, accept",
+};
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const { search } = url;
     let pathname = url.pathname;
+
+    // Live GraphQL proxy — free, same-origin, for agents/curl/Bazantic upstream.
+    if (pathname === "/api/graph" || pathname === "/api/graph/") {
+      if (request.method === "OPTIONS") {
+        return new Response(null, { status: 204, headers: corsJson });
+      }
+      if (request.method === "GET") {
+        return new Response(
+          JSON.stringify(
+            {
+              endpoint: SUBGRAPH_STUDIO,
+              usage: "POST application/json { query, variables? }",
+              docs: "https://github.com/sneldao/civicord/blob/main/skills/civicord-graph/SKILL.md",
+            },
+            null,
+            2
+          ),
+          {
+            status: 200,
+            headers: {
+              "content-type": "application/json; charset=utf-8",
+              "cache-control": "public, max-age=300",
+              ...corsJson,
+            },
+          }
+        );
+      }
+      if (request.method !== "POST") {
+        return new Response(JSON.stringify({ error: "POST a GraphQL body" }, null, 2), {
+          status: 405,
+          headers: { "content-type": "application/json; charset=utf-8", ...corsJson },
+        });
+      }
+      try {
+        const upstream = await fetch(SUBGRAPH_STUDIO, {
+          method: "POST",
+          headers: { "content-type": "application/json", accept: "application/json" },
+          body: await request.text(),
+        });
+        const text = await upstream.text();
+        return new Response(text, {
+          status: upstream.status,
+          headers: {
+            "content-type": "application/json; charset=utf-8",
+            "cache-control": "no-store",
+            ...corsJson,
+          },
+        });
+      } catch (err) {
+        return new Response(
+          JSON.stringify(
+            { error: "subgraph upstream failed", detail: String(err?.message || err) },
+            null,
+            2
+          ),
+          {
+            status: 502,
+            headers: { "content-type": "application/json; charset=utf-8", ...corsJson },
+          }
+        );
+      }
+    }
 
     if (pathname.startsWith("/data/")) {
       const key = pathname.slice("/data/".length);
@@ -30,11 +103,9 @@ export default {
     if (pathname === "/api/constituencies" || pathname === "/api/constituencies/") {
       rewritten = "/api/constituencies.json";
     } else if (pathname.startsWith("/api/constituencies/")) {
-      // Avoid rewriting og images or already-.json slugs
       if (!pathname.endsWith(".json") && !pathname.endsWith(".svg") && pathname.split("/").length === 4) {
         rewritten = pathname + ".json";
       } else if (pathname.endsWith("/") && pathname.split("/").filter(Boolean).length === 3) {
-        // trailing slash slug e.g. /api/constituencies/st-ives/
         rewritten = pathname.replace(/\/$/, "") + ".json";
       }
     } else if (pathname === "/api/summary" || pathname === "/api/summary/") {
@@ -47,9 +118,6 @@ export default {
       const newUrl = new URL(request.url);
       newUrl.pathname = rewritten;
       newUrl.search = url.search;
-      // If the caller passed ?country=&region=&limit= filters on the list endpoint,
-      // Pages serves a static .json — it ignores search. Do the filtering in the
-      // worker so ?country=Scotland and ?limit=2 actually trim (gateway also uses it).
       const needsFilter =
         (rewritten === "/api/constituencies.json" || rewritten === "/api/constituencies") &&
         (url.searchParams.has("country") || url.searchParams.has("region") || url.searchParams.has("limit"));
@@ -81,8 +149,6 @@ export default {
       } else {
         const newRequest = new Request(newUrl.toString(), request);
         const res = await env.ASSETS.fetch(newRequest);
-        // Missing .json on disk serves the SPA HTML fallback as 200 — normalize
-        // unknown /api/* ids to a JSON 404 (same contract as known-bad ids).
         if ((res.headers.get("content-type") || "").includes("text/html") && pathname.startsWith("/api/")) {
           return new Response(JSON.stringify({ error: "not found", path: pathname }, null, 2), {
             status: 404,
@@ -95,13 +161,9 @@ export default {
         }
         if (res.status !== 404) return res;
       }
-      // else fall through to original handling below
     }
 
     const res = await env.ASSETS.fetch(request);
-    // Static hosting builds no per-ID 404 file: unknown /api/* ids fall through
-    // to the SPA HTML fallback. Normalize to JSON so agents get a real 404
-    // (same contract the prerendered endpoints return for known-bad ids).
     if (pathname.startsWith("/api/") && (res.headers.get("content-type") || "").includes("text/html")) {
       return new Response(JSON.stringify({ error: "not found", path: pathname }, null, 2), {
         status: 404,

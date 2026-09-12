@@ -4,6 +4,7 @@ import PeekSheet from "../../components/PeekSheet.astro";
 import CommandPalette from "../../components/CommandPalette.astro";
 import MobileEssentials from "../../components/MobileEssentials.astro";
 import ScrollReveal from "../../components/ScrollReveal.astro";
+import AgentView from "../../components/AgentView.astro";
 import WebMCP from "../../components/WebMCP.astro";
 import { ClientRouter } from "astro:transitions";
 import { partyLiveShare } from "../../lib/cohorts";
@@ -310,6 +311,8 @@ const personShareText =
       {nextId ? <a href={`/candidates/${nextId}`}>Next candidate →</a> : <span />}
     </nav>
     </main>
+
+    <AgentView mode="candidate" name={person.name} samplePersonId={person.id} />
 
     <footer>
       <p>

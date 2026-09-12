@@ -73,6 +73,12 @@ def main() -> None:
     ap.add_argument("--limit", type=int, default=0, help="0 = no limit")
     ap.add_argument("--records-only", action="store_true")
     ap.add_argument(
+        "--ids",
+        type=str,
+        default="",
+        help="comma-separated Democracy Club person ids (demo subset), e.g. 5693,17372,2504",
+    )
+    ap.add_argument(
         "--blast",
         action="store_true",
         help="fire raw signed txs without waiting for receipts (~50x faster)",
@@ -99,6 +105,12 @@ def main() -> None:
     parent = state["parent_name"]
 
     candidates = load_audit()
+    if args.ids.strip():
+        wanted = {x.strip() for x in args.ids.split(",") if x.strip()}
+        candidates = [c for c in candidates if str(c["person_id"]) in wanted]
+        if not candidates:
+            raise SystemExit(f"no candidates matched --ids {args.ids!r}")
+        print(f"--ids filter: {len(candidates)} candidate(s)", flush=True)
     if args.limit:
         candidates = candidates[args.start : args.start + args.limit]
     elif args.start:

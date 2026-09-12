@@ -1,25 +1,25 @@
 ---
 // Agent view — "what this page looks like to a machine".
 //
-// Sits on every seat page, where the human URL and the metered resource are the
-// same string (/constituencies/x ↔ /api/constituencies/x), so the abstraction is
-// legible in one glance.
-//
-// Uses <details> for the disclosure itself, so opening it needs no JS. JS only
-// enhances: user-triggered live fetches (free JSON, gateway 402, The Graph).
-// Nothing is mocked, nothing fires without a click.
+// Seat pages: free JSON + x402 + MCP + live Graph.
+// Candidate pages: free candidate JSON + live Graph + compare tool hint.
+// Nothing mocked; live fetches only on click.
 
 interface Props {
-  slug: string;
+  mode?: "seat" | "candidate";
+  slug?: string;
   name: string;
-  /** Democracy Club person id for a candidate in this seat — Graph Candidate.id */
+  /** Democracy Club person id — Graph Candidate.id */
   samplePersonId?: string;
 }
-const { slug, name, samplePersonId = "5693" } = Astro.props;
+const mode = Astro.props.mode ?? "seat";
+const slug = Astro.props.slug ?? "";
+const name = Astro.props.name;
+const samplePersonId = Astro.props.samplePersonId ?? "5693";
 
 const GATEWAY = "https://civicord-aieyq.bazgateway.com";
-const SUBGRAPH = "https://api.studio.thegraph.com/query/101650/civicord/v0.0.3";
-const mcents = 200; // $0.002 per jurisdiction — the pay-per-seat unit
+const SUBGRAPH = "https://api.studio.thegraph.com/query/101650/civicord/v0.0.4";
+const mcents = 200;
 const priceUsd = (mcents / 1000 / 100).toFixed(4).replace(/0+$/, "").replace(/\.$/, ".0");
 
 const subgraphQuery = `{
@@ -30,52 +30,95 @@ const subgraphQuery = `{
   _meta { block { number } hasIndexingErrors }
 }`;
 
-// Built as a string so the template braces are content, not expressions.
-const mcpSnippet = `getConstituency(slug="${slug}")
+const mcpSnippet =
+  mode === "candidate"
+    ? `compare_onchain_to_ledger(id="${samplePersonId}")
+-> { onchain, ledger, verdict[] }`
+    : `getConstituency(slug="${slug}")
 -> { name: "${name}", stats: { sites, live, livePct, ... }, candidates: [ ... ] }`;
 ---
 
-<details class="agentview" data-slug={slug} data-gateway={GATEWAY} data-person={samplePersonId} data-subgraph={SUBGRAPH}>
+<details
+  class="agentview"
+  data-mode={mode}
+  data-slug={slug}
+  data-gateway={GATEWAY}
+  data-person={samplePersonId}
+  data-subgraph={SUBGRAPH}
+>
   <summary class="av-summary">
     <span class="av-kicker">Agent view</span>
     <span class="av-title">What this page looks like to a machine</span>
-    <span class="av-price" title={`${mcents} mcents per call`}>${priceUsd} / seat</span>
+    {mode === "seat" ? (
+      <span class="av-price" title={`${mcents} mcents per call`}>${priceUsd} / seat</span>
+    ) : (
+      <span class="av-price" title="Graph + ledger join">Graph live</span>
+    )}
   </summary>
 
   <div class="av-body">
     <p class="muted av-lede">
-      Humans read this page for free. Agents pay per jurisdiction — this exact
-      record is one metered call. Everything below is live; nothing here is mocked.
+      {mode === "seat" ? (
+        <>
+          Humans read this page for free. Agents pay per jurisdiction — this exact
+          record is one metered call. Everything below is live; nothing here is mocked.
+        </>
+      ) : (
+        <>
+          Humans read this candidate free. Agents join the live The Graph registration
+          with the audit ledger — same tools WebMCP exposes. Nothing here is mocked.
+        </>
+      )}
     </p>
 
     <div class="av-grid">
-      <section class="av-card">
-        <h3><span class="av-n">1</span> Free, same-origin</h3>
-        <code class="av-url">/api/constituencies/{slug}.json</code>
-        <p class="muted av-note">Plain static JSON, CORS <code>*</code>, no key, 5-minute cache.</p>
-        <button type="button" class="btn-ghost btn-sm" data-av="free">Fetch it</button>
-        <pre class="av-out" data-av-out="free" hidden></pre>
-      </section>
+      {mode === "seat" ? (
+        <>
+          <section class="av-card">
+            <h3><span class="av-n">1</span> Free, same-origin</h3>
+            <code class="av-url">/api/constituencies/{slug}.json</code>
+            <p class="muted av-note">Plain static JSON, CORS <code>*</code>, no key, 5-minute cache.</p>
+            <button type="button" class="btn-ghost btn-sm" data-av="free">Fetch it</button>
+            <pre class="av-out" data-av-out="free" hidden></pre>
+          </section>
+
+          <section class="av-card">
+            <h3><span class="av-n">2</span> Metered via x402</h3>
+            <code class="av-url">{GATEWAY}/api/constituencies/{slug}</code>
+            <p class="muted av-note">One jurisdiction = one charge. Expect <b>402</b>, not an error.</p>
+            <button type="button" class="btn-ghost btn-sm" data-av="paid">Probe it</button>
+            <pre class="av-out" data-av-out="paid" hidden></pre>
+          </section>
+
+          <section class="av-card">
+            <h3><span class="av-n">3</span> MCP tool</h3>
+            <p class="muted av-note">Same call, as an agent would invoke it over MCP.</p>
+            <pre class="av-code copyable" title="Click to copy" data-copy={mcpSnippet}>{mcpSnippet}</pre>
+          </section>
+        </>
+      ) : (
+        <>
+          <section class="av-card">
+            <h3><span class="av-n">1</span> Free ledger JSON</h3>
+            <code class="av-url">/api/candidates/{samplePersonId}.json</code>
+            <p class="muted av-note">Static audit record — websites, status, ENS hint.</p>
+            <button type="button" class="btn-ghost btn-sm" data-av="cand">Fetch it</button>
+            <pre class="av-out" data-av-out="cand" hidden></pre>
+          </section>
+
+          <section class="av-card">
+            <h3><span class="av-n">2</span> WebMCP join</h3>
+            <p class="muted av-note">Preferred agent tool — live Graph + ledger verdict.</p>
+            <pre class="av-code copyable" title="Click to copy" data-copy={mcpSnippet}>{mcpSnippet}</pre>
+          </section>
+        </>
+      )}
 
       <section class="av-card">
-        <h3><span class="av-n">2</span> Metered via x402</h3>
-        <code class="av-url">{GATEWAY}/api/constituencies/{slug}</code>
-        <p class="muted av-note">One jurisdiction = one charge. Expect <b>402</b>, not an error.</p>
-        <button type="button" class="btn-ghost btn-sm" data-av="paid">Probe it</button>
-        <pre class="av-out" data-av-out="paid" hidden></pre>
-      </section>
-
-      <section class="av-card">
-        <h3><span class="av-n">3</span> MCP tool</h3>
-        <p class="muted av-note">Same call, as an agent would invoke it over MCP.</p>
-        <pre class="av-code copyable" data-av-out="mcp" title="Click to copy" data-copy={mcpSnippet}>{mcpSnippet}</pre>
-      </section>
-
-      <section class="av-card">
-        <h3><span class="av-n">4</span> The Graph (live)</h3>
+        <h3><span class="av-n">{mode === "seat" ? "4" : "3"}</span> The Graph (live)</h3>
         <p class="muted av-note">
-          On-chain <code>p{samplePersonId}.civicord.eth</code> via Subgraph Studio —
-          person id, not seat slug.
+          On-chain <code>p{samplePersonId}.civicord.eth</code> via
+          <code>/api/graph</code> (Studio proxy) — person id, not seat slug.
         </p>
         <pre class="av-code copyable" title="Click to copy" data-copy={subgraphQuery}>{subgraphQuery}</pre>
         <button type="button" class="btn-ghost btn-sm" data-av="graph" style="margin-top:0.45rem">Query The Graph</button>
@@ -87,6 +130,7 @@ const mcpSnippet = `getConstituency(slug="${slug}")
       Verify independently: <a href={`https://app.ens.domains/p${samplePersonId}.civicord.eth`} rel="noopener">ENS</a> ·
       <a href="https://sepolia.etherscan.io/address/0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67" rel="noopener">resolver</a> ·
       <a href="https://thegraph.com/studio/subgraph/civicord" rel="noopener">Subgraph Studio</a> ·
+      <a href="/api/graph">/api/graph</a> ·
       <a href="/openapi.yaml">openapi.yaml</a> ·
       <a href="https://github.com/sneldao/civicord" rel="noopener">source</a>
     </p>
@@ -94,7 +138,7 @@ const mcpSnippet = `getConstituency(slug="${slug}")
 </details>
 
 <script>
-  import { compareOnchainToLedger, querySubgraph, SUBGRAPH_URL } from "../lib/graph";
+  import { compareOnchainToLedger, graphEndpoint, querySubgraph } from "../lib/graph";
 
   const GATEWAY = "https://civicord-aieyq.bazgateway.com";
 
@@ -135,6 +179,25 @@ const mcpSnippet = `getConstituency(slug="${slug}")
       out.textContent =
         `HTTP ${res.status} ${res.headers.get("content-type") ?? ""} · ${text.length} bytes\n\n` +
         trim(body);
+    } catch (err) {
+      out.textContent = `Request failed: ${(err as Error).message}`;
+    }
+  }
+
+  async function fetchCandidate(id: string, out: HTMLElement) {
+    out.hidden = false;
+    out.textContent = "GET /api/candidates/" + id + ".json …";
+    try {
+      const res = await fetch(`/api/candidates/${encodeURIComponent(id)}.json`, {
+        headers: { accept: "application/json" },
+      });
+      const text = await res.text();
+      let body: unknown = text;
+      try {
+        body = JSON.parse(text);
+      } catch {}
+      out.textContent =
+        `HTTP ${res.status} · ${text.length} bytes\n\n` + trim(body);
     } catch (err) {
       out.textContent = `Request failed: ${(err as Error).message}`;
     }
@@ -187,7 +250,7 @@ const mcpSnippet = `getConstituency(slug="${slug}")
 
   async function queryGraph(personId: string, out: HTMLElement) {
     out.hidden = false;
-    out.textContent = `POST ${SUBGRAPH_URL} … candidate(${personId}) + compare`;
+    out.textContent = `POST ${graphEndpoint()} … candidate(${personId}) + compare`;
     try {
       const [raw, compare] = await Promise.all([
         querySubgraph<{
@@ -204,7 +267,10 @@ const mcpSnippet = `getConstituency(slug="${slug}")
       ]);
       out.textContent =
         `Studio block ${raw._meta.block.number} · errors=${raw._meta.hasIndexingErrors}\n\n` +
-        trim({ candidate: raw.candidate, verdict: compare.verdict, onchain: compare.onchain, ledger: compare.ledger }, 1400);
+        trim(
+          { candidate: raw.candidate, verdict: compare.verdict, onchain: compare.onchain, ledger: compare.ledger },
+          1400
+        );
     } catch (err) {
       out.textContent = `Graph query failed: ${(err as Error).message}`;
     }
@@ -219,13 +285,16 @@ const mcpSnippet = `getConstituency(slug="${slug}")
     const outFor = (key: string) =>
       root.querySelector<HTMLElement>(`[data-av-out="${key}"]`);
 
-    // Avoid stacking listeners across ClientRouter navigations.
     if (root.dataset.avBound === "1") return;
     root.dataset.avBound = "1";
 
     root.querySelector<HTMLButtonElement>('[data-av="free"]')?.addEventListener("click", () => {
       const out = outFor("free");
       if (out) fetchFree(slug, out);
+    });
+    root.querySelector<HTMLButtonElement>('[data-av="cand"]')?.addEventListener("click", () => {
+      const out = outFor("cand");
+      if (out) fetchCandidate(personId, out);
     });
     root.querySelector<HTMLButtonElement>('[data-av="paid"]')?.addEventListener("click", () => {
       const out = outFor("paid");

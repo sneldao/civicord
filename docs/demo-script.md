@@ -61,7 +61,7 @@ verdict joining on-chain registration to the audit ledger.
 ```bash
 curl -s -X POST -H 'content-type: application/json' \
   -d '{"query":"{ _meta { block { number } hasIndexingErrors } stat(id:\"civicord\") { candidateCount textRecordCount } candidate(id:\"5693\") { id ensName textRecordCount } }"}' \
-  https://api.studio.thegraph.com/query/101650/civicord/v0.0.3
+  https://api.studio.thegraph.com/query/101650/civicord/v0.0.4
 ```
 **Line:** “Agents call `compare_onchain_to_ledger` — live Graph plus the audit JSON —
 so the answer cites both the register and the crawl. Continuity work: we wired Studio
@@ -82,7 +82,7 @@ Overlay cards:
 ## B-roll / captions to bake in
 - Lower-third on every URL change: `?constituency=…` / `?status=gone` / `?party=…`
 - x402 `402 → payment-required → 200` flash (2s)
-- Subgraph `v0.0.3 block 8149999 → indexing → _meta hasIndexingErrors:false` badge (v0.0.2 was faulted — don't show it)
+- Subgraph `v0.0.4` namehash fix → TextChanged joins · `_meta hasIndexingErrors:false` (v0.0.2 faulted — don't show it; v0.0.3 had wrong node keys)
 
 ## What we cut if we hit 4:00
 - Candidate deep-dive (keep only the ynys-mon → st-ives hop)

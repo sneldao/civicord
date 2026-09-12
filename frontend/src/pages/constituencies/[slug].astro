@@ -151,7 +151,7 @@ const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
     <p class="muted browse-hint">Share: copy the URL — it encodes your view · Press <kbd>⌘K</kbd> to jump anywhere. This seat's hex is equal-weight (Automatic Knowledge v5, OGL) · <a href="/methodology">How we checked →</a></p>
     </main>
 
-    <AgentView slug={c.slug} name={c.name} samplePersonId={samplePersonId} />
+    <AgentView mode="seat" slug={c.slug} name={c.name} samplePersonId={samplePersonId} />
     <WebMCP />
 
     <footer>

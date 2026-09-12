@@ -59,7 +59,7 @@ Agent skill for Cursor/Claude: `skills/civicord-graph/SKILL.md` in the repo.
 ## Changes to records
 
 ENS registrations and text-record updates are indexed by The Graph subgraph
-`https://api.studio.thegraph.com/query/101650/civicord/v0.0.3` (entities:
+`https://api.studio.thegraph.com/query/101650/civicord/v0.0.4` (entities:
 `candidate`, `textRecord`, `textRecordChange`, `stat`). Candidate id is the
 Democracy Club person id (e.g. `"5693"`), **not** a constituency slug.
 

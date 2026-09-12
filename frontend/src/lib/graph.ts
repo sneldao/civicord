@@ -4,7 +4,15 @@
  */
 
 export const SUBGRAPH_URL =
-  "https://api.studio.thegraph.com/query/101650/civicord/v0.0.3";
+  "https://api.studio.thegraph.com/query/101650/civicord/v0.0.4";
+
+/** Prefer same-origin worker proxy in the browser; Studio direct in Node/scripts. */
+export function graphEndpoint(): string {
+  if (typeof location !== "undefined" && location?.origin) {
+    return `${location.origin}/api/graph`;
+  }
+  return SUBGRAPH_URL;
+}
 
 export type GraphCandidate = {
   id: string;
@@ -42,13 +50,14 @@ export async function querySubgraph<T>(
   variables?: Record<string, unknown>,
   signal?: AbortSignal
 ): Promise<T> {
-  const res = await fetch(SUBGRAPH_URL, {
+  const endpoint = graphEndpoint();
+  const res = await fetch(endpoint, {
     method: "POST",
     headers: { "content-type": "application/json", accept: "application/json" },
     body: JSON.stringify({ query, variables }),
     signal,
   });
-  if (!res.ok) throw new Error(`Subgraph HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`Subgraph HTTP ${res.status} via ${endpoint}`);
   const body = (await res.json()) as GraphQLResult<T>;
   if (body.errors?.length) {
     throw new Error(body.errors.map((e) => e.message).join("; "));
@@ -72,7 +81,7 @@ export async function getSubgraphMeta(signal?: AbortSignal): Promise<{
     undefined,
     signal
   );
-  return { ...data, endpoint: SUBGRAPH_URL };
+  return { ...data, endpoint: graphEndpoint() };
 }
 
 export async function getOnchainCandidate(
@@ -285,7 +294,7 @@ export async function compareOnchainToLedger(
 
   return {
     personId: id,
-    endpoint: SUBGRAPH_URL,
+    endpoint: graphEndpoint(),
     onchain,
     ledger: ledgerRaw
       ? {

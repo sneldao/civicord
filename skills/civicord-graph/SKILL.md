@@ -10,11 +10,11 @@ Continuity note: Civicord is an existing open-source public-record project. This
 ## Endpoint
 
 ```
-https://api.studio.thegraph.com/query/101650/civicord/v0.0.3
+https://api.studio.thegraph.com/query/101650/civicord/v0.0.4
 ```
 
 Studio UI: https://thegraph.com/studio/subgraph/civicord
-Network: Sepolia · deployment IPFS `QmUcjfa4x4hmuJfkNLUnKHVwWBuRKj9JcXszz26oiZ3KNt`
+Network: Sepolia · **v0.0.4** (namehash join). Same-origin: `POST /api/graph` on civicord.pages.dev.
 
 POST `application/json` body: `{ "query": "...", "variables": { } }`
 Browser CORS allows `*`.
@@ -107,5 +107,5 @@ On Civicord pages, WebMCP tools do this for you:
 ```bash
 curl -s -X POST -H 'content-type: application/json' \
   -d '{"query":"{ _meta { block { number } hasIndexingErrors } stat(id:\"civicord\") { candidateCount textRecordCount } }"}' \
-  https://api.studio.thegraph.com/query/101650/civicord/v0.0.3
+  https://api.studio.thegraph.com/query/101650/civicord/v0.0.4
 ```
