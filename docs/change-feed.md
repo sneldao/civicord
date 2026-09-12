@@ -38,7 +38,8 @@ civicord changes          # → data/out/changes_v0.csv
 
 Frontend build attaches `website.changeSignal` / `person.changeSignal` in
 `candidates.json`. Candidate pages show a “What changed” line; browse accepts
-`?change=`.
+`?change=` and (for the Wayback spike sample) `?sig=` for content significance
+(`unchanged` / `minor` / `major` / `transformed`).
 
 ### What v0 cannot claim
 
@@ -61,7 +62,8 @@ Frontend build attaches `website.changeSignal` / `person.changeSignal` in
 2. **Phase 2 — Text diffs:** significance heuristics + fixed policy taxonomy;
    per-candidate timelines (see [architecture.md](architecture.md)).
    **Spike shipped:** `civicord diff-spike` → `content_diffs.json`; candidate
-   pages show “Content chronology” when a row exists (see [wayback-spike.md](wayback-spike.md)).
+   pages show “Content chronology” when a row exists; browse `?sig=` filters
+   by significance (see [wayback-spike.md](wayback-spike.md)).
 3. **Phase 3 — Themes:** rollups over many diffs; alerts; candidate→MP transition.
 
 License blocker for bulk public reuse of Campaign Lab scrape text remains open

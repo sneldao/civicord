@@ -262,6 +262,26 @@ a .onchain-chip:hover, .ens-record h2 .onchain-chip:hover {
   transform: rotate(-2deg) scale(1.05);
 }
 
+.sig-chip {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.06rem 0.4rem 0.08rem;
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: 3px;
+  vertical-align: 0.12em;
+  border: 1px solid var(--rule);
+  color: var(--muted);
+}
+.sig-chip.sig-unchanged { color: var(--live); border-color: var(--live); }
+.sig-chip.sig-minor { color: var(--live); border-color: color-mix(in srgb, var(--live) 55%, var(--rule)); }
+.sig-chip.sig-major { color: var(--warn); border-color: var(--warn); }
+.sig-chip.sig-transformed { color: var(--gone); border-color: var(--gone); }
+
 /* Click-to-copy ENS name */
 .ens-copy {
   font: inherit;

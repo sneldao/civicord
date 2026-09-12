@@ -253,7 +253,7 @@ def write_docs(results: list[diffing.DiffResult], docs_path: Path) -> None:
         "\n## Reproduce\n\n"
         "```bash\n"
         "civicord changes\n"
-        "civicord wayback-spike --limit 50   # resume-friendly; caches under data/out/\n"
+        "civicord wayback-spike --limit 150  # resume-friendly; caches under data/out/\n"
         "civicord diff-spike                 # re-extract + significance (offline)\n"
         "```\n"
     )

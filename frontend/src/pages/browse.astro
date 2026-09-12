@@ -9,6 +9,7 @@ import ScrollReveal from "../components/ScrollReveal.astro";
 import WebMCP from "../components/WebMCP.astro";
 import "../styles/global.css";
 import constituenciesRaw from "../data/constituencies.json";
+import contentDiffsRaw from "../data/content_diffs.json";
 
 // Validated at build time by src/content.config.ts
 const all = await getCollection("candidates");
@@ -17,6 +18,12 @@ const websites = candidates.flatMap((c) => c.websites);
 const live = websites.filter((w) => w.audit?.statusClass === "live");
 const dead = websites.filter((w) => w.audit?.statusClass === "dns_error");
 
+const diffsRoot: any = contentDiffsRaw as any;
+const significanceByPerson: Record<string, string> = {};
+for (const [pid, row] of Object.entries(diffsRoot?.byPerson ?? {})) {
+  const sig = (row as any)?.significance;
+  if (sig) significanceByPerson[pid] = String(sig);
+}
 const VALID_STATUSES = new Set([
   "live", "gone", "redirected",
   "http_error", "dns_error", "connection_error",
@@ -50,6 +57,24 @@ const changeFilterLabels: Record<string, string> = {
 };
 const VALID_CHANGES = new Set(Object.keys(changeFilterLabels));
 
+const significanceFilterLabels: Record<string, string> = {
+  unchanged: "Unchanged (high overlap)",
+  minor: "Minor rewrite",
+  major: "Major rewrite",
+  transformed: "Transformed",
+};
+const VALID_SIGS = new Set(Object.keys(significanceFilterLabels));
+const significanceCounts: Record<string, number> = {
+  unchanged: 0,
+  minor: 0,
+  major: 0,
+  transformed: 0,
+};
+for (const c of candidates) {
+  const s = significanceByPerson[c.id];
+  if (s && s in significanceCounts) significanceCounts[s] += 1;
+}
+const significanceSampleN = Object.keys(significanceByPerson).length;
 const legendGroups: Array<[string, string, string[]]> = [
   ["g-live", "Live", ["live"]],
   ["g-gone", "Gone", ["dns_error", "connection_error"]],
@@ -148,6 +173,15 @@ function slugify(name: string): string {
           <option value={value}>{label}</option>
         ))}
       </select>
+      <label class="visually-hidden" for="sig">Filter by content significance</label>
+      <select id="sig" aria-label="Filter by content significance (Wayback spike)">
+        <option value="all">All content diffs ({significanceSampleN} scored)</option>
+        {Object.entries(significanceFilterLabels).map(([value, label]) => (
+          <option value={value}>
+            {label} ({significanceCounts[value] ?? 0})
+          </option>
+        ))}
+      </select>
       <label class="visually-hidden" for="party">Filter by party</label>
       <select id="party" aria-label="Filter by party">
         <option value="all">All parties</option>
@@ -183,6 +217,7 @@ function slugify(name: string): string {
             c.websites.map((w) => {
               const st = w.audit?.statusClass ?? "not_audited";
               const change = w.changeSignal ?? "unaudited";
+              const contentSig = significanceByPerson[c.id] ?? "";
               const constSlugs = w.posts.map((p) => slugify(p)).join("|");
               const postsStr = w.posts.join(" ");
               return (
@@ -190,6 +225,7 @@ function slugify(name: string): string {
                   class={`row-st-${st}`}
                   data-status={st}
                   data-change={change}
+                  data-sig={contentSig}
                   data-redirected={w.audit?.redirected ? "1" : "0"}
                   data-party={w.parties.map((p) => p.toLowerCase()).join("|")}
                   data-constituency={constSlugs}
@@ -198,6 +234,11 @@ function slugify(name: string): string {
                   <td class="who">
                     <a class="who-name" href={`/candidates/${c.id}`}>{c.name}</a>
                     {c.onchain && <span class="onchain-chip" title={`${c.onchain.ens} — permanent public record`}>On-chain ✓</span>}
+                    {contentSig && (
+                      <span class={`sig-chip sig-${contentSig}`} title="Wayback vs April content significance">
+                        {contentSig}
+                      </span>
+                    )}
                   </td>
                   <td class="muted" data-label="Party">{w.parties.join(", ")}</td>
                   <td class="muted" data-label="Election">{w.elections[0]}</td>
@@ -240,10 +281,11 @@ function slugify(name: string): string {
       </p>
     </footer>
 
-    <script define:vars={{ statuses: cohortBoot.statuses, parties: cohortBoot.parties, changeSignals: [...VALID_CHANGES], randomIds, goneCount, liveCount, constituencySlugs: [...constituencySlugs], constituencyList: constituencies.map((c) => ({ slug: c.slug, name: c.name, stats: c.stats })) }}>
+    <script define:vars={{ statuses: cohortBoot.statuses, parties: cohortBoot.parties, changeSignals: [...VALID_CHANGES], significanceClasses: [...VALID_SIGS], randomIds, goneCount, liveCount, constituencySlugs: [...constituencySlugs], constituencyList: constituencies.map((c) => ({ slug: c.slug, name: c.name, stats: c.stats })) }}>
       window.__COHORT_STATUSES = statuses;
       window.__COHORT_PARTIES = parties;
       window.__COHORT_CHANGES = changeSignals;
+      window.__COHORT_SIGS = significanceClasses;
       window.__COHORT_CONSTITUENCIES = constituencySlugs;
       window.__CONSTITUENCY_LIST = constituencyList;
       const BROWSE_IDS = randomIds;
@@ -266,6 +308,7 @@ function slugify(name: string): string {
         const q = document.getElementById("q");
         const status = document.getElementById("status");
         const change = document.getElementById("change");
+        const sig = document.getElementById("sig");
         const party = document.getElementById("party");
         const count = document.getElementById("count");
         const noresults = document.getElementById("noresults");
@@ -284,6 +327,7 @@ function slugify(name: string): string {
         const bannerLink = document.getElementById("constituency-banner-link");
         const clearConstituencyBtn = document.getElementById("clear-constituency");
         const VALID_CHANGES = new Set(window.__COHORT_CHANGES ?? []);
+        const VALID_SIGS = new Set(window.__COHORT_SIGS ?? []);
 
         // store originals for highlight restore
         for (const tr of rows) {
@@ -306,6 +350,7 @@ function slugify(name: string): string {
           if (q.value.trim()) out.set("q", q.value.trim().slice(0, 120));
           if (status.value !== "all") out.set("status", status.value);
           if (change && change.value !== "all") out.set("change", change.value);
+          if (sig && sig.value !== "all") out.set("sig", sig.value);
           if ((party?.value ?? "all") !== "all") out.set("party", party.value);
           if (activeConstituency) out.set("constituency", activeConstituency);
           if (currentPage > 1) out.set("page", String(currentPage));
@@ -408,6 +453,7 @@ function slugify(name: string): string {
           const needle = q.value.trim().toLowerCase();
           const want = status.value;
           const wantChange = change?.value ?? "all";
+          const wantSig = sig?.value ?? "all";
           const wantParty = party?.value ?? "all";
 
           // virtual status "redirected" filters on the redirected flag
@@ -424,12 +470,14 @@ function slugify(name: string): string {
               : wantGone ? isGone
               : tr.dataset.status === want;
             const changeMatches = wantChange === "all" || tr.dataset.change === wantChange;
+            const sigMatches = wantSig === "all" || tr.dataset.sig === wantSig;
             const constituencyMatches = !activeConstituency || (tr.dataset.constituency ?? "").split("|").includes(activeConstituency);
             const matches =
               (wantParty === "all" || (tr.dataset.party ?? "").split("|").includes(wantParty)) &&
               (!needle || fuzzyMatch(tr.dataset.haystack, needle)) &&
               statusMatches &&
               changeMatches &&
+              sigMatches &&
               (!legendClasses || legendClasses.includes(tr.dataset.status)) &&
               constituencyMatches;
             tr.dataset.matched = matches ? "1" : "0";
@@ -488,7 +536,7 @@ function slugify(name: string): string {
             }
           }
 
-          const isDefault = !needle && want === "all" && wantParty === "all" && !legendClasses && !activeConstituency;
+          const isDefault = !needle && want === "all" && wantChange === "all" && wantSig === "all" && wantParty === "all" && !legendClasses && !activeConstituency;
           if (total === 0) {
             count.textContent = "no matches";
             if (noresultsQuery) noresultsQuery.textContent = needle ? ` for “${q.value.trim().slice(0,40)}”` : "";
@@ -531,6 +579,7 @@ function slugify(name: string): string {
         q.addEventListener("input", () => { currentPage = 1; syncUrl(); apply(); });
         status.addEventListener("change", () => { currentPage = 1; syncUrl(); apply(); });
         change?.addEventListener("change", () => { currentPage = 1; syncUrl(); apply(); });
+        sig?.addEventListener("change", () => { currentPage = 1; syncUrl(); apply(); });
         party?.addEventListener("change", () => { currentPage = 1; syncUrl(); apply(); });
         legend.forEach((btn) =>
           btn.addEventListener("click", () => {
@@ -553,6 +602,7 @@ function slugify(name: string): string {
           q.value = "";
           status.value = "all";
           if (change) change.value = "all";
+          if (sig) sig.value = "all";
           if (party) party.value = "all";
           legendClasses = null;
           legend.forEach((b) => b.setAttribute("aria-pressed", "false"));
@@ -643,12 +693,14 @@ function slugify(name: string): string {
         const qp = (params.get("party") ?? "").toLowerCase();
         const qs = params.get("status") ?? "";
         const qchange = params.get("change") ?? "";
+        const qsig = params.get("sig") ?? "";
         const qq = params.get("q") ?? "";
         const qc = (params.get("constituency") ?? "").toLowerCase();
         const qpage = parseInt(params.get("page") ?? "1", 10);
         if (party && qp && bootParties.includes(qp)) party.value = qp;
         if (qs && bootStatuses.includes(qs)) status.value = qs;
         if (change && qchange && VALID_CHANGES.has(qchange)) change.value = qchange;
+        if (sig && qsig && VALID_SIGS.has(qsig)) sig.value = qsig;
         if (qc && bootConstituencies.includes(qc)) activeConstituency = qc;
         if (qq) q.value = qq.slice(0, 120);
         if (Number.isFinite(qpage) && qpage > 1) currentPage = Math.min(qpage, 500);

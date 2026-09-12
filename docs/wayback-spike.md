@@ -28,11 +28,12 @@ coverage fixed the join; see the section below for the current score table.
 ## What this unlocks
 
 1. **Scale CDX + `id_` further** — treat Wayback as primary for dead domains;
-   enlarge past 50 once rate limits allow.
+   enlarge past 50 (`--limit 150` in flight / resume-friendly).
 2. **Normalize + significance — shipped** — `civicord diff-spike` (trafilatura +
    token coverage); surface on timelines via `content_diffs.json`.
-3. **On-chain next:** `snapshot_sha256` text records once we trust the body.
-4. **Product next:** browse filter by significance; theme rollups over many diffs.
+3. **Browse filter — shipped** — `/browse?sig=transformed` (etc.).
+4. **On-chain next:** `snapshot_sha256` text records once we trust the body.
+5. **Product next:** theme rollups over many diffs.
 
 # Normalized diff spike
 
@@ -119,6 +120,6 @@ Artifacts: `data/out/wayback_spike/diff_summary.csv` (gitignored under `data/`).
 
 ```bash
 civicord changes
-civicord wayback-spike --limit 50   # resume-friendly; caches under data/out/
+civicord wayback-spike --limit 150  # resume-friendly; caches under data/out/
 civicord diff-spike                 # re-extract + significance (offline)
 ```
