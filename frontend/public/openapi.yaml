@@ -399,6 +399,11 @@ components:
           properties:
             ens: { type: string, example: p2504.civicord.eth }
             status: { type: string, nullable: true }
+        changeSignal:
+          type: string
+          nullable: true
+          enum: [gone, repurposed_suspect, redirected, still_attested, other, unaudited]
+          example: still_attested
 
     Stats:
       type: object
@@ -425,12 +430,24 @@ components:
         live: { type: integer }
         gone: { type: integer }
         redirected: { type: integer }
+        changeSignals:
+          type: object
+          additionalProperties: { type: integer }
+          description: Exclusive change-signal counts (see docs/change-feed.md)
+          example:
+            gone: 441
+            repurposed_suspect: 448
+            redirected: 471
+            still_attested: 738
+            other: 277
+            unaudited: 0
         constituencies: { type: integer }
         withSites: { type: integer }
         emptySeats: { type: integer }
         onchain: { type: integer }
         auditedAt: { type: string, format: date }
         source: { type: string }
+        changeFeed: { type: string, format: uri }
 
     Error:
       type: object

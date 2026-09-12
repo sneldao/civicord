@@ -69,6 +69,33 @@ const pages = readCsv("pages.csv", { required: false });
 
 const auditByUrl = new Map(auditRows.map((r) => [r.url, r]));
 
+// Keep in sync with src/civicord/change_signal.py classify_change_signal().
+const CHANGE_SEVERITY = {
+  gone: 0,
+  repurposed_suspect: 1,
+  redirected: 2,
+  other: 3,
+  still_attested: 4,
+  unaudited: 5,
+};
+
+function classifyChangeSignal(audit) {
+  if (!audit) return "unaudited";
+  const sc = audit.statusClass || "";
+  if (sc === "dns_error" || sc === "connection_error") return "gone";
+  if (sc === "live" && audit.nameFound === false) return "repurposed_suspect";
+  if (audit.redirected) return "redirected";
+  if (sc === "live") return "still_attested";
+  return "other";
+}
+
+function rollupChangeSignal(signals) {
+  if (!signals.length) return "unaudited";
+  return signals.reduce((best, s) =>
+    (CHANGE_SEVERITY[s] ?? 99) < (CHANGE_SEVERITY[best] ?? 99) ? s : best
+  );
+}
+
 // Keep the "Archived scrape" evidence table sane: the raw scrape has ~72k
 // pages (154M chars). Committing/rendering all of them would bloat the repo
 // (~29MB JSON) and the built HTML (~40MB dist). Cap at the 8 most substantial
@@ -101,20 +128,23 @@ for (const w of websites) {
   }
   const person = persons.get(w.person_id);
   const a = auditByUrl.get(w.url);
+  const audit = a
+    ? {
+        statusClass: a.status_class,
+        statusCode: a.status_code || null,
+        redirected: a.redirected === "True",
+        finalUrl: a.final_url || null,
+        nameFound: a.name_found === "" ? null : a.name_found === "True",
+      }
+    : null;
+  const changeSignal = classifyChangeSignal(audit);
   person.websites.push({
     url: w.url,
     elections: w.elections ? w.elections.split(";") : [],
     parties: w.parties ? w.parties.split(";") : [],
     posts: w.posts ? w.posts.split(";") : [],
-    audit: a
-      ? {
-          statusClass: a.status_class,
-          statusCode: a.status_code || null,
-          redirected: a.redirected === "True",
-          finalUrl: a.final_url || null,
-          nameFound: a.name_found === "" ? null : a.name_found === "True",
-        }
-      : null,
+    audit,
+    changeSignal,
   });
 }
 // On-chain ENS records (optional — written at the end of a publish run)
@@ -132,6 +162,7 @@ for (const r of manifestRows) {
 for (const person of persons.values()) {
   person.pages = pagesByPerson.get(person.id) ?? [];
   person.onchain = onchainByPerson.get(person.id) ?? null;
+  person.changeSignal = rollupChangeSignal(person.websites.map((w) => w.changeSignal));
 }
 
 const data = [...persons.values()].sort((a, b) => a.name.localeCompare(b.name));
@@ -139,4 +170,11 @@ mkdirSync(outDir, { recursive: true });
 writeFileSync(path.join(outDir, "candidates.json"), JSON.stringify(data));
 
 const siteCount = data.reduce((n, p) => n + p.websites.length, 0);
+const signalCounts = {};
+for (const p of data) {
+  for (const w of p.websites) {
+    signalCounts[w.changeSignal] = (signalCounts[w.changeSignal] || 0) + 1;
+  }
+}
 console.log(`Wrote ${data.length} persons (${siteCount} websites, ${pages.length} scraped pages) -> src/data/candidates.json`);
+console.log(`Change signals: ${JSON.stringify(signalCounts)}`);

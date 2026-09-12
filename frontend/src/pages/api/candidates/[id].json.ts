@@ -83,6 +83,7 @@ export const GET: APIRoute = async ({ params }) => {
       ? { ens: p.onchain.ens, status: p.onchain.status ?? null, node: p.onchain.node ?? null }
       : { ens, status: null, node: null },
     verifyOnchain: "/api/ens?id=" + p.id,
+    changeSignal: p.changeSignal ?? null,
     websites: p.websites.map((w: any) => ({
       url: w.url,
       status: w.audit?.statusClass ?? "unknown",
@@ -90,6 +91,7 @@ export const GET: APIRoute = async ({ params }) => {
       nameFound: w.audit?.nameFound ?? null,
       redirected: w.audit?.redirected ?? false,
       finalUrl: w.audit?.finalUrl ?? w.url,
+      changeSignal: w.changeSignal ?? null,
       elections: w.elections ?? [],
       parties: (w.parties ?? []).filter(Boolean),
       posts: (w.posts ?? []).filter(Boolean),

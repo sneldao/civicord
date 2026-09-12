@@ -1,4 +1,4 @@
-"""Civicord CLI: download, ingest, audit, report."""
+"""Civicord CLI: download, ingest, audit, report, changes."""
 
 from __future__ import annotations
 
@@ -230,6 +230,75 @@ def cmd_report(args: argparse.Namespace) -> None:
     print(f"Saved: {out_md}")
 
 
+def cmd_changes(args: argparse.Namespace) -> None:
+    """Derive change signals from audit_liveness.csv → changes_v0.csv.
+
+    Joins websites.csv when present so counts match frontend build-data.mjs.
+    """
+    from . import change_signal
+
+    out = args.data_dir / "out"
+    audit_csv = out / "audit_liveness.csv"
+    with open(audit_csv, encoding="utf-8") as f:
+        audit_by_url = {r["url"]: r for r in csv.DictReader(f)}
+
+    websites_csv = out / "websites.csv"
+    if websites_csv.exists():
+        with open(websites_csv, encoding="utf-8") as f:
+            site_rows = list(csv.DictReader(f))
+        audit_rows = []
+        for w in site_rows:
+            a = audit_by_url.get(w["url"])
+            if a:
+                audit_rows.append(a)
+            else:
+                audit_rows.append(
+                    {
+                        "person_id": w.get("person_id", ""),
+                        "person_name": w.get("person_name", ""),
+                        "url": w["url"],
+                        "status_class": "",
+                        "status_code": "",
+                        "redirected": "False",
+                        "final_url": "",
+                        "name_found": "",
+                        "_unaudited": "1",
+                    }
+                )
+        rows = []
+        for r in audit_rows:
+            if r.get("_unaudited") == "1":
+                rows.append(
+                    {
+                        "person_id": r["person_id"],
+                        "person_name": r["person_name"],
+                        "url": r["url"],
+                        "change_signal": "unaudited",
+                        "status_class": "",
+                        "status_code": "",
+                        "redirected": "False",
+                        "final_url": "",
+                        "name_found": "",
+                        "checked_at": change_signal.CHECKED_AT,
+                        "label": change_signal.LABELS["unaudited"],
+                    }
+                )
+            else:
+                rows.extend(change_signal.rows_from_audit([r]))
+    else:
+        with open(audit_csv, encoding="utf-8") as f:
+            rows = change_signal.rows_from_audit(list(csv.DictReader(f)))
+
+    out_csv = out / "changes_v0.csv"
+    change_signal.write_changes_csv(rows, out_csv)
+    counts = change_signal.summarize(rows)
+    print(f"Wrote {len(rows)} rows → {out_csv}")
+    for sig in change_signal.SIGNALS:
+        n = counts.get(sig, 0)
+        if n:
+            print(f"  {sig:<22} {n:>5}")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="civicord", description="Civicord: UK candidate website tracker"
@@ -266,6 +335,12 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("report", help="Render markdown audit summary")
     p.set_defaults(func=cmd_report)
+
+    p = sub.add_parser(
+        "changes",
+        help="Derive change signals (gone/repurposed/redirected/…) from the liveness audit",
+    )
+    p.set_defaults(func=cmd_changes)
 
     args = parser.parse_args(argv)
     args.func(args)

@@ -2,7 +2,10 @@
 
 Partnership-first: the research (see [../RESEARCH.md](../RESEARCH.md)) shows the
 data layer already exists — civicord's value comes from joining it. These
-conversations should happen **before** writing the diff engine.
+conversations should happen **before** writing the diff engine. Change signals
+v0 (audit-derived gone / repurpose / redirect classes) already shipped — see
+[change-feed.md](change-feed.md); full text diffs still wait on T₁ bodies +
+Campaign Lab license clarity.
 
 ## Priority order
 

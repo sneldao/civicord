@@ -18,6 +18,16 @@ const websiteSchema = z.object({
     })
     .nullable()
     .optional(),
+  changeSignal: z
+    .enum([
+      "gone",
+      "repurposed_suspect",
+      "redirected",
+      "still_attested",
+      "other",
+      "unaudited",
+    ])
+    .optional(),
 });
 
 const candidateSchema = z.object({
@@ -34,6 +44,16 @@ const candidateSchema = z.object({
     )
     .optional()
     .default([]),
+  changeSignal: z
+    .enum([
+      "gone",
+      "repurposed_suspect",
+      "redirected",
+      "still_attested",
+      "other",
+      "unaudited",
+    ])
+    .optional(),
   onchain: z
     .object({
       ens: z.string(),

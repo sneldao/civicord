@@ -28,6 +28,12 @@ roughly 17 months after the April 2025 scrape.** The other 36% are gone or broke
 
 ## Why this matters
 
+Survival is the baseline, not the product. Phase 0 answers *whether the URL
+still works*; the change feed answers *what kind of change that implies* —
+see [change-feed.md](change-feed.md) for signals v0 (`gone` /
+`repurposed_suspect` / `redirected` / `still_attested`) derived from this
+audit. Paragraph-level diffs still need a second corpus (Wayback / re-crawl).
+
 The US analogues (Library of Congress US Elections Web Archive, EDGI) archive
 *federal* sites continuously. No UK project maintains even a **liveness
 baseline** for candidates. This is the smallest publishable artifact — and it

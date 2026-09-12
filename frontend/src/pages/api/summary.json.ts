@@ -19,6 +19,19 @@ export const GET: APIRoute = async () => {
   const redirected = audited.filter((w: any) => w.audit?.redirected);
   const onchain = candidates.filter((c: any) => c.onchain);
 
+  const changeSignals: Record<string, number> = {
+    gone: 0,
+    repurposed_suspect: 0,
+    redirected: 0,
+    still_attested: 0,
+    other: 0,
+    unaudited: 0,
+  };
+  for (const w of websites) {
+    const sig = w.changeSignal ?? "unaudited";
+    changeSignals[sig] = (changeSignals[sig] ?? 0) + 1;
+  }
+
   const body = {
     candidates: candidates.length,
     websites: websites.length,
@@ -26,12 +39,14 @@ export const GET: APIRoute = async () => {
     live: live.length,
     gone: gone.length,
     redirected: redirected.length,
+    changeSignals,
     constituencies: list.length,
     withSites,
     emptySeats,
     onchain: onchain.length,
     auditedAt: "2026-09-07",
     source: "Campaign Lab April 2025 + Democracy Club IDs",
+    changeFeed: "https://github.com/sneldao/civicord/blob/main/docs/change-feed.md",
   };
 
   return new Response(JSON.stringify(body, null, 2), {

@@ -27,6 +27,15 @@ const statusLabels: Record<string, string> = {
   connection_error: "Connection failed",
   other_error: "Error",
 };
+const changeLabels: Record<string, string> = {
+  gone: "Domain no longer resolves",
+  repurposed_suspect:
+    "Page responds, but the candidate’s surname is absent — may have been repurposed",
+  redirected: "URL now redirects elsewhere",
+  still_attested: "Still live; surname still present",
+  other: "Audited, but not a clean survival/repurpose class",
+  unaudited: "No audit yet",
+};
 const parties = [...new Set(person.websites.flatMap((w) => w.parties))];
 const elections = [...new Set(person.websites.flatMap((w) => w.elections))];
 const firstStatus = person.websites[0]?.audit?.statusClass;
@@ -240,6 +249,7 @@ const personShareText =
       <h2>Websites</h2>
       {person.websites.map((w) => {
         const st = w.audit?.statusClass ?? "unknown";
+        const change = w.changeSignal ?? "unaudited";
         return (
           <article class={`entry st-${st}`}>
             <header>
@@ -248,6 +258,10 @@ const personShareText =
               </span>
               <a class="site-url" href={w.url} rel="noopener noreferrer">{w.url}</a>
             </header>
+            <p class={`change-line change-${change}`}>
+              <span class="change-kicker">What changed</span>
+              {changeLabels[change] ?? change}
+            </p>
             <ul class="facts">
               {w.audit?.statusCode && <li>HTTP {w.audit.statusCode} on 2026-09-07</li>}
               {w.audit?.redirected && w.audit.finalUrl && (

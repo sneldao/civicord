@@ -16,6 +16,12 @@ web-monitoring and the Library of Congress's Elections Web Archive — see
 
 ## Status
 
+**2026-09-12 · Change feed v0.** The product north star is a **citable change
+feed** over campaign websites ([docs/change-feed.md](docs/change-feed.md)).
+The survival register (ENS + ledger + Graph) is the spine. v0 derives
+`gone` / `repurposed_suspect` / `redirected` / `still_attested` signals from the
+Sep 2026 audit (not paragraph diffs yet — those need Wayback/re-crawl).
+
 **2026-09-11 · Phase 0 + map + seat context + gateway LIVE (3,031 html + 652 json + 650 deeds).** Liveness audit of all 2,375 scraped candidate
 websites: **64% still live ~17 months after the scrape** — 363 domains gone
 entirely, 372 serving HTTP errors, 659 URLs redirect elsewhere ([docs/phase0-findings.md](docs/phase0-findings.md)). Homepage is narrative-only with cohort cards and hero search →
@@ -49,6 +55,7 @@ pip install -e '.[dev]'
 civicord download --full          # Campaign Lab scrape → data/raw/
 civicord ingest                   # → data/out/{candidacies,websites,pages}.csv
 civicord audit --content-check    # liveness pass → data/out/audit_liveness.csv
+civicord changes                  # change signals → data/out/changes_v0.csv
 civicord report                   # → data/out/audit_report.md
 pytest
 

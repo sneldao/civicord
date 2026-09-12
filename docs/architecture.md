@@ -122,18 +122,23 @@ endpoints humans use — there is no separate agent backend, no key, no mock.
 ## Pipeline phases
 
 ```
-┌─────────┐   ┌────────┐   ┌─────────┐   ┌──────┐   ┌──────────┐    ┌───────┐
-│  ingest  │──▶│ audit  │──▶│ wayback │──▶│ diff │──▶│  outputs │───▶│  map  │
-└─────────┘   └────────┘   └─────────┘   └──────┘   └──────────┘    └───────┘
-  YNR JSON,    liveness,     CDX query,    text diff,  change log site   hex + constituency
-  Campaign     coverage      id_ fetch,    significance, static site,    halftone, pointillist,
-  Lab JSON     stats         sha256        topic tags   Parquet/CDX export  650 pages, OG cards
+┌─────────┐   ┌────────┐   ┌──────────┐   ┌─────────┐   ┌──────┐   ┌──────────┐    ┌───────┐
+│  ingest  │──▶│ audit  │──▶│ changes  │──▶│ wayback │──▶│ diff │──▶│  outputs │───▶│  map  │
+└─────────┘   └────────┘   └──────────┘   └─────────┘   └──────┘   └──────────┘    └───────┘
+  YNR JSON,    liveness,     signals v0     CDX query,    text diff,  change log site   hex + constituency
+  Campaign     coverage      (gone /        id_ fetch,    significance, static site,    halftone, pointillist,
+  Lab JSON     stats         repurpose /    sha256        topic tags   Parquet/CDX export  650 pages, OG cards
+                             redirect)
 ```
 
 - **ingest** — Campaign Lab `assets/json` + Democracy Club YNR export → tidy
   candidates/websites tables.
 - **audit** — HEAD/GET every URL; measure live rate, redirects, repurposing.
   *This number decides how much of the rest is worth building.*
+- **changes** (v0, 2026-09-12) — exclusive `changeSignal` from the audit
+  (`gone` / `repurposed_suspect` / `redirected` / `still_attested` / `other`).
+  See [change-feed.md](change-feed.md). CSV: `data/out/changes_v0.csv` via
+  `civicord changes`. Not paragraph diffs — those need Wayback/re-crawl bodies.
 - **wayback** — CDX API per URL around (a) the April 2025 scrape date and
   (b) the July 2024 GE; fetch with `id_` suffix to strip toolbar; hash + store.
 - **diff** — text-level diff (trafilatura-extracted markdown + difflib) between

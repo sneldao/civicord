@@ -804,6 +804,26 @@ td mark, .who-name mark {
 .facts .fact-redir a { color: var(--warn); }
 .facts .fact-warn { color: var(--warn); }
 
+.change-line {
+  margin: 0.55rem 0 0;
+  font-size: 0.88rem;
+  color: var(--ink);
+  line-height: 1.35;
+}
+.change-kicker {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+.change-gone .change-kicker,
+.change-repurposed_suspect .change-kicker { color: var(--gone); }
+.change-redirected .change-kicker { color: var(--warn); }
+.change-still_attested .change-kicker { color: var(--live); }
+
 /* Archived scrape specimens */
 .specimens pre {
   font-family: var(--mono);

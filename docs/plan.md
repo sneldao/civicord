@@ -71,12 +71,20 @@ Substreams is blockchain ETL; web-archive data can't flow through it.
 
 ## Phases after the sprint
 
+Product north star: a **citable change feed** over campaign websites.
+The survival register (ENS + audit ledger + Graph) is the spine — see
+[change-feed.md](change-feed.md).
+
+- **Phase 0.5 — change signals v0 (now):** derive exclusive signals
+  (`gone` / `repurposed_suspect` / `redirected` / `still_attested` / `other`)
+  from the Sep 2026 audit; surface on candidate pages + browse `?change=`.
+  No second page corpus yet — not paragraph diffs.
 - **Phase 1 — historical baseline (weeks 3–6):** Wayback CDX backfill per URL
   (Apr 2025 ± 30 days; Jul 2024 GE), `id_` fetch + sha256, source per snapshot.
   Dead domains often have richer Wayback coverage than live sites — treat
   Wayback as a primary source, not a fallback. Priority: the 863 non-live
   sites; then redirect-destination clustering (repurposing analysis).
-- **Phase 2 — MVP dataset + static site (weeks 6–12):** text-level diff engine
+- **Phase 2 — text diffs + taxonomy (weeks 6–12):** text-level diff engine
   with significance heuristics; fixed policy taxonomy; per-candidate change
   timelines on the static site; bulk Parquet + CDX-style exports (LoC-style
   data package); license resolution (**open blocker**).
