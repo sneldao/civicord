@@ -183,7 +183,7 @@ from `frontend/` so `dist/` reflects the latest `candidates.json` and map data.
 ```bash
 # From repo root (needs data/out/changes_v0.csv + pages.csv)
 .venv/bin/civicord changes
-.venv/bin/civicord wayback-spike --limit 150   # resume-friendly; caches HTML under data/out/
+.venv/bin/civicord wayback-spike --limit 310   # resume-friendly; caches HTML under data/out/
 .venv/bin/civicord diff-spike                  # writes frontend/src/data/content_diffs.json + docs
 
 cd frontend && npm run build
