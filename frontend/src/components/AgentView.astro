@@ -6,29 +6,28 @@
 // legible in one glance.
 //
 // Uses <details> for the disclosure itself, so opening it needs no JS. JS only
-// enhances: two user-triggered live fetches (the free same-origin JSON, and the
-// gateway's real 402). Nothing is mocked, nothing fires without a click.
-//
-// The gateway's 402 is CORS-readable and exposes its payment headers, which is
-// what makes the live probe possible at all.
+// enhances: user-triggered live fetches (free JSON, gateway 402, The Graph).
+// Nothing is mocked, nothing fires without a click.
 
 interface Props {
   slug: string;
   name: string;
+  /** Democracy Club person id for a candidate in this seat — Graph Candidate.id */
+  samplePersonId?: string;
 }
-const { slug, name } = Astro.props;
+const { slug, name, samplePersonId = "5693" } = Astro.props;
 
 const GATEWAY = "https://civicord-aieyq.bazgateway.com";
+const SUBGRAPH = "https://api.studio.thegraph.com/query/101650/civicord/v0.0.3";
 const mcents = 200; // $0.002 per jurisdiction — the pay-per-seat unit
 const priceUsd = (mcents / 1000 / 100).toFixed(4).replace(/0+$/, "").replace(/\.$/, ".0");
 
 const subgraphQuery = `{
-  candidate(id: "${slug}") {
-    id ensName status url
+  candidate(id: "${samplePersonId}") {
+    id ensName status url personName textRecordCount
+    registeredAt registeredAtBlock owner
   }
-  textRecords(where: { key: "status" }) {
-    id value lastSetAtBlock
-  }
+  _meta { block { number } hasIndexingErrors }
 }`;
 
 // Built as a string so the template braces are content, not expressions.
@@ -36,7 +35,7 @@ const mcpSnippet = `getConstituency(slug="${slug}")
 -> { name: "${name}", stats: { sites, live, livePct, ... }, candidates: [ ... ] }`;
 ---
 
-<details class="agentview" data-slug={slug} data-gateway={GATEWAY}>
+<details class="agentview" data-slug={slug} data-gateway={GATEWAY} data-person={samplePersonId} data-subgraph={SUBGRAPH}>
   <summary class="av-summary">
     <span class="av-kicker">Agent view</span>
     <span class="av-title">What this page looks like to a machine</span>
@@ -73,15 +72,21 @@ const mcpSnippet = `getConstituency(slug="${slug}")
       </section>
 
       <section class="av-card">
-        <h3><span class="av-n">4</span> Change log</h3>
-        <p class="muted av-note">The on-chain record, queryable through The Graph.</p>
+        <h3><span class="av-n">4</span> The Graph (live)</h3>
+        <p class="muted av-note">
+          On-chain <code>p{samplePersonId}.civicord.eth</code> via Subgraph Studio —
+          person id, not seat slug.
+        </p>
         <pre class="av-code copyable" title="Click to copy" data-copy={subgraphQuery}>{subgraphQuery}</pre>
+        <button type="button" class="btn-ghost btn-sm" data-av="graph" style="margin-top:0.45rem">Query The Graph</button>
+        <pre class="av-out" data-av-out="graph" hidden></pre>
       </section>
     </div>
 
     <p class="muted av-foot">
-      Verify independently: <a href={`https://app.ens.domains/${slug}.civicord.eth`} rel="noopener">ENS</a> ·
+      Verify independently: <a href={`https://app.ens.domains/p${samplePersonId}.civicord.eth`} rel="noopener">ENS</a> ·
       <a href="https://sepolia.etherscan.io/address/0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67" rel="noopener">resolver</a> ·
+      <a href="https://thegraph.com/studio/subgraph/civicord" rel="noopener">Subgraph Studio</a> ·
       <a href="/openapi.yaml">openapi.yaml</a> ·
       <a href="https://github.com/sneldao/civicord" rel="noopener">source</a>
     </p>
@@ -89,8 +94,9 @@ const mcpSnippet = `getConstituency(slug="${slug}")
 </details>
 
 <script>
+  import { compareOnchainToLedger, querySubgraph, SUBGRAPH_URL } from "../lib/graph";
+
   const GATEWAY = "https://civicord-aieyq.bazgateway.com";
-  let bound = false;
 
   function b64json(raw: string | null) {
     if (!raw) return null;
@@ -179,13 +185,43 @@ const mcpSnippet = `getConstituency(slug="${slug}")
     }
   }
 
+  async function queryGraph(personId: string, out: HTMLElement) {
+    out.hidden = false;
+    out.textContent = `POST ${SUBGRAPH_URL} … candidate(${personId}) + compare`;
+    try {
+      const [raw, compare] = await Promise.all([
+        querySubgraph<{
+          candidate: unknown;
+          _meta: { block: { number: number }; hasIndexingErrors: boolean };
+        }>(`{
+          candidate(id: "${personId}") {
+            id ensName status url personName textRecordCount
+            registeredAt registeredAtBlock owner
+          }
+          _meta { block { number } hasIndexingErrors }
+        }`),
+        compareOnchainToLedger(personId),
+      ]);
+      out.textContent =
+        `Studio block ${raw._meta.block.number} · errors=${raw._meta.hasIndexingErrors}\n\n` +
+        trim({ candidate: raw.candidate, verdict: compare.verdict, onchain: compare.onchain, ledger: compare.ledger }, 1400);
+    } catch (err) {
+      out.textContent = `Graph query failed: ${(err as Error).message}`;
+    }
+  }
+
   document.addEventListener("astro:page-load", () => {
     const root = document.querySelector(".agentview") as HTMLElement | null;
     if (!root) return;
     const slug = root.dataset.slug ?? "";
+    const personId = root.dataset.person ?? "5693";
 
     const outFor = (key: string) =>
       root.querySelector<HTMLElement>(`[data-av-out="${key}"]`);
+
+    // Avoid stacking listeners across ClientRouter navigations.
+    if (root.dataset.avBound === "1") return;
+    root.dataset.avBound = "1";
 
     root.querySelector<HTMLButtonElement>('[data-av="free"]')?.addEventListener("click", () => {
       const out = outFor("free");
@@ -195,25 +231,20 @@ const mcpSnippet = `getConstituency(slug="${slug}")
       const out = outFor("paid");
       if (out) probePaid(slug, out);
     });
+    root.querySelector<HTMLButtonElement>('[data-av="graph"]')?.addEventListener("click", () => {
+      const out = outFor("graph");
+      if (out) void queryGraph(personId, out);
+    });
 
-    // Click-to-copy on the MCP + subgraph snippets (same feedback as .ens-copy).
     for (const el of root.querySelectorAll<HTMLElement>(".copyable[data-copy]")) {
       el.addEventListener("click", async () => {
+        const text = el.dataset.copy ?? el.textContent ?? "";
         try {
-          await navigator.clipboard.writeText(el.dataset.copy ?? "");
-        } catch {
-          const ta = document.createElement("textarea");
-          ta.value = el.dataset.copy ?? "";
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          ta.remove();
-        }
-        el.classList.add("copied");
-        setTimeout(() => el.classList.remove("copied"), 1200);
+          await navigator.clipboard.writeText(text);
+          el.classList.add("copied");
+          setTimeout(() => el.classList.remove("copied"), 1200);
+        } catch {}
       });
     }
-
-    if (!bound) bound = true;
   });
 </script>

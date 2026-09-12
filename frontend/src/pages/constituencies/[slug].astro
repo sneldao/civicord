@@ -44,6 +44,7 @@ const siteUrl = "https://civicord.pages.dev";
 const ogImage = `${siteUrl}/og/constituencies/${c.slug}.svg`;
 const ogTitle = `${c.name} — Civicord`;
 const ogDesc = c.stats.sites ? `${c.name}: ${shareLine}. Permanent record on civicord.eth.` : `${c.name}: no candidate site in the April 2025 scrape. Permanent record on civicord.eth.`;
+const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
 ---
 
 <html lang="en-GB">
@@ -150,7 +151,7 @@ const ogDesc = c.stats.sites ? `${c.name}: ${shareLine}. Permanent record on civ
     <p class="muted browse-hint">Share: copy the URL — it encodes your view · Press <kbd>⌘K</kbd> to jump anywhere. This seat's hex is equal-weight (Automatic Knowledge v5, OGL) · <a href="/methodology">How we checked →</a></p>
     </main>
 
-    <AgentView slug={c.slug} name={c.name} />
+    <AgentView slug={c.slug} name={c.name} samplePersonId={samplePersonId} />
     <WebMCP />
 
     <footer>

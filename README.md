@@ -75,6 +75,7 @@ Deployed via Cloudflare Pages (https://civicord.pages.dev); see
 | [gateway/recipe.md](gateway/recipe.md) + [`frontend/public/openapi.yaml`](frontend/public/openapi.yaml) | Bazantic Recipe + OpenAPI — the agent gateway (pay-per-`?constituency=` query, x402/MPP) |
 | [`/api/constituencies/{slug}.json`](frontend/src/pages/api/constituencies/[slug].json.ts) · [`/api/summary.json`](frontend/src/pages/api/summary.json.ts) | Static jurisdiction API (metered by Bazantic, free on the site) |
 | [`/og/constituencies/{slug}.svg`](frontend/scripts/build-og.mjs) | 650 stipple-deed share cards (1200×630 SVG from one template) |
+| [skills/civicord-graph/SKILL.md](skills/civicord-graph/SKILL.md) | Agent skill — live Subgraph Studio queries + ledger join |
 | [docs/phase0-findings.md](docs/phase0-findings.md) | Phase 0 liveness-audit baseline (64% live) |
 | [docs/outreach.md](docs/outreach.md) | Partner strategy and draft outreach emails |
 | [RESEARCH.md](RESEARCH.md) | Adjacent projects, validated gaps, prior art |

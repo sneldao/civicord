@@ -47,12 +47,25 @@ Full contract: `/openapi.yaml`. This site itself registers browser-agent tools
 via WebMCP (`document.modelContext`) when supported — try an agent with the
 Model Context Tool Inspector extension.
 
+**WebMCP tools (ledger + live The Graph):**
+- Ledger (static JSON): `search_civicord`, `get_constituency`, `get_summary`,
+  `get_candidate`, `filter_ledger`, `get_metered_demand`
+- The Graph (live Studio POST): `query_subgraph_meta`, `get_onchain_candidate`,
+  `compare_onchain_to_ledger` (Graph + ledger join — prefer for Q&A),
+  `list_recent_onchain_registrations`, `list_text_record_changes`
+
+Agent skill for Cursor/Claude: `skills/civicord-graph/SKILL.md` in the repo.
+
 ## Changes to records
 
-Website liveness/status changes are recorded on-chain per candidate; the
-change log is queryable via The Graph subgraph
-(`https://api.studio.thegraph.com/query/101650/civicord/v0.0.3` — entities:
-`candidate`, `textRecord`, `textRecordChange`, `stat`).
+ENS registrations and text-record updates are indexed by The Graph subgraph
+`https://api.studio.thegraph.com/query/101650/civicord/v0.0.3` (entities:
+`candidate`, `textRecord`, `textRecordChange`, `stat`). Candidate id is the
+Democracy Club person id (e.g. `"5693"`), **not** a constituency slug.
+
+Join pattern: Studio `candidate(id)` + `/api/candidates/{id}.json` (or call
+`compare_onchain_to_ledger`). Registrations are live (~2,375); text-record
+change rows appear as `setText` events index.
 
 ## Docs
 

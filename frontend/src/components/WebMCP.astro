@@ -4,21 +4,31 @@
 // Registers browser-agent tools on document.modelContext (W3C draft,
 // webmachinelearning.github.io/webmcp; Chrome origin trial from 149) so an
 // agent sitting next to the user can act on this page: search the record,
-// get the current seat or candidate as JSON, or fetch the metered x402
-// demand — the same surfaces the site sells through the gateway.
+// get the current seat or candidate as JSON, query The Graph live, or fetch
+// the metered x402 demand — the same surfaces the site sells through the gateway.
 //
 // Discipline held:
 //  - Progressive in both directions. Browsers with native WebMCP load nothing
 //    extra; everyone else gets the 24 KB self-hosted polyfill (MIT, vendored at
 //    /vendor/) injected only because it is what makes tools visible today.
 //    If either path fails, nothing happens — zero cost to humans, no UI.
-//  - Nothing here mocks. Tools return the same static JSON the gateway meters.
+//  - Ledger tools return the same static JSON the gateway meters.
+//  - Graph tools POST live to Subgraph Studio (not a snapshot).
 //  - Read-only hints on every tool; nothing consequential without the user.
 //  - JS-off / no-JS agents: unaffected — /robots.txt, /llms.txt, /openapi.yaml
 //    and the sitemap carry discovery the old way.
 ---
 
 <script>
+  import {
+    compareOnchainToLedger,
+    getOnchainCandidate,
+    getSubgraphMeta,
+    getTextRecordChanges,
+    listRecentOnchainRegistrations,
+    SUBGRAPH_URL,
+  } from "../lib/graph";
+
   // Gateway host for the live x402 probe below (browser scope — frontmatter
   // consts are template-time only, so this is declared here, once).
   const GATEWAY: string = "https://civicord-aieyq.bazgateway.com";
@@ -124,7 +134,7 @@
         name: "get_summary",
         title: "Get dataset summary",
         description:
-          "Return dataset totals: candidates tracked, websites audited, live/gone/redirected counts, constituencies, audit date. Free, no key.",
+          "Return dataset totals: candidates tracked, websites audited, live/gone/redirected counts, constituencies, audit date. Free, no key. Static audit ledger — for live on-chain index counts use query_subgraph_meta.",
         inputSchema: { type: "object", properties: {} },
         annotations: { readOnlyHint: true },
         execute: async () => getJSON("/api/summary.json"),
@@ -133,10 +143,11 @@
         name: "get_candidate",
         title: "Get candidate page data",
         description:
-          "Return the full record for one UK parliamentary candidate (same shape as the HTML page): name, parties, website statuses with audit outcome, ENS name, seat context, on-chain status. Works from /api/candidates/{id}.json — the static API endpoint — so it is deterministic and needs no DOM scraping.",
+          "Return the full static ledger record for one UK parliamentary candidate: name, parties, website statuses with audit outcome, ENS name, seat context. From /api/candidates/{id}.json. For live The Graph entity use get_onchain_candidate; to reason across both use compare_onchain_to_ledger.",
         inputSchema: {
           type: "object",
-          properties: { id: { type: "string", description: 'Democracy Club person ID, e.g. "3454". Omit to use the current candidate page.' } } },
+          properties: { id: { type: "string", description: 'Democracy Club person ID, e.g. "3454". Omit to use the current candidate page.' } },
+        },
         annotations: { readOnlyHint: true },
         execute: async ({ id: tpId }: { id?: string }) => {
           const cid = tpId || currentCandidateId();
@@ -164,7 +175,7 @@
           if (args.status) qs.set("status", args.status);
           if (args.query) qs.set("q", args.query);
           const target = `/browse${qs.toString() ? `?${qs}` : ""}`;
-          location.href = target; // the URL encodes the view — shareable, JS-optional
+          location.href = target;
           return { navigatedTo: target };
         },
       },
@@ -206,6 +217,87 @@
             wwwAuthenticate: res.headers.get("www-authenticate") ?? undefined,
           };
         },
+      },
+      {
+        name: "query_subgraph_meta",
+        title: "Query The Graph sync status",
+        description:
+          `Live query against Civicord's Subgraph Studio endpoint (${SUBGRAPH_URL}). Returns _meta (block, deployment, indexing errors) and Stat entity counts (candidates, text records, text-record changes). Use this to prove Graph is live — not a static snapshot.`,
+        inputSchema: { type: "object", properties: {} },
+        annotations: { readOnlyHint: true },
+        execute: async (_args, options) => getSubgraphMeta(options?.signal),
+      },
+      {
+        name: "get_onchain_candidate",
+        title: "Get on-chain candidate from The Graph",
+        description:
+          "Live Subgraph query for one ENS-registered candidate by Democracy Club person id (Candidate.id). Returns ensName, owner, registeredAt, status/url text if indexed, textRecordCount. Prefer compare_onchain_to_ledger when you need audit outcomes too.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id: { type: "string", description: 'Person id, e.g. "5693". Omit to use the current /candidates/{id} page.' },
+          },
+        },
+        annotations: { readOnlyHint: true },
+        execute: async ({ id }: { id?: string }, options) => {
+          const cid = id || currentCandidateId();
+          if (!cid) throw new Error("No person id given and this page is not a candidate page.");
+          const candidate = await getOnchainCandidate(cid, options?.signal);
+          return { endpoint: SUBGRAPH_URL, candidate };
+        },
+      },
+      {
+        name: "compare_onchain_to_ledger",
+        title: "Compare The Graph record to the audit ledger",
+        description:
+          "Load-bearing Graph+ledger join: live Studio Candidate entity plus static /api/candidates/{id}.json. Returns onchain fields, ledger website audit outcomes, and a short verdict array an agent can cite. Use when asked whether a candidate is registered on-chain, what the audit says about their site, or how the two sources relate.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id: { type: "string", description: 'Democracy Club person id. Omit on a candidate page.' },
+          },
+        },
+        annotations: { readOnlyHint: true },
+        execute: async ({ id }: { id?: string }, options) => {
+          const cid = id || currentCandidateId();
+          if (!cid) throw new Error("No person id given and this page is not a candidate page.");
+          return compareOnchainToLedger(cid, options?.signal);
+        },
+      },
+      {
+        name: "list_recent_onchain_registrations",
+        title: "List recent on-chain registrations",
+        description:
+          "Live Subgraph query: most recently registered p{id}.civicord.eth names (orderBy registeredAt desc). Proves the agent is reading chain-indexed data from The Graph.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            first: { type: "number", description: "How many (1–50, default 10)" },
+          },
+        },
+        annotations: { readOnlyHint: true },
+        execute: async ({ first }: { first?: number }, options) => ({
+          endpoint: SUBGRAPH_URL,
+          candidates: await listRecentOnchainRegistrations(first ?? 10, options?.signal),
+        }),
+      },
+      {
+        name: "list_text_record_changes",
+        title: "List on-chain text record changes",
+        description:
+          "Live Subgraph TextRecordChange rows (url/status/name updates). May be empty until setText blasts finish indexing — still a live Studio query. Optional person id filter.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id: { type: "string", description: "Optional person id to filter" },
+            first: { type: "number", description: "How many (1–50, default 10)" },
+          },
+        },
+        annotations: { readOnlyHint: true },
+        execute: async ({ id, first }: { id?: string; first?: number }, options) => ({
+          endpoint: SUBGRAPH_URL,
+          changes: await getTextRecordChanges({ personId: id, first }, options?.signal),
+        }),
       },
     ];
     return tools;

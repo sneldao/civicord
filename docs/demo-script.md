@@ -52,23 +52,24 @@ curl -s -H "X-Payment: <x402>" https://civicord-aieyq.bazgateway.com/api/constit
 `/mcp`. `listConstituencies` is a penny, a single seat is two-tenths of a cent.
 The Recipe tells an agent when to call it: any UK place name → slug → one call.”
 
-## 1:55 — Subgraph — the change log agents actually query (40s)
-**Screen:** Studio `thegraph.com/studio/subgraph/civicord` — `v0.0.3` green,
-or terminal `curl` to `api.studio.thegraph.com/query/101650/civicord/v0.0.3`.
-**Line:** “The same onchain events a human verifies, an agent can query.”
-```graphql
-{
-  stat(id: "civicord") { candidateCount textRecordCount }
-  candidates(first: 3) { id label ensName status url }
-  textRecords(where: { key: "status" }) { id value } # which sites went dark
-}
+## 1:55 — The Graph is load-bearing (45s)
+**Screen:** `/constituencies/ynys-mon` → open **Agent view** → card 4 **Query The Graph**.
+Also show WebMCP / terminal Studio curl.
+**Line:** “The permanent names are on ENS. The Graph indexes them live — not a CSV.”
+Click **Query The Graph** — Studio block number + `candidate(id: "<person>")` +
+verdict joining on-chain registration to the audit ledger.
+```bash
+curl -s -X POST -H 'content-type: application/json' \
+  -d '{"query":"{ _meta { block { number } hasIndexingErrors } stat(id:\"civicord\") { candidateCount textRecordCount } candidate(id:\"5693\") { id ensName textRecordCount } }"}' \
+  https://api.studio.thegraph.com/query/101650/civicord/v0.0.3
 ```
-“This is The Graph indexing `LabelRegistered` + `TextChanged` on Sepolia from
-block 8150000 — the natural-language layer over the ENS record. *Which sites
-went dark since April? Which now redirect to a shop?* — that’s a Subgraph query,
-not a scrape.”
+**Line:** “Agents call `compare_onchain_to_ledger` — live Graph plus the audit JSON —
+so the answer cites both the register and the crawl. Continuity work: we wired Studio
+into WebMCP; the subgraph and ledger already existed.”
+If `textRecordCount` is 0: “Registrations are indexed; status text records land as
+`setText` continues — the agent still reasons with Graph identity + ledger audit.”
 
-## 2:35 — Close + verify (15s)
+## 2:40 — Close + verify (15s)
 **Screen:** Back to hero, scroll to “How it works: Collect → Record → Verify”
 and the infra strip, then land on the **“Built for one election. Designed for any.”**
 region cards (`UK · Live now` / France / US / Your democracy).

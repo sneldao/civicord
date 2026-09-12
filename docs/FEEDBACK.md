@@ -16,17 +16,19 @@
 
 ---
 
-## The Graph — AI Tooling / From Scratch
+## The Graph — AI Tooling / Continuity
 
-**What we built:** Subgraph indexing ENSv2 `LabelRegistered/LabelUnregistered/ResolverUpdated` + `TextChanged` on Sepolia from `startBlock 8150000` — schema `Candidate ↔ TextRecord ↔ TextRecordChange + Stat + NodeToCandidate` lookup (because `TextChanged.node` is `bytes32`, not `person_id`). `v0.0.1` `QmTp8yuy…` faulted then pruned; `v0.0.2` `QmQqGfVx…` faulted @ 11660475 (unpadded `BigInt.toHexString()` → `Bytes.fromHexString` throw on odd-length hex); **v0.0.3 `QmUcjfa4…` fixes it** (`hasIndexingErrors:false` @ 8149999, `paddedHex` 0x+64, syncing 3.5M blocks to `11677k`), endpoint `api.studio.thegraph.com/query/101650/civicord/v0.0.3` (`v0.0.2` kept for forensics).
+**What we built:** Subgraph indexing ENSv2 `LabelRegistered/LabelUnregistered/ResolverUpdated` + `TextChanged` on Sepolia from `startBlock 8150000` — schema `Candidate ↔ TextRecord ↔ TextRecordChange + Stat + NodeToCandidate` lookup (because `TextChanged.node` is `bytes32`, not `person_id`). `v0.0.1` `QmTp8yuy…` faulted then pruned; `v0.0.2` `QmQqGfVx…` faulted @ 11660475 (unpadded `BigInt.toHexString()` → `Bytes.fromHexString` throw on odd-length hex); **v0.0.3 `QmUcjfa4…` fixes it** (`hasIndexingErrors:false`, synced near head), endpoint `api.studio.thegraph.com/query/101650/civicord/v0.0.3`.
 
-**What worked:** `graph-cli 0.98 + graph-ts 0.38` codegen/build is solid once `entities: [NodeToCandidate]` is registered; Studio deploy flow (`graph auth` → `graph deploy --node studio --version-label v0.0.3 --output-dir subgraph/build`) is clean. Free `_meta` query is enough for the demo until sync finishes.
+**Continuity deepening (2026-09-12):** Graph became load-bearing in the agent path — not copy-paste only. `frontend/src/lib/graph.ts` POSTs live to Studio; WebMCP tools `query_subgraph_meta`, `get_onchain_candidate`, **`compare_onchain_to_ledger`** (Graph + `/api/candidates/{id}.json` join with verdict), `list_recent_onchain_registrations`, `list_text_record_changes`; AgentView “Query The Graph” button (fixed `candidate(id)` to person id, not seat slug); reusable `skills/civicord-graph/SKILL.md`. Pre-existing: subgraph + static ledger + Bazantic. New for Continuity judging: live Studio consumption + reasoned join.
 
-**Friction:** v0.0.1/v0.0.2 `indexing_error` only surfaced as `hasIndexingErrors:true` + `indexing_error` on entity queries — Logs tab was the only diagnostic; `api.thegraph.com/index-node/graphql` is 404 without auth. The real bug was `BigInt.toHexString()` not zero-padding to 32 bytes, so `Bytes.fromHexString("0x1...")` threw deterministically at a block whose `tokenId` had leading zero bytes. A CLI flag to stream `deterministic` error after deploy would have cut a debug hour. Sync of 3.5M blocks is slow — a higher `startBlock` note (why 8150000, not 9M) helps reviewers.
+**What worked:** `graph-cli 0.98 + graph-ts 0.38` codegen/build once `entities: [NodeToCandidate]` is registered; Studio CORS `*` lets the browser hit the provider directly; free `_meta` is enough for a sync proof in the demo.
+
+**Friction:** v0.0.1/v0.0.2 `indexing_error` only surfaced as `hasIndexingErrors:true` — Logs tab was the only diagnostic. Sync of ~3.5M blocks is slow. **Honesty:** as of deepening, `candidateCount≈2375` but `textRecordCount`/`textRecordChangeCount` can still be `0` until `setText` blasts finish — agents must join Graph identity with the audit ledger for liveness answers.
 
 **Wish:** clearer `bytes32` vs `uint256 tokenId` hex-casing + padding contract (we now `paddedHex` to 0x+64 lower-case), and an `immutable` entity recommendation in the scaffold.
 
-**Would you fund this dataset via GRT?** Yes — the agent query “which sites went dark since April?” is a Subgraph query, not a scrape.
+**Would you fund this dataset via GRT?** Yes — registration + change-log queries are Subgraph work; the audit join is how agents answer “what happened to the site?” without pretending Graph alone holds HTTP outcomes.
 
 ---
 
