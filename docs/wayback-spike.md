@@ -29,7 +29,7 @@ coverage fixed the join; see the section below for the current score table.
 ## What this unlocks
 
 1. **Scale CDX + `id_` further** — treat Wayback as primary for dead domains;
-   enlarge past 50 (`--limit 150` in flight / resume-friendly).
+   next enlargement past `--limit 150` (resume-friendly; unique persons).
 2. **Normalize + significance — shipped** — `civicord diff-spike` (trafilatura +
    token coverage); surface on timelines via `content_diffs.json`.
 3. **Browse filter — shipped** — `/browse?sig=transformed` (etc.).

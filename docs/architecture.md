@@ -142,12 +142,13 @@ endpoints humans use — there is no separate agent backend, no key, no mock.
 - **wayback** — CDX API per URL around (a) the April 2025 scrape date and
   (b) the July 2024 GE; fetch with `id_` suffix to strip toolbar; hash + store.
   **Spike:** `civicord wayback-spike` ([wayback-spike.md](wayback-spike.md)) —
-  14/14 CDX+body on a gone/repurpose sample; naïve CL-text vs HTML similarity
-  is low → normalize extracts before Phase 2 diffs.
+  ~135 unique persons / 125 bodies on gone+repurpose; naïve CL-text vs HTML
+  similarity is low → normalize extracts before scoring.
 - **diff** — text-level diff (trafilatura-extracted markdown + difflib) between
   consecutive snapshots; significance heuristics (% changed, coverage of April
-  tokens, page type). **Spike:** `civicord diff-spike` — coverage median **0.25**
-  vs raw-similarity median 0.03; see [wayback-spike.md](wayback-spike.md).
+  tokens, page type). **Spike:** `civicord diff-spike` — coverage median
+  **0.28** (n≈112 classifiable) vs raw-similarity median ~0.03; frontend
+  `content_diffs.json` + browse `?sig=`; see [wayback-spike.md](wayback-spike.md).
   LLM claim-extraction is a later, optional pass.
 - **outputs** — static per-candidate timelines (GitHub Pages, like Campaign
   Lab's), plus bulk Parquet + CDX-style index exports.
