@@ -19,11 +19,11 @@ web-monitoring and the Library of Congress's Elections Web Archive — see
 **2026-09-12 · Change feed + Wayback significance spike.** Product north star:
 a **citable change feed** ([docs/change-feed.md](docs/change-feed.md)).
 Audit-derived signals (`gone` / `repurposed_suspect` / `redirected` /
-`still_attested`) on records + browse `?change=`. Wayback CDX spike (~135
-persons, 112 scored) → `content_diffs.json`, candidate **Content chronology**,
-browse `?sig=` ([docs/wayback-spike.md](docs/wayback-spike.md)). Survival
-register (ENS + ledger + Graph) remains the spine. Full-corpus diffs + policy
-taxonomy still open.
+`still_attested`) on records + browse `?change=`. Wayback CDX spike (**174**
+scored / **287** scrapeable with-pages targets) → `content_diffs.json`, candidate
+**Content chronology**, browse `?sig=` ([docs/wayback-spike.md](docs/wayback-spike.md)).
+Survival register (ENS + ledger + Graph) remains the spine. Full-corpus diffs +
+policy taxonomy still open.
 
 **2026-09-11 · Phase 0 + map + seat context + gateway LIVE (3,031 html + 652 json + 650 deeds).** Liveness audit of all 2,375 scraped candidate
 websites: **64% still live ~17 months after the scrape** — 363 domains gone
