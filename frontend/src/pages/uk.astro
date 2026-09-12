@@ -5,6 +5,8 @@ import { cohortStats, statusCohorts } from "../lib/cohorts";
 import HalftoneHexMap from "../components/HalftoneHexMap.astro";
 import PeekSheet from "../components/PeekSheet.astro";
 import CommandPalette from "../components/CommandPalette.astro";
+import MobileEssentials from "../components/MobileEssentials.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
 import WebMCP from "../components/WebMCP.astro";
 import "../styles/global.css";
 import constituenciesRaw from "../data/constituencies.json";
@@ -138,12 +140,12 @@ const randomIds = candidates.map((c) => c.id);
       </div>
       <div class="browse-actions" style="margin-top:0.55rem">
         <a class="btn-primary" href="/browse">Browse the ledger ↗</a>
-        <button type="button" id="random-home-top" class="btn-ghost">Surprise me — random record 🎲</button>
+        <button type="button" id="random-home-top" class="btn-ghost">Surprise me — random record</button>
       </div>
     </section>
 
     <!-- Stats strip owns the corpus numbers — first and only summary. -->
-    <section class="stats" aria-label="Audit summary">
+    <section class="stats" aria-label="Audit summary" data-reveal>
       <div class="stat"><b>{candidates.length.toLocaleString("en-GB")}</b><span>Candidates</span></div>
       <div class="stat"><b>{websites.length.toLocaleString("en-GB")}</b><span>Websites</span></div>
       <div class="stat"><b>{audited.length ? pct(live.length, audited.length) : "—"}%</b><span>Still live</span></div>
@@ -153,16 +155,16 @@ const randomIds = candidates.map((c) => c.id);
       </div>
     </section>
 
-    <p class="decay-line" aria-label="Decay over time">
+    <p class="decay-line" aria-label="Decay over time" data-reveal>
       <span class="decay-when"><b>April 2025</b></span>
       <span class="decay-arrow" aria-hidden="true">→</span>
       <span class="decay-when"><b>September 2026</b> — <b class="decay-now">{livePctNow}%</b> still live</span>
     </p>
 
-    <section class="cohort-features" aria-label="Explore by outcome">
+    <section class="cohort-features" aria-label="Explore by outcome" data-reveal>
       <h2>What happened to the sites?</h2>
       <p class="muted">Pick a lane, then drill to the ledger.</p>
-      <div class="feature-grid">
+      <div class="feature-grid" data-reveal-stagger>
         <a class="feature-card f-gone" href="/cohorts/gone">
           <span class="f-label">Gone</span>
           <b class="f-num">{bySlug.gone.sites.toLocaleString("en-GB")}</b>
@@ -184,9 +186,11 @@ const randomIds = candidates.map((c) => c.id);
       </div>
     </section>
 
-    <HalftoneHexMap />
+    <div data-reveal>
+      <HalftoneHexMap />
+    </div>
 
-    <section class="cohorts" aria-label="Survival by party">
+    <section class="cohorts" aria-label="Survival by party" data-reveal>
       <h2>Which parties' sites survived?</h2>
       <p class="muted">Click a row to filter the ledger.</p>
       <ol class="board" id="party-board">
@@ -204,7 +208,7 @@ const randomIds = candidates.map((c) => c.id);
       </ol>
     </section>
 
-    <details class="how how-disclosure">
+    <details class="how how-disclosure" data-reveal>
       <summary>How the record is made</summary>
       <ol>
         <li>
@@ -339,25 +343,43 @@ const randomIds = candidates.map((c) => c.id);
         }
 
         if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          for (const el of document.querySelectorAll(".stat b")) {
-            const raw = el.textContent?.trim() ?? "";
-            if (raw.includes("%")) continue;
-            const target = Number(raw.replace(/,/g, ""));
-            if (!Number.isFinite(target)) continue;
-            const t0 = performance.now();
-            const tick = (t) => {
-              const p = Math.min(1, (t - t0) / 900);
-              const eased = 1 - Math.pow(1 - p, 3);
-              el.textContent = Math.round(target * eased).toLocaleString("en-GB");
-              if (p < 1) requestAnimationFrame(tick);
-            };
-            requestAnimationFrame(tick);
+          const statsEl = document.querySelector(".stats[data-reveal]");
+          const runCount = () => {
+            for (const el of document.querySelectorAll(".stat b")) {
+              const raw = el.textContent?.trim() ?? "";
+              if (raw.includes("%")) continue;
+              const target = Number(raw.replace(/,/g, ""));
+              if (!Number.isFinite(target)) continue;
+              const t0 = performance.now();
+              const tick = (t) => {
+                const p = Math.min(1, (t - t0) / 900);
+                const eased = 1 - Math.pow(1 - p, 3);
+                el.textContent = Math.round(target * eased).toLocaleString("en-GB");
+                if (p < 1) requestAnimationFrame(tick);
+              };
+              requestAnimationFrame(tick);
+            }
+          };
+          if (statsEl?.classList.contains("is-in")) {
+            runCount();
+          } else if (statsEl) {
+            const mo = new MutationObserver(() => {
+              if (statsEl.classList.contains("is-in")) {
+                mo.disconnect();
+                runCount();
+              }
+            });
+            mo.observe(statsEl, { attributes: true, attributeFilter: ["class"] });
+          } else {
+            runCount();
           }
         }
       });
     </script>
     <PeekSheet />
     <CommandPalette />
+    <MobileEssentials />
+    <ScrollReveal />
     <WebMCP />
   </body>
 </html>

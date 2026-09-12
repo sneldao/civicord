@@ -2,6 +2,8 @@
 import { getCollection } from "astro:content";
 import PeekSheet from "../../components/PeekSheet.astro";
 import CommandPalette from "../../components/CommandPalette.astro";
+import MobileEssentials from "../../components/MobileEssentials.astro";
+import ScrollReveal from "../../components/ScrollReveal.astro";
 import WebMCP from "../../components/WebMCP.astro";
 import { ClientRouter } from "astro:transitions";
 import { partyLiveShare } from "../../lib/cohorts";
@@ -319,6 +321,8 @@ const personShareText =
 
     <PeekSheet />
     <CommandPalette />
+    <MobileEssentials />
+    <ScrollReveal />
     <WebMCP />
 
     <script>

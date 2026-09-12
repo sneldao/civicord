@@ -74,7 +74,7 @@ const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
 ---
 
 {hasHexes ? (
-  <section class="hexmap-wrap" aria-label={`Jurisdiction map — ${hexes.length || 650} equal hexes, halftone by survival`}>
+  <section class="hexmap-wrap" id="map" aria-label={`Jurisdiction map — ${hexes.length || 650} equal hexes, halftone by survival`}>
     <div class="hexmap-head">
       <h2>One hex, one seat</h2>
       <p class="muted hexmap-lede">Colour = still live. Dot density = how much vanished. Click to peek.</p>
@@ -158,7 +158,7 @@ const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
     <p class="muted hexmap-foot">{hexes.length || 650} seats · {hexes.length ? hexes.length - emptyCount : 633} with scraped sites · <span class="hexmap-empty-note">{emptyCount} empty.</span> <a href="/methodology">Methodology ↗</a> · Automatic Knowledge v5 (OGL) + ONS. <a href="/browse">Browse ledger ↗</a></p>
   </section>
 ) : (
-  <section class="hexmap-wrap hexmap-empty">
+  <section class="hexmap-wrap hexmap-empty" id="map">
     <p class="muted">Map data missing — run <code>node scripts/build-map.mjs</code> after <code>civicord ingest</code>. The ledger below is still complete.</p>
   </section>
 )}

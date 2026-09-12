@@ -3,6 +3,8 @@ import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import CommandPalette from "../components/CommandPalette.astro";
 import DoorField from "../components/DoorField.astro";
+import MobileEssentials from "../components/MobileEssentials.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
 import WebMCP from "../components/WebMCP.astro";
 import "../styles/global.css";
 import constituenciesRaw from "../data/constituencies.json";
@@ -69,12 +71,12 @@ const livePct = audited.length ? pct(live.length, audited.length) : 0;
     </div>
 
     <main id="main" tabindex="-1">
-      <section class="future door-regions" id="regions" aria-label="Regions">
+      <section class="future door-regions" id="regions" aria-label="Regions" data-reveal>
         <h2>Built for one election. Designed for any.</h2>
         <p class="muted future-lede">
           Roster + crawl + a place to keep the record. Pick a region.
         </p>
-        <div class="future-grid">
+        <div class="future-grid" data-reveal-stagger>
           <a class="future-card is-live" href="/uk">
             <span class="fc-status">Live now</span>
             <b class="vt-uk-title">United Kingdom</b>
@@ -104,6 +106,8 @@ const livePct = audited.length ? pct(live.length, audited.length) : 0;
     </main>
 
     <CommandPalette />
+    <MobileEssentials />
+    <ScrollReveal />
     <WebMCP />
   </body>
 </html>

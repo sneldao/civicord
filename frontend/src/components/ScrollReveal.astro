@@ -1,0 +1,16 @@
+---
+// Lightweight editorial reveal — see ../lib/scroll-reveal.ts
+---
+<script>
+  import { initScrollReveal } from "../lib/scroll-reveal";
+
+  let teardown: (() => void) | undefined;
+
+  const boot = () => {
+    teardown?.();
+    teardown = initScrollReveal();
+  };
+
+  document.addEventListener("astro:page-load", boot);
+  if (document.readyState !== "loading") boot();
+</script>

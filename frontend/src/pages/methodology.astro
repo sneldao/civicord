@@ -2,6 +2,8 @@
 import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import CommandPalette from "../components/CommandPalette.astro";
+import MobileEssentials from "../components/MobileEssentials.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
 import WebMCP from "../components/WebMCP.astro";
 import "../styles/global.css";
 
@@ -44,7 +46,7 @@ const onchain = candidates.filter((c) => c.onchain);
       <p class="lede">What Civicord claims, where it comes from, and how you can check it yourself.</p>
     </header>
 
-    <article>
+    <article data-reveal>
       <h2>1. The source: Campaign Lab scrape, April 2025</h2>
       <p>
         Every record starts from Campaign Lab's scrape of UK parliamentary
@@ -144,6 +146,8 @@ const onchain = candidates.filter((c) => c.onchain);
     </p>
 
     <CommandPalette />
+    <MobileEssentials />
+    <ScrollReveal />
     <WebMCP />
   </body>
 </html>

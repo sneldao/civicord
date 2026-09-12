@@ -3,6 +3,8 @@ import { ClientRouter } from "astro:transitions";
 import AgentView from "../../components/AgentView.astro";
 import WebMCP from "../../components/WebMCP.astro";
 import CommandPalette from "../../components/CommandPalette.astro";
+import MobileEssentials from "../../components/MobileEssentials.astro";
+import ScrollReveal from "../../components/ScrollReveal.astro";
 import "../../styles/global.css";
 import constituenciesRaw from "../../data/constituencies.json";
 import hexesRaw from "../../data/hexes.json";
@@ -156,5 +158,7 @@ const ogDesc = c.stats.sites ? `${c.name}: ${shareLine}. Permanent record on civ
     </footer>
 
     <CommandPalette />
+    <MobileEssentials />
+    <ScrollReveal />
   </body>
 </html>

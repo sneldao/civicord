@@ -227,6 +227,9 @@
 
     input.addEventListener("input", search);
     document.getElementById("palette-trigger")?.addEventListener("click", () => openPalette());
+    document.querySelectorAll("[data-palette-open]").forEach((el) => {
+      el.addEventListener("click", () => openPalette());
+    });
     dlg.addEventListener("click", (e) => {
       if (e.target === dlg) void closeDialog(dlg);
     });

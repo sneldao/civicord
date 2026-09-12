@@ -1,0 +1,58 @@
+---
+import { ClientRouter } from "astro:transitions";
+import CommandPalette from "../components/CommandPalette.astro";
+import MobileEssentials from "../components/MobileEssentials.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
+import WebMCP from "../components/WebMCP.astro";
+import "../styles/global.css";
+---
+
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="This page isn’t in the Civicord record." />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Not in the record — Civicord</title>
+    <ClientRouter />
+  </head>
+  <body class="reveal-root miss-page">
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="masthead">
+      <p class="wordmark wordmark-link">
+        <a href="/" aria-label="Civicord home">Civicord<span class="dot">.</span></a>
+      </p>
+      <p class="crumb"><a href="/">Civicord</a> / <b>Missing</b></p>
+      <h1 class="region-title">This page isn’t in the record.</h1>
+      <p class="lede">
+        Either it never was, or the link drifted. The ledger is still here.
+      </p>
+    </header>
+
+    <main id="main" tabindex="-1" data-reveal>
+      <div class="miss-actions" role="group" aria-label="Where to go">
+        <a class="btn-primary" href="/uk">UK genesis dataset →</a>
+        <a class="btn-ghost" href="/browse">Browse the ledger</a>
+        <a class="btn-ghost" href="/">Home</a>
+      </div>
+      <p class="muted miss-note">
+        Looking for a candidate or seat? Press <kbd>⌘</kbd><kbd>K</kbd> (or use Jump on
+        mobile) — or start from the map.
+      </p>
+    </main>
+
+    <footer>
+      <p>
+        <a href="/methodology">Methodology</a> ·
+        <a href="https://github.com/sneldao/civicord">Source</a>
+      </p>
+    </footer>
+
+    <CommandPalette />
+    <MobileEssentials />
+    <ScrollReveal />
+    <WebMCP />
+  </body>
+</html>
