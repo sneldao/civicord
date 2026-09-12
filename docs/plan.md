@@ -88,7 +88,8 @@ The survival register (ENS + audit ledger + Graph) is the spine — see
 - **Phase 2 — text diffs + taxonomy (weeks 6–12):** text-level diff engine
   with significance heuristics; fixed policy taxonomy; per-candidate change
   timelines on the static site; bulk Parquet + CDX-style exports (LoC-style
-  data package); license resolution (**open blocker**).
+  data package). Campaign Lab scrape text: **reuse OK** (CC-BY + credit,
+  agreed 2026-09-12 — see [outreach.md](outreach.md)).
   **Spike (2026-09-12):** `civicord diff-spike` → `content_diffs.json`,
   candidate “Content chronology”, browse `?sig=` — see
   [wayback-spike.md](wayback-spike.md). Full-corpus + policy taxonomy still open.
@@ -103,7 +104,7 @@ The survival register (ENS + audit ledger + Graph) is the spine — see
 
 | Risk | Mitigation |
 | --- | --- |
-| Campaign Lab scrape has no license (blocks public dataset reuse) | Raised in person 2026-09-07; get written clarification before Phase 2 publication |
+| Campaign Lab scrape reuse | **Cleared 2026-09-12** — public reuse/redistribute of extracted page text with credit (CC-BY); keep attribution on bulk releases |
 | ENSv2 → subgraph indexing is the riskiest sprint item | Timebox it; pre-agreed fallback to the Hedera x402 card (above) |
 | UKWA content is reading-room-only (Legal Deposit) | Verify 2024 election collection access model (outreach in progress) |
 | GDPR on raw HTML | Publish derived text/diffs only; raw HTML stays access-controlled |

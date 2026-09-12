@@ -23,7 +23,7 @@ Audit-derived signals (`gone` / `repurposed_suspect` / `redirected` /
 persons, 112 scored) → `content_diffs.json`, candidate **Content chronology**,
 browse `?sig=` ([docs/wayback-spike.md](docs/wayback-spike.md)). Survival
 register (ENS + ledger + Graph) remains the spine. Full-corpus diffs + policy
-taxonomy still open (license blocker).
+taxonomy still open.
 
 **2026-09-11 · Phase 0 + map + seat context + gateway LIVE (3,031 html + 652 json + 650 deeds).** Liveness audit of all 2,375 scraped candidate
 websites: **64% still live ~17 months after the scrape** — 363 domains gone
@@ -108,4 +108,5 @@ transparency per hackathon rules.
 ## License
 
 Code: [AGPL-3.0](LICENSE) (aligning with Democracy Club's approach).
-Datasets: CC-BY (TBC — blocked on Campaign Lab clarifying the scrape's license).
+Datasets: CC-BY for Civicord-derived outputs; Campaign Lab April 2025 scrape
+text reusable with credit (CC-BY) — agreed 2026-09-12.

@@ -32,7 +32,7 @@ _Researched 2026-09-07 via Parallel Search API. Status: preliminary — items ma
 
 - **Democracy Club Candidates** (candidates.democracyclub.org.uk): canonical roster, free researcher downloads, social media links, election statements. No website-change tracking. **Use their person/candidate IDs as our primary keys.**
 - **TheyWorkForYou (mySociety)**: MP activity records; no website monitoring.
-- **Campaign Lab candidate-website-scrape**: our baseline (April 2025 scrape, JSON per candidate in `assets/json`). No license file ⚠️ — clarify reuse terms.
+- **Campaign Lab candidate-website-scrape**: our baseline (April 2025 scrape, JSON per candidate in `assets/json`). **Reuse OK** (CC-BY + credit) — Campaign Lab agreed 2026-09-12.
 - **British Election Study**: 2024 constituency results + candidate data (DOI 10.48420/284306) — good for won/lost status enrichment.
 
 ## The gap (provisional finding)
@@ -79,7 +79,7 @@ See [docs/cartography.md §2.2–2.4](docs/cartography.md) for the full methodol
 ## Open questions / manual verification needed
 
 - [ ] Does UKWA hold 2024 GE candidate site crawls? What access model?
-- [ ] Campaign Lab scrape license + per-candidate scrape timestamps
+- [x] Campaign Lab scrape license + per-candidate scrape timestamps — reuse OK (CC-BY + credit), 2026-09-12; timestamps still TBD if needed
 - [ ] Democracy Club: does YNR API expose website/homepage fields reliably?
 - [ ] Contact EDGI about reusing web-monitoring components
 - [ ] Any academic UK candidate-website datasets (Google Scholar pass still to do)

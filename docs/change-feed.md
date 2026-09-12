@@ -66,5 +66,6 @@ Frontend build attaches `website.changeSignal` / `person.changeSignal` in
    by significance (see [wayback-spike.md](wayback-spike.md)).
 3. **Phase 3 — Themes:** rollups over many diffs; alerts; candidate→MP transition.
 
-License blocker for bulk public reuse of Campaign Lab scrape text remains open
-— see [outreach.md](outreach.md) and [plan.md](plan.md).
+Campaign Lab agreed (2026-09-12) that extracted scrape text may be publicly
+reused and redistributed with credit (CC-BY). Attribute on bulk text/diff
+releases — see [outreach.md](outreach.md).

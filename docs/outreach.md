@@ -6,7 +6,9 @@ conversations should happen **before** scaling full-corpus diffs. Change signals
 v0 (audit-derived gone / repurpose / redirect classes) and a Wayback
 significance spike (~112 scored persons → browse `?sig=`) already shipped —
 see [change-feed.md](change-feed.md) and [wayback-spike.md](wayback-spike.md).
-Full-corpus publication still waits on Campaign Lab license clarity.
+Full-corpus publication is unblocked on Campaign Lab’s side: they agreed
+(2026-09-12) that we may publicly reuse and redistribute the extracted page
+text with credit (CC-BY). Keep attribution on any bulk text/diff release.
 
 ## Priority order
 
@@ -94,4 +96,5 @@ Full-corpus publication still waits on Campaign Lab license clarity.
 
 | Date | Org | Contact | Outcome |
 | --- | --- | --- | --- |
-| 2026-09-07 | Campaign Lab | In-person visit | Scrape license + metadata questions raised (see plan.md blockers) |
+| 2026-09-07 | Campaign Lab | In-person visit | Scrape license + metadata questions raised |
+| 2026-09-12 | Campaign Lab | Message | Agreed: public reuse/redistribute extracted page text with credit (CC-BY) |

@@ -184,7 +184,7 @@ endpoints humans use — there is no separate agent backend, no key, no mock.
 
 | Source | What it gives us | Access | License/status |
 | --- | --- | --- | --- |
-| Campaign Lab candidate-website-scrape | April 2025 per-candidate scrape (per-section text + source URLs) | GitHub repo, public | ⚠️ No license file — clarify before public reuse |
+| Campaign Lab candidate-website-scrape | April 2025 per-candidate scrape (per-section text + source URLs) | GitHub repo, public | ✅ Reuse OK (CC-BY + credit) — Campaign Lab agreed 2026-09-12 |
 | Democracy Club Candidates (YNR) | Canonical roster: person IDs (stable across elections), party, constituency, results | Free downloads + API | Open (attribution) |
 | Wayback Machine (CDX API) | Historical snapshots incl. dead domains; `id_` suffix strips toolbar | Free API | Public |
 | UK Web Archive (British Library) | Election web collections (2024 access ⚠️ to verify) | Legal Deposit — mostly reading-room | Restricted |

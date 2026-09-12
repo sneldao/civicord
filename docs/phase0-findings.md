@@ -58,5 +58,6 @@ longer resolves.
 ## Next
 
 1. Enlarge Wayback CDX past the ~135-person spike; harden significance taxonomy.
-2. Partner outreach + Campaign Lab license clarity before bulk text publication.
+2. Enlarge Wayback CDX; harden significance taxonomy; prepare bulk text/diff
+   package now that Campaign Lab reuse is cleared (CC-BY + credit).
 3. Repurposing analysis on redirect destinations (`final_url` clustering).
