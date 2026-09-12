@@ -79,7 +79,10 @@ export const GET: APIRoute = async ({ params }) => {
     verdictCopy: verdictCopy(verdict, p.name),
     seat: seatInfo(p),
     ens,
-    onchain: p.onchain ? { ens: p.onchain.ens, status: p.onchain.status ?? null } : { ens, status: null },
+    onchain: p.onchain
+      ? { ens: p.onchain.ens, status: p.onchain.status ?? null, node: p.onchain.node ?? null }
+      : { ens, status: null, node: null },
+    verifyOnchain: "/api/ens?id=" + p.id,
     websites: p.websites.map((w: any) => ({
       url: w.url,
       status: w.audit?.statusClass ?? "unknown",

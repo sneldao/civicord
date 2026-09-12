@@ -94,7 +94,13 @@ const onchainRows = readCsv("onchain_manifest.csv", { required: false });
 const auditByUrl = new Map(auditRows.map((r) => [r.url, r]));
 const onchainByPerson = new Map();
 for (const r of onchainRows) {
-  if (r.person_id && r.ens_name) onchainByPerson.set(r.person_id, { ens: r.ens_name, status: r.status || null });
+  if (r.person_id && r.ens_name) {
+    onchainByPerson.set(r.person_id, {
+      ens: r.ens_name,
+      status: r.status || null,
+      node: r.node || null,
+    });
+  }
 }
 
 // Map (person_id, normalized_url) -> {postLabel, partyName, personName, url} for parl only

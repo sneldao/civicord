@@ -177,16 +177,58 @@ paths:
               properties:
                 query: { type: string }
                 variables: { type: object, additionalProperties: true }
-            example:
-              query: '{ _meta { block { number } hasIndexingErrors } candidate(id: "5693") { id ensName status textRecordCount } }'
       responses:
         '200':
           description: GraphQL response from Studio
           content:
             application/json:
-              schema: { type: object }
-        '502':
-          description: Upstream Studio failure
+              schema:
+                type: object
+
+  /api/ens:
+    get:
+      operationId: verifyEnsText
+      summary: Live Sepolia resolver text() via eth_call
+      description: |
+        **Free.** Same-origin worker calls PermissionedResolver `text(bytes32,string)`
+        on Sepolia for `p{id}.civicord.eth`. No wallet required. Used by the candidate
+        page **Verify on-chain** button.
+      tags: [ens]
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema: { type: string }
+          description: Democracy Club person id (e.g. 5693)
+        - name: ens
+          in: query
+          required: false
+          schema: { type: string }
+          description: Full name, e.g. p5693.civicord.eth
+        - name: keys
+          in: query
+          required: false
+          schema: { type: string }
+          description: Comma-separated text keys (default url,status,vnd.civicord.person_name,vnd.civicord.eac_demo)
+      responses:
+        '200':
+          description: Live text records from the resolver
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  network: { type: string }
+                  ens: { type: string }
+                  personId: { type: string }
+                  node: { type: string }
+                  resolver: { type: string }
+                  source: { type: string }
+                  texts:
+                    type: object
+                    additionalProperties: true
+        '400':
+          description: Missing id/ens
 
   /api/summary:
     get:

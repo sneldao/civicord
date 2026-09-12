@@ -105,8 +105,9 @@ Audience-first framing for all frontend content, in priority order:
    to the tamper-evident public record (ENS name + register link). Screenshot-grade
    evidence, citable.
 2. **Candidates & parties** — represented neutrally: "recorded", never judged.
-   The PermissionedResolver write roles already allow a candidate to later claim
-   and correct their own name.
+   PermissionedResolver EAC (`authorizeTextRoles` / `authorizeNameRoles`) is the
+   claim path for a candidate to later correct their own text keys — proven on
+   Sepolia for a demo set ([docs/ens-claim-path.md](ens-claim-path.md)).
 3. **Civic-tech adopters** (mySociety, Democracy Club, Campaign Lab) — reusable
    identifiers (Democracy Club person IDs) and an open pipeline, not a one-off demo.
 4. **Sponsors** — ENS as identity infrastructure; same surface as #1.

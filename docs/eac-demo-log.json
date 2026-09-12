@@ -1,0 +1,35 @@
+{
+  "network": "sepolia",
+  "results": [
+    {
+      "ens": "p5693.civicord.eth",
+      "person_id": "5693",
+      "node": "0xf902e24ba35ca3f4414930fd606c4b6a26498cb0c4122fc921eaf64fa79c6d17",
+      "delegate": "0x892AE835D7ff7ee0B840553C587eC4FEA232843b",
+      "key": "vnd.civicord.eac_demo",
+      "value": "eac-ok:1789218840",
+      "grant_tx": "0x63ed74ae4cdfe319bf75e17a5c8c9841c64476c482e59dcba719172372ad5c7a",
+      "revoke_tx": "0xed0d95be8e724a86bd624136eee44b648ec901261d972be210fd171718e33eb2"
+    },
+    {
+      "ens": "p17372.civicord.eth",
+      "person_id": "17372",
+      "node": "0x90cef1c8366cc303175cb08b1ef1c6203f26c18bf290acb5aee10d4c2370f667",
+      "delegate": "0x892AE835D7ff7ee0B840553C587eC4FEA232843b",
+      "key": "vnd.civicord.eac_demo",
+      "value": "eac-ok:1789218901",
+      "grant_tx": "0xd5d092b09e5f7915ded5e5663a7d23c84624ccb2d671773994a3dcbb42effbee",
+      "revoke_tx": "0x6fd9c1e2fa9520d8e487c4c181417dc999e6eedc0ca70c19dbb20b4b81d19940"
+    },
+    {
+      "ens": "p2504.civicord.eth",
+      "person_id": "2504",
+      "node": "0x66454c2f88f5589b6f9d2d1c2ad11da79b34861ed2b9f651a0e88c65cb448d32",
+      "delegate": "0x892AE835D7ff7ee0B840553C587eC4FEA232843b",
+      "key": "vnd.civicord.eac_demo",
+      "value": "eac-ok:1789218950",
+      "grant_tx": "0x3d31c43826bd183b0620972dec58282cbb0c8182b1cf9a2c1579a81987d593be",
+      "revoke_tx": "0xf96c3a89c22e3a52fc04d898eb864a714d23031c22a9759d40ad0cf0c88638b6"
+    }
+  ]
+}

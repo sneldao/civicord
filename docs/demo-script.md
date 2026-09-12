@@ -33,6 +33,9 @@ Click **See filtered ledger →** — lands on `/browse?constituency=ynys-mon`.
 Show **Share** — `og:image` is `/og/constituencies/ynys-mon.svg`, 1200×630 stipple deed — paste in Slack.
 Candidate row → `/candidates/2504` — seat-context bar “in St Ives — 3 of 4 live”
 + hex thumb + party live-share compare.
+Click **Verify on-chain** — live Sepolia `text()` for `url` / `status` / name
+(no wallet). One line: “Same Permissioned Resolver — we also proved EAC
+grant → write → revoke so a candidate can later claim a single text key.”
 
 ## 1:25 — Agent pay-per-seat (30s)
 **Screen:** Terminal.

@@ -122,7 +122,11 @@ const manifestRows = readCsv("onchain_manifest.csv", { required: false });
 const onchainByPerson = new Map();
 for (const r of manifestRows) {
   if (r.person_id && r.ens_name) {
-    onchainByPerson.set(r.person_id, { ens: r.ens_name, status: r.status || null });
+    onchainByPerson.set(r.person_id, {
+      ens: r.ens_name,
+      status: r.status || null,
+      node: r.node || null,
+    });
   }
 }
 for (const person of persons.values()) {

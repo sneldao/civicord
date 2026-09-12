@@ -1,4 +1,4 @@
-# Demo + submission checklist (The Graph Continuity)
+# Demo + submission checklist (ENS Continuity + Graph Continuity)
 
 Deadline: **Sun 2026-09-13 12:00 EDT / 17:00 UK**.
 
@@ -6,45 +6,43 @@ Deadline: **Sun 2026-09-13 12:00 EDT / 17:00 UK**.
 
 1. **Record the 2–4 min demo** (see [demo-script.md](demo-script.md))
    - Must-show beat: seat or `/candidates/5693` → Agent view → **Query The Graph**
-   - Say Continuity: *subgraph existed; we made agents consume Studio live and join the ledger*
-   - If `textRecordCount > 0` on v0.0.4: show status/url from Graph; else say registrations + ledger join (still valid)
+   - ENS beat: same page → **Verify on-chain** (live `eth_call` texts) + mention EAC claim path
+   - Say Continuity: *subgraph + ENSv2 registry existed; we made agents/UI consume them live*
 2. **ETHGlobal submission**
-   - Track: **Best AI Tooling / AI Use Case — Continuity**
+   - Tracks: **Best AI Tooling / Continuity** (Graph) **and** **ENS Continuity Integration** (primary ENS lane)
+   - Optional stretch: **Best Use of ENSv2** if EAC grant/revoke + live verify are in the video
    - Public repo: `https://github.com/sneldao/civicord`
-   - Document pre-existing vs new: subgraph + ledger pre-existed; live WebMCP Graph tools, `/api/graph`, AgentView Query, namehash fix `v0.0.4`, skill — Continuity work
+   - Document pre-existing vs new: see FEEDBACK Continuity sections
 3. **Optional Bazantic**
-   - Re-import `https://civicord.pages.dev/openapi.yaml` so free `POST /api/graph` appears as a gateway resource (MCP tools are auto-generated from OpenAPI — we cannot push tools from the repo)
+   - Re-import `https://civicord.pages.dev/openapi.yaml` so free `POST /api/graph` appears as a gateway resource
 
 ## What is already done in-repo / on-chain
 
 | Item | Status |
 |---|---|
-| Live Studio client + WebMCP Graph tools + compare join | Done (`b6ec282`+) |
-| Same-origin `POST /api/graph` worker proxy | Done (this pass) |
+| Live Studio client + WebMCP Graph tools + compare join | Done |
+| Same-origin `POST /api/graph` worker proxy | Done |
 | AgentView on seat **and** candidate pages | Done |
-| OpenAPI + recipe + SKILL + Continuity FEEDBACK | Done |
-| Demo set `setText` on-chain (5693, Ynys Môn, St Ives) | On-chain yes |
-| Subgraph **v0.0.4** namehash fix (TextChanged join) | Deployed; **re-syncing** |
-| Full 2,375 records blast | Needs ~2 ETH gas — **optional**; demo set is enough |
+| Subgraph **v0.0.4** namehash fix (TextChanged join) | Done · ~2375 candidates · ~7122 texts |
+| Live `GET /api/ens` eth_call verify + candidate **Verify on-chain** | Done |
+| EAC grant → write → revoke demo (`eac_demo.py`) | Done · see [ens-claim-path.md](ens-claim-path.md) |
+| Manifest rebuild from Graph (chips ≈ full set) | Done via `rebuild_manifest_from_graph.py` |
+| Full 2,375 records blast | Already on-chain (Graph); optional re-publish |
 
 ## Verify before pressing record
 
 ```bash
-# Prefer v0.0.4 once synced past registrations + text events
+# Graph
 curl -s -X POST -H 'content-type: application/json' \
-  -d '{"query":"{ _meta { block { number } hasIndexingErrors } stat(id:\"civicord\") { candidateCount textRecordCount textRecordChangeCount } candidate(id:\"5693\") { ensName status url textRecordCount } }"}' \
+  -d '{"query":"{ candidate(id:\"5693\") { ensName status url textRecordCount } }"}' \
   https://api.studio.thegraph.com/query/101650/civicord/v0.0.4
 
-# Same-origin proxy (after Pages deploy)
-curl -s -X POST https://civicord.pages.dev/api/graph \
-  -H 'content-type: application/json' \
-  -d '{"query":"{ _meta { block { number } } }"}'
+# Live resolver text (after Pages deploy)
+curl -s 'https://civicord.pages.dev/api/ens?id=5693'
 ```
 
-Wait until `candidate(id:"5693").status` is `"live"` (or `textRecordCount >= 1`) before the Graph close-up in the video if possible.
-
-## Deployer gas (only if you want full records blast)
+## Deployer gas (only if re-running EAC / publish)
 
 - Address: `0xfa104deA24CbC347100adE461883403bdd79E0eC`
-- Full `--records-only` for all candidates needs ~2+ ETH at ~1 gwei
-- Demo subset already skipped as on-chain; no top-up required for the video
+- EAC demo needs ~0.01 ETH for delegate funding + a handful of txs
+- Full `--records-only` re-blast not required for the video

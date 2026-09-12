@@ -46,6 +46,29 @@ Written today by `publish.py`:
 | `status` | Audit status class (live/http_error/dns_error/...) |
 | `vnd.civicord.person_name` | Candidate name |
 
+EAC demo only (`eac_demo.py`):
+
+| Key | Value |
+|---|---|
+| `vnd.civicord.eac_demo` | Proof string written by a delegated key, then rights revoked |
+
+## EAC claim-path demo
+
+```bash
+export PK=$(tr -d '\n' < ~/.config/civicord/sepolia.key)
+# optional: write a throwaway key to ~/.config/civicord/eac-delegate.key
+python scripts/publish/eac_demo.py --ids 5693,17372,2504
+```
+
+See `docs/ens-claim-path.md`.
+
+## Refresh frontend chips from The Graph
+
+```bash
+python scripts/publish/rebuild_manifest_from_graph.py
+cd frontend && npm run build
+```
+
 Planned (not yet written by the script):
 
 | Key | Value |

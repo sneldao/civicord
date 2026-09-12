@@ -38,6 +38,7 @@ const candidateSchema = z.object({
     .object({
       ens: z.string(),
       status: z.string().nullable().optional(),
+      node: z.string().nullable().optional(),
     })
     .nullable()
     .optional(),

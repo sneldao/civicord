@@ -75,9 +75,9 @@ slug = ynys-mon  (normalize NFD, &→and, lower, -)
 * **Upstream:** `https://civicord.pages.dev` (Cloudflare Pages, static, no auth) — extensionless `GET /api/*` aliased via `frontend/public/_worker.js` (`cb09faf` → `…json` + `?country=&region=&limit=` filtering; verified `21:30` after `68950dd3`).
 * **Spec:** `https://civicord.pages.dev/openapi.yaml`
 * **Metered routes:** `/api/constituencies/{slug}` (x402 $0.002 = `200` mcents), `/api/constituencies` (x402 $0.001 = `100` mcents) — both `402` with `x402Version:1` + `payment-required` + `www-authenticate: Payment` on Base USDC `0x8335…` → `0x96F3…7446`
-* **Free routes:** `/api/summary` (`200` free), `/api/graph` (**POST GraphQL → The Graph Studio**, free — live on-chain Candidate/TextRecord index), `/og/constituencies/{slug}.svg` (origin `200 image/svg+xml`, gateway currently `404 not found` — origin is canonical), `/*.html`, `/browse?constituency=*`, `/openapi.yaml`
-* **Second service for Bazantic prize:** The Graph via upstream `POST https://civicord.pages.dev/api/graph` (or Studio directly) — satisfies “use at least one other service” without new Bazantic code. Re-import OpenAPI after deploy so the gateway lists `/api/graph`.
-* **Cache:** `max-age=300` on `/api/*` (except `/api/graph` = `no-store`), `max-age=86400` on `/og/*` (origin; gateway inherits)
+* **Free routes:** `/api/summary` (`200` free), `/api/graph` (**POST GraphQL → The Graph Studio**, free), `/api/ens` (**GET live Sepolia `text()` eth_call**, free), `/og/constituencies/{slug}.svg` (origin `200 image/svg+xml`, gateway currently `404 not found` — origin is canonical), `/*.html`, `/browse?constituency=*`, `/openapi.yaml`
+* **Second service for Bazantic prize:** The Graph via upstream `POST https://civicord.pages.dev/api/graph` (or Studio directly) — satisfies “use at least one other service” without new Bazantic code. Re-import OpenAPI after deploy so the gateway lists `/api/graph` and `/api/ens`.
+* **Cache:** `max-age=300` on `/api/*` (except `/api/graph` and `/api/ens` = `no-store`), `max-age=86400` on `/og/*` (origin; gateway inherits)
 
 ## Local test (no key)
 

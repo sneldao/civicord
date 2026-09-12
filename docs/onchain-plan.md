@@ -127,7 +127,10 @@ code.
   (we deploy **no** new contracts; ENSv2's factories + official implementations only)
 - `scripts/publish/deploy.py` — registry + resolver proxy deployment (idempotent)
 - `scripts/publish/publish.py` — batch registration + text records + manifest
+- `scripts/publish/eac_demo.py` — EAC grant → delegate write → revoke on demo names
+- `scripts/publish/rebuild_manifest_from_graph.py` — sync manifest/chips from Studio
 - `scripts/publish/README.md` — usage + record schema
+- `docs/ens-claim-path.md` — candidate claim path + alias honesty note
 
 ## Sepolia → mainnet permanence path
 

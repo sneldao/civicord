@@ -2,15 +2,17 @@
 
 > One doc, three sections — copy per-sponsor on submission. Keep each 150–250 words. Be specific, not flattering.
 
-## ENS — Best Use of ENSv2
+## ENS — Best Use of ENSv2 / Continuity Integration
 
-**What we built:** `civicord.eth` parent + UserRegistry `0x0895…2aa9` + PermissionedResolver `0x340d…ee67` on Sepolia — `p{person_id}.civicord.eth` for 2,375 candidates, `text(url/status/vnd.civicord.person_name)` as the tamper-evident record. Blast publisher (`publish.py --blast`) + idempotent resume (`decode_string` fix, `get_pending_nonce()`), alias `civicordhq.eth` kept.
+**What we built:** `civicord.eth` parent + UserRegistry `0x0895…2aa9` + PermissionedResolver `0x340d…ee67` on Sepolia — `p{person_id}.civicord.eth` for 2,375 candidates, `text(url/status/vnd.civicord.person_name)` as the tamper-evident record. Blast publisher (`publish.py --blast`) + idempotent resume, dual parent `civicordhq.eth` (same UserRegistry — not `setAlias`).
 
-**What worked:** ENSv2 factories + PermissionedResolver per-record roles are the right primitive for a *public register* — one resolver per deployer, one `namehash` per candidate, `app.ens.domains` verification for free. Docs were legible.
+**ENS deepening (2026-09-12):** EAC proven end-to-end on `5693` / `17372` / `2504` — `authorizeTextRoles` grant → delegate `setText(vnd.civicord.eac_demo)` → revoke → unauthorized revert (`scripts/publish/eac_demo.py`, [ens-claim-path.md](ens-claim-path.md), [eac-demo-log.json](eac-demo-log.json)). Live product verify: `GET /api/ens?id=` worker does Sepolia `eth_call text()`; candidate pages **Verify on-chain**. Manifest rebuilt from Studio (`rebuild_manifest_from_graph.py`) so chips match ~2,375 on-chain names.
 
-**Friction:** `decode_string` ABI word offset is subtle (we shipped a wrong skip for a week); a worked `text()` round-trip example with `bytes32 node` + `string key` would have saved a pass. `recordVersions` vs `TextChanged` indexing guidance is thin — we used `TextChanged` + `LabelRegistered` for the Subgraph.
+**What worked:** ENSv2 factories + PermissionedResolver per-record roles are the right primitive for a *public register* — one resolver per deployer, one `namehash` per candidate, free read path (no wallet). Docs were legible; `authorizeTextRoles` matched the claim-path story.
 
-**Wish:** a Sepolia faucet note in the onboarding (Alchemy vs publicnode divergence cost us a publish retry), and a canonical “verify a text record” Etherscan link pattern to share with judges.
+**Friction:** `decode_string` ABI word offset is subtle; `grantRoles` on the resolver ABI is a stub — real path is `authorize*`. Dual-parent registry aliasing is easy to overclaim as `setAlias`.
+
+**Wish:** a Sepolia faucet note in onboarding, and a canonical “verify a text record” Etherscan deep-link pattern for judges.
 
 **Would you recommend ENSv2 for this use again?** Yes — identity, not wallet, is the product here.
 
@@ -24,7 +26,7 @@
 
 **What worked:** `graph-cli 0.98 + graph-ts 0.38` codegen/build once `entities: [NodeToCandidate]` is registered; Studio CORS `*` lets the browser hit the provider directly; free `_meta` is enough for a sync proof in the demo.
 
-**Friction:** v0.0.1/v0.0.2 `indexing_error` only surfaced as `hasIndexingErrors:true` — Logs tab was the only diagnostic. Sync of ~3.5M blocks is slow. **Honesty:** as of deepening, `candidateCount≈2375` but `textRecordCount`/`textRecordChangeCount` can still be `0` until `setText` blasts finish — agents must join Graph identity with the audit ledger for liveness answers.
+**Friction:** v0.0.1/v0.0.2 `indexing_error` only surfaced as `hasIndexingErrors:true` — Logs tab was the only diagnostic. Sync of ~3.5M blocks is slow. **Honesty (post v0.0.4):** `candidateCount≈2375` and `textRecordCount≈7122` once namehash join + setText blasts indexed — agents should still join Graph with the audit ledger for outcome language.
 
 **Wish:** clearer `bytes32` vs `uint256 tokenId` hex-casing + padding contract (we now `paddedHex` to 0x+64 lower-case), and an `immutable` entity recommendation in the scaffold.
 

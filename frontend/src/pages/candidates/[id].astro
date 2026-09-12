@@ -296,11 +296,22 @@ const personShareText =
           .{" "}
           {person.onchain.status && <>Recorded status: <b>{person.onchain.status}</b>. </>}
           It holds this page's claims — website, status, evidence — in a public
-          register that can't be quietly edited or deleted.
+          register that can't be quietly edited or deleted. Same registry also
+          serves <code>p{person.id}.civicordhq.eth</code> (dual parent label).
         </p>
+        <div
+          class="ens-live"
+          data-person-id={person.id}
+          data-ens={ens}
+          data-node={person.onchain.node ?? ""}
+        >
+          <button type="button" class="ens-verify-btn">Verify on-chain</button>
+          <p class="ens-live-status muted" hidden>Reading Sepolia resolver…</p>
+          <dl class="ens-live-texts" hidden></dl>
+        </div>
         <ul class="ens-links">
           <li><a href={ensUrl} rel="noopener noreferrer">View the record ↗</a></li>
-          <li><a href={resolverUrl} rel="noopener noreferrer">Verify on the register ↗</a></li>
+          <li><a href={resolverUrl} rel="noopener noreferrer">Open the register ↗</a></li>
         </ul>
       </section>
     )}
@@ -329,7 +340,7 @@ const personShareText =
     <WebMCP />
 
     <script>
-      // Copy the ENS name on click (progressive enhancement; view-transition safe).
+      // Copy the ENS name + live Sepolia text() verify (view-transition safe).
       document.addEventListener("astro:page-load", () => {
         const btn = document.querySelector<HTMLButtonElement>(".ens-copy");
         btn?.addEventListener("click", async () => {
@@ -345,6 +356,46 @@ const personShareText =
           }
           btn.classList.add("copied");
           setTimeout(() => btn.classList.remove("copied"), 1200);
+        });
+
+        const live = document.querySelector<HTMLElement>(".ens-live");
+        const verifyBtn = live?.querySelector<HTMLButtonElement>(".ens-verify-btn");
+        const statusEl = live?.querySelector<HTMLElement>(".ens-live-status");
+        const textsEl = live?.querySelector<HTMLDListElement>(".ens-live-texts");
+        verifyBtn?.addEventListener("click", async () => {
+          if (!live || !statusEl || !textsEl) return;
+          const id = live.dataset.personId;
+          if (!id) return;
+          verifyBtn.disabled = true;
+          statusEl.hidden = false;
+          statusEl.textContent = "Reading Sepolia resolver via eth_call…";
+          textsEl.hidden = true;
+          textsEl.replaceChildren();
+          try {
+            const res = await fetch(`/api/ens?id=${encodeURIComponent(id)}`);
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || res.statusText);
+            const entries = Object.entries(data.texts || {}).filter(
+              ([, v]) => v != null && typeof v === "string" && v.length > 0
+            );
+            if (!entries.length) {
+              statusEl.textContent = "No text records returned from the resolver.";
+            } else {
+              statusEl.textContent = `Live from Sepolia · ${data.source}`;
+              for (const [key, value] of entries) {
+                const dt = document.createElement("dt");
+                dt.textContent = key;
+                const dd = document.createElement("dd");
+                dd.textContent = String(value);
+                textsEl.append(dt, dd);
+              }
+              textsEl.hidden = false;
+            }
+          } catch (err) {
+            statusEl.textContent = `Verify failed: ${err instanceof Error ? err.message : String(err)}`;
+          } finally {
+            verifyBtn.disabled = false;
+          }
         });
 
         // Seat hex peeks in place when the sheet is mounted; plain link otherwise.
