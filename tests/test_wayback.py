@@ -95,3 +95,27 @@ def test_select_spike_prefers_pages(tmp_path: Path):
     ids = {r["person_id"] for r in rows}
     assert "2" in ids
     assert "1" not in ids or "2" in ids  # prefers 2 over 1 for gone
+
+
+def test_select_spike_dedupes_person_ids(tmp_path: Path):
+    from civicord.wayback import select_spike_targets
+
+    changes = tmp_path / "changes.csv"
+    changes.write_text(
+        "person_id,person_name,url,change_signal\n"
+        "1,A,https://a.com/1,gone\n"
+        "1,A,https://a.com/2,gone\n"
+        "2,B,https://b.com,gone\n"
+        "3,C,https://c.com,repurposed_suspect\n"
+        "4,D,https://d.com,repurposed_suspect\n",
+        encoding="utf-8",
+    )
+    pages = tmp_path / "pages.csv"
+    pages.write_text(
+        "person_id,page_key,char_count,text\n1,k,10,a\n2,k,10,b\n3,k,10,c\n4,k,10,d\n",
+        encoding="utf-8",
+    )
+    rows = select_spike_targets(changes, pages_csv=pages, limit=4)
+    ids = [r["person_id"] for r in rows]
+    assert len(ids) == len(set(ids))
+    assert len(ids) == 4

@@ -243,8 +243,35 @@ def select_spike_targets(
 
     half = max(1, limit // 2)
     out: list[dict[str, str]] = []
+    seen: set[str] = set()
+
+    def take(sig: str, n: int) -> None:
+        added = 0
+        for r in wanted[sig]:
+            if added >= n:
+                return
+            pid = r.get("person_id", "")
+            if not pid or pid in seen:
+                continue
+            seen.add(pid)
+            out.append(r)
+            added += 1
+
     for sig in signals:
-        out.extend(wanted[sig][:half])
+        take(sig, half)
+    # Top up to limit from either bucket if a signal ran short.
+    if len(out) < limit:
+        for sig in signals:
+            for r in wanted[sig]:
+                pid = r.get("person_id", "")
+                if not pid or pid in seen:
+                    continue
+                seen.add(pid)
+                out.append(r)
+                if len(out) >= limit:
+                    break
+            if len(out) >= limit:
+                break
     return out[:limit]
 
 

@@ -39,7 +39,7 @@ def run_diff_spike(*, data_dir: Path) -> list[diffing.DiffResult]:
     if summary_path.exists():
         for row in json.loads(summary_path.read_text()):
             pid = str(row.get("person_id", ""))
-            if pid:
+            if pid and pid not in meta_by_id:
                 person_ids.append(pid)
                 meta_by_id[pid] = row
     if not person_ids:
