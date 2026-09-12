@@ -29,8 +29,6 @@ CDX_BASE = "https://web.archive.org/cdx/search/cdx"
 # Prefer snapshots near the Campaign Lab scrape window.
 DEFAULT_FROM = "20250301"
 DEFAULT_TO = "20250531"
-GE2024_FROM = "20240615"
-GE2024_TO = "20240815"
 
 
 @dataclass
@@ -97,16 +95,15 @@ def query_cdx(
 
 
 def query_cdx_fallback(client: httpx.Client, url: str) -> list[CdxHit]:
-    """Broader CDX: Apr window, then GE 2024 window, then any 200 in 2024–2025."""
-    for frm, to in (
-        (DEFAULT_FROM, DEFAULT_TO),
-        (GE2024_FROM, GE2024_TO),
-        ("20240101", "20251231"),
-    ):
-        hits = query_cdx(client, url, from_ts=frm, to_ts=to)
-        if hits:
-            return hits
-        time.sleep(0.4)
+    """CDX: Apr scrape window first, then 2024–2025 (pick_snapshot prefers Apr), then any."""
+    hits = query_cdx(client, url, from_ts=DEFAULT_FROM, to_ts=DEFAULT_TO)
+    if hits:
+        return hits
+    time.sleep(0.4)
+    hits = query_cdx(client, url, from_ts="20240101", to_ts="20251231")
+    if hits:
+        return hits
+    time.sleep(0.4)
     # Last resort: unfiltered CDX (may include non-200).
     q = (
         f"{CDX_BASE}?url={quote(url, safe='')}&output=json"
@@ -130,11 +127,24 @@ def query_cdx_fallback(client: httpx.Client, url: str) -> list[CdxHit]:
     return hits
 
 
-def pick_snapshot(hits: list[CdxHit], prefer_ts: str = "20250415") -> CdxHit | None:
+def pick_snapshot(
+    hits: list[CdxHit],
+    prefer_ts: str = "20250415",
+    *,
+    window_from: str = DEFAULT_FROM,
+    window_to: str = DEFAULT_TO,
+) -> CdxHit | None:
+    """Prefer HTTP 200 snapshots inside the scrape window, else closest overall."""
     if not hits:
         return None
-    # Prefer 200s closest to prefer_ts.
     good = [h for h in hits if h.statuscode == "200"] or hits
+
+    def in_window(h: CdxHit) -> bool:
+        try:
+            day = h.timestamp[:8]
+            return window_from[:8] <= day <= window_to[:8]
+        except Exception:  # noqa: BLE001
+            return False
 
     def dist(h: CdxHit) -> int:
         try:
@@ -142,7 +152,9 @@ def pick_snapshot(hits: list[CdxHit], prefer_ts: str = "20250415") -> CdxHit | N
         except ValueError:
             return 10**9
 
-    return min(good, key=dist)
+    in_win = [h for h in good if in_window(h)]
+    pool = in_win or good
+    return min(pool, key=dist)
 
 
 def fetch_id_body(client: httpx.Client, hit: CdxHit) -> tuple[int, bytes]:
@@ -241,6 +253,7 @@ def run_spike(
     data_dir: Path,
     limit: int = 15,
     sleep_s: float = 0.8,
+    resume: bool = True,
 ) -> list[SpikeResult]:
     out_dir = data_dir / "out" / "wayback_spike"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -259,6 +272,43 @@ def run_spike(
             url = t["url"]
             name = t.get("person_name", "")
             sig = t.get("change_signal", "")
+            person_dir = out_dir / pid
+            person_dir.mkdir(parents=True, exist_ok=True)
+            apr = load_april_text(pages, pid)
+
+            existing = sorted(person_dir.glob("*.bin"))
+            if resume and existing:
+                ts = existing[-1].stem
+                body = existing[-1].read_bytes()
+                digest = sha256_bytes(body)
+                text = html_to_text(body.decode("utf-8", "replace"))
+                meta_path = person_dir / "cdx.json"
+                cdx_hits = 0
+                if meta_path.exists():
+                    try:
+                        cdx_hits = int(json.loads(meta_path.read_text()).get("cdx_hits") or 0)
+                    except Exception:  # noqa: BLE001
+                        cdx_hits = 0
+                logger.info("[%d/%d] %s resume %s", i, len(targets), pid, ts)
+                results.append(
+                    SpikeResult(
+                        person_id=pid,
+                        person_name=name,
+                        url=url,
+                        change_signal=sig,
+                        cdx_hits=cdx_hits,
+                        snapshot_ts=ts,
+                        wayback_url=id_url(ts, url),
+                        http_status=200,
+                        sha256=digest,
+                        char_count=len(text),
+                        apr2025_chars=len(apr),
+                        similarity=(round(similarity(text, apr), 4) if apr and text else None),
+                        note="resumed",
+                    )
+                )
+                continue
+
             logger.info("[%d/%d] %s %s (%s)", i, len(targets), pid, url, sig)
             note = ""
             try:
@@ -267,8 +317,6 @@ def run_spike(
                 note = f"cdx_error:{e!s}"[:180]
                 hits = []
             hit = pick_snapshot(hits)
-            person_dir = out_dir / pid
-            person_dir.mkdir(parents=True, exist_ok=True)
             meta = {
                 "person_id": pid,
                 "url": url,
@@ -278,7 +326,6 @@ def run_spike(
             }
             (person_dir / "cdx.json").write_text(json.dumps(meta, indent=2) + "\n")
 
-            apr = load_april_text(pages, pid)
             if not hit:
                 results.append(
                     SpikeResult(

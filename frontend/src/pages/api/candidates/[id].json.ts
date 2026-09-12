@@ -4,6 +4,7 @@
 import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 import constituenciesRaw from "../../../data/constituencies.json";
+import contentDiffsRaw from "../../../data/content_diffs.json";
 
 export const prerender = true;
 
@@ -66,6 +67,8 @@ export const GET: APIRoute = async ({ params }) => {
     });
   }
   const p = person.data;
+  const diffsRoot: any = contentDiffsRaw as any;
+  const contentDiff = (diffsRoot?.byPerson ?? {})[p.id] ?? null;
   const parties = [...new Set(p.websites.flatMap((w: any) => w.parties ?? []).filter(Boolean))];
   const elections = [...new Set(p.websites.flatMap((w: any) => w.elections ?? []).filter(Boolean))];
   const verdict = verdictOf(p);
@@ -84,6 +87,7 @@ export const GET: APIRoute = async ({ params }) => {
       : { ens, status: null, node: null },
     verifyOnchain: "/api/ens?id=" + p.id,
     changeSignal: p.changeSignal ?? null,
+    contentDiff,
     websites: p.websites.map((w: any) => ({
       url: w.url,
       status: w.audit?.statusClass ?? "unknown",

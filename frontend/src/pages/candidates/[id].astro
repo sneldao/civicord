@@ -11,6 +11,7 @@ import { partyLiveShare } from "../../lib/cohorts";
 import "../../styles/global.css";
 import constituenciesRaw from "../../data/constituencies.json";
 import hexesRaw from "../../data/hexes.json";
+import contentDiffsRaw from "../../data/content_diffs.json";
 
 export async function getStaticPaths() {
   const all = await getCollection("candidates");
@@ -36,6 +37,14 @@ const changeLabels: Record<string, string> = {
   other: "Audited, but not a clean survival/repurpose class",
   unaudited: "No audit yet",
 };
+const significanceLabels: Record<string, string> = {
+  unchanged: "April text still largely present in the archived page",
+  minor: "Small wording drift vs the April scrape",
+  major: "Substantial rewrite — only some April phrases remain",
+  transformed: "Little overlap with the April scrape — page may have changed role",
+};
+const diffsRoot: any = contentDiffsRaw as any;
+const contentDiff: any = (diffsRoot?.byPerson ?? diffsRoot?.default?.byPerson ?? {})[person.id] ?? null;
 const parties = [...new Set(person.websites.flatMap((w) => w.parties))];
 const elections = [...new Set(person.websites.flatMap((w) => w.elections))];
 const firstStatus = person.websites[0]?.audit?.statusClass;
@@ -244,6 +253,40 @@ const personShareText =
         <b>{person.onchain ? "Recorded" : "Pending"}</b><span>on-chain</span>
       </li>
     </ol>
+
+    {contentDiff && (
+      <section class="content-chrono" aria-label="Content chronology">
+        <h2>Content chronology</h2>
+        <p class={`change-line sig-${contentDiff.significance}`}>
+          <span class="change-kicker">{String(contentDiff.significance).replace("_", " ")}</span>
+          {significanceLabels[contentDiff.significance] ?? contentDiff.significance}
+          {typeof contentDiff.coverage === "number" && (
+            <> · {(contentDiff.coverage * 100).toFixed(0)}% of April tokens still found</>
+          )}
+        </p>
+        <ul class="facts">
+          {contentDiff.snapshotTs && (
+            <li>
+              Compared April Campaign Lab text to Wayback{" "}
+              <code>{String(contentDiff.snapshotTs).slice(0, 8)}</code>
+              {contentDiff.waybackUrl && (
+                <>
+                  {" "}
+                  ·{" "}
+                  <a href={contentDiff.waybackUrl} rel="noopener noreferrer">
+                    open archived page
+                  </a>
+                </>
+              )}
+            </li>
+          )}
+          <li class="fact-muted">
+            Spike sample — not yet run for the full register. Method in{" "}
+            <a href="https://github.com/sneldao/civicord/blob/main/docs/wayback-spike.md">docs/wayback-spike.md</a>.
+          </li>
+        </ul>
+      </section>
+    )}
 
     <section class="entries">
       <h2>Websites</h2>

@@ -404,6 +404,22 @@ components:
           nullable: true
           enum: [gone, repurposed_suspect, redirected, still_attested, other, unaudited]
           example: still_attested
+        contentDiff:
+          type: object
+          nullable: true
+          description: Spike-sample Wayback vs April significance (null when not in content_diffs.json)
+          properties:
+            significance:
+              type: string
+              enum: [unchanged, minor, major, transformed]
+            significanceScore: { type: number }
+            coverage: { type: number, nullable: true }
+            similarity: { type: number, nullable: true }
+            snapshotTs: { type: string, nullable: true }
+            waybackUrl: { type: string, nullable: true }
+            changeSignal: { type: string, nullable: true }
+            url: { type: string, nullable: true }
+            extractor: { type: string, nullable: true }
 
     Stats:
       type: object

@@ -824,6 +824,21 @@ td mark, .who-name mark {
 .change-redirected .change-kicker { color: var(--warn); }
 .change-still_attested .change-kicker { color: var(--live); }
 
+.content-chrono {
+  margin: 1.25rem 0 0.5rem;
+  padding: 0.9rem 0 0;
+  border-top: 1px solid var(--rule);
+}
+.content-chrono h2 {
+  font-size: 0.95rem;
+  margin: 0 0 0.35rem;
+}
+.sig-unchanged .change-kicker { color: var(--live); }
+.sig-minor .change-kicker { color: var(--live); }
+.sig-major .change-kicker { color: var(--warn); }
+.sig-transformed .change-kicker { color: var(--gone); }
+.facts .fact-muted { font-size: 0.8rem; opacity: 0.9; }
+
 /* Archived scrape specimens */
 .specimens pre {
   font-family: var(--mono);

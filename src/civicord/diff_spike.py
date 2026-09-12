@@ -194,13 +194,56 @@ def render_diff_findings(results: list[diffing.DiffResult]) -> str:
         "  the April scrape still appears in the archived page.",
         "- **Significance** uses `max(coverage, similarity)` so a good fragment join",
         "  is not punished by unequal document length.",
-        "- Scale next: apply the same normalize+score path to a larger CDX batch,",
-        "  then surface `significance` on candidate timelines.",
+        "- **Product:** `frontend/src/data/content_diffs.json` feeds candidate",
+        "  “Content chronology” and `/api/candidates/{id}` `contentDiff`.",
         "",
         "Artifacts: `data/out/wayback_spike/diff_summary.csv` (gitignored under `data/`).",
         "",
     ]
     return "\n".join(lines) + "\n"
+
+
+def publish_frontend_snapshot(
+    results: list[diffing.DiffResult],
+    path: Path,
+    *,
+    data_dir: Path,
+) -> int:
+    """Write a compact JSON map person_id → significance for the frontend build."""
+    spike = data_dir / "out" / "wayback_spike" / "spike_summary.json"
+    meta: dict[str, dict] = {}
+    if spike.exists():
+        for row in json.loads(spike.read_text()):
+            meta[str(row.get("person_id", ""))] = row
+
+    payload = {
+        "generatedAt": "2026-09-12",
+        "source": "civicord diff-spike (Wayback id_ vs Campaign Lab April text)",
+        "docs": "https://github.com/sneldao/civicord/blob/main/docs/wayback-spike.md",
+        "byPerson": {},
+    }
+    for r in results:
+        if r.significance == "incomparable":
+            continue
+        m = meta.get(r.person_id, {})
+        payload["byPerson"][r.person_id] = {
+            "significance": r.significance,
+            "significanceScore": r.significance_score,
+            "coverage": r.coverage,
+            "similarity": r.similarity,
+            "snapshotTs": r.snapshot_ts,
+            "changeSignal": m.get("change_signal"),
+            "url": m.get("url"),
+            "waybackUrl": (
+                f"https://web.archive.org/web/{r.snapshot_ts}id_/{m['url']}"
+                if r.snapshot_ts and m.get("url")
+                else None
+            ),
+            "extractor": r.extractor,
+        }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return len(payload["byPerson"])
 
 
 def write_docs(results: list[diffing.DiffResult], docs_path: Path) -> None:
@@ -210,13 +253,12 @@ def write_docs(results: list[diffing.DiffResult], docs_path: Path) -> None:
         "\n## Reproduce\n\n"
         "```bash\n"
         "civicord changes\n"
-        "civicord wayback-spike --limit 15   # once; caches bodies under data/out/\n"
+        "civicord wayback-spike --limit 50   # resume-friendly; caches under data/out/\n"
         "civicord diff-spike                 # re-extract + significance (offline)\n"
         "```\n"
     )
     if docs_path.exists():
         old = docs_path.read_text(encoding="utf-8")
-        # Keep the original spike headline block; append/replace normalized section.
         marker = "# Normalized diff spike"
         if marker in old:
             head = old.split(marker)[0].rstrip() + "\n\n"

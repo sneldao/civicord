@@ -35,6 +35,24 @@ def test_pick_snapshot_prefers_near_date():
     assert pick_snapshot(hits).timestamp == "20250414000000"
 
 
+def test_pick_snapshot_prefers_april_window_over_closer_outlier():
+    """A mid-April snapshot beats a nearer but out-of-window hit (e.g. 2022 / Sep)."""
+    hits = [
+        CdxHit("20221231135251", "https://a.com", "200", "d1"),  # closer to nothing useful
+        CdxHit("20250405094323", "https://a.com", "200", "d2"),  # in Apr window
+        CdxHit("20250916154711", "https://a.com", "200", "d3"),  # post-audit
+    ]
+    assert pick_snapshot(hits).timestamp == "20250405094323"
+
+
+def test_pick_snapshot_falls_back_outside_window():
+    hits = [
+        CdxHit("20221231135251", "https://a.com", "200", "d1"),
+        CdxHit("20240715134130", "https://a.com", "200", "d2"),
+    ]
+    assert pick_snapshot(hits).timestamp == "20240715134130"
+
+
 def test_sha256_and_similarity():
     assert len(sha256_bytes(b"abc")) == 64
     assert similarity("hello world", "hello world") == 1.0

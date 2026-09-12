@@ -302,20 +302,17 @@ def cmd_changes(args: argparse.Namespace) -> None:
 def cmd_wayback_spike(args: argparse.Namespace) -> None:
     from . import wayback
 
-    results = wayback.run_spike(data_dir=args.data_dir, limit=args.limit, sleep_s=args.sleep)
+    results = wayback.run_spike(
+        data_dir=args.data_dir,
+        limit=args.limit,
+        sleep_s=args.sleep,
+        resume=not args.no_resume,
+    )
     findings = wayback.render_findings(results)
     out_md = args.data_dir / "out" / "wayback_spike" / "FINDINGS.md"
     out_md.write_text(findings, encoding="utf-8")
-    # Durable summary into docs/ (no raw HTML bodies).
-    docs = Path(__file__).resolve().parents[2] / "docs" / "wayback-spike.md"
-    docs.write_text(
-        findings
-        + "\n## Reproduce\n\n```bash\ncivicord changes\ncivicord wayback-spike --limit 15\ncivicord diff-spike\n```\n",
-        encoding="utf-8",
-    )
     print(findings)
     print(f"Saved: {out_md}")
-    print(f"Docs:  {docs}")
 
 
 def cmd_diff_spike(args: argparse.Namespace) -> None:
@@ -327,9 +324,15 @@ def cmd_diff_spike(args: argparse.Namespace) -> None:
     out_md.write_text(findings, encoding="utf-8")
     docs = Path(__file__).resolve().parents[2] / "docs" / "wayback-spike.md"
     diff_spike.write_docs(results, docs)
+    # Commit-friendly frontend snapshot (no HTML bodies).
+    frontend_path = (
+        Path(__file__).resolve().parents[2] / "frontend" / "src" / "data" / "content_diffs.json"
+    )
+    n = diff_spike.publish_frontend_snapshot(results, frontend_path, data_dir=args.data_dir)
     print(findings)
     print(f"Saved: {out_md}")
     print(f"Docs:  {docs}")
+    print(f"Frontend snapshot: {frontend_path} ({n} rows)")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -385,6 +388,11 @@ def main(argv: list[str] | None = None) -> int:
         type=float,
         default=0.8,
         help="Seconds between Wayback requests (be polite)",
+    )
+    p.add_argument(
+        "--no-resume",
+        action="store_true",
+        help="Re-fetch even when a cached .bin already exists for the person",
     )
     p.set_defaults(func=cmd_wayback_spike)
 

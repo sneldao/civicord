@@ -14,7 +14,7 @@ every delta can point at a public name and an auditable fact.
 |---|---|---|
 | Survival register | Shipped | Is the site live / gone / redirected? Can I cite `p{id}.civicord.eth`? |
 | **Change signals v0** | **Shipped** | What *kind* of change does the Apr 2025 → Sep 2026 audit imply? |
-| Content chronology | Next | What text moved between snapshots (Wayback or re-crawl)? |
+| Content chronology | Spike (n≈50) | Normalized Wayback vs April text → significance on candidate pages |
 | Theme rollup | Later | Which topics get walked back across seats and parties? |
 
 ## Change signals v0
@@ -60,7 +60,8 @@ Frontend build attaches `website.changeSignal` / `person.changeSignal` in
    `civicord wayback-spike` — see [wayback-spike.md](wayback-spike.md).
 2. **Phase 2 — Text diffs:** significance heuristics + fixed policy taxonomy;
    per-candidate timelines (see [architecture.md](architecture.md)).
-   **Started:** `civicord diff-spike` (trafilatura normalize + coverage/significance).
+   **Spike shipped:** `civicord diff-spike` → `content_diffs.json`; candidate
+   pages show “Content chronology” when a row exists (see [wayback-spike.md](wayback-spike.md)).
 3. **Phase 3 — Themes:** rollups over many diffs; alerts; candidate→MP transition.
 
 License blocker for bulk public reuse of Campaign Lab scrape text remains open
