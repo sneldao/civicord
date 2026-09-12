@@ -44,10 +44,12 @@ longer resolves.
 
 - **dns_error ≈ 15%** — the domain itself is gone. The Wayback Machine is now
   the *only* record of these sites → motivates Phase 1 (CDX backfill) as a
-  first-class source, not a fallback.
+  first-class source, not a fallback. **Spike shipped:** see
+  [wayback-spike.md](wayback-spike.md).
 - **http_error ≈ 16%** — domain alive, candidate pages removed or restructured.
   The April 2025 scrape text is the only pre-deletion evidence → motivates
-  per-page diffing in Phase 2.
+  per-page diffing in Phase 2 (**spike:** `civicord diff-spike` + browse
+  `?sig=`).
 - Caveats: single-day snapshot; HEAD-with-GET-fallback can misclassify exotic
   servers; "live" means "responds", not "still about the candidate" (the
   surname content-check covers this — the 863 non-live URLs are the priority
@@ -55,7 +57,6 @@ longer resolves.
 
 ## Next
 
-1. Current sprint: frontend restyle + ENSv2 identity layer + Subgraph/MCP
-   agent — see [plan.md](plan.md).
-2. Phase 1: Wayback CDX backfill — priority on the 863 non-live sites.
+1. Enlarge Wayback CDX past the ~135-person spike; harden significance taxonomy.
+2. Partner outreach + Campaign Lab license clarity before bulk text publication.
 3. Repurposing analysis on redirect destinations (`final_url` clustering).

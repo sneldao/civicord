@@ -4,7 +4,12 @@ Infrastructure and deployment notes for Civicord. This doc is **internal** —
 it's safe to commit (no secrets), but unlike `architecture.md` /
 `onchain-plan.md` it documents *how we run* the project rather than what it is.
 
-Last updated: 2026-09-11 23:45 — gateway **LIVE** (`civicord-aieyq.bazgateway.com`, marketplace *Pending verification*), OG deeds live, worker alias for extensionless `/api/*` shipped (`68950dd3`); landing **reframed region-agnostic** and deployed (`c1804fad`, additive only — no route/file/data change); subgraph **v0.0.3 deployed** (`QmUcjfa4x4…`, `hasIndexingErrors:false` @ 8149999, syncing 3.5M blocks from 8150000 to 11677k — `v0.0.2` faulted @ 11660475 due to unpadded `BigInt.toHexString()` → `Bytes.fromHexString` throw, `v0.0.1` pruned).
+Last updated: 2026-09-12 — change-feed signals + Wayback significance spike
+live (`content_diffs.json`, browse `?sig=`, candidate Content chronology);
+prior 2026-09-11 23:45 — gateway **LIVE** (`civicord-aieyq.bazgateway.com`,
+marketplace *Pending verification*), OG deeds live, worker alias for
+extensionless `/api/*` shipped (`68950dd3`); landing **reframed region-agnostic**
+and deployed (`c1804fad`); subgraph **v0.0.3 deployed** (`QmUcjfa4x4…`).
 
 ## Hosting topology
 
@@ -172,6 +177,22 @@ pipeline outputs (`data/out/*.csv`, `data/boundaries/ak-v5.geojson`) have
 changed, an old `dist/` will still contain stale stats and the wrong on-chain
 counts. After a pipeline or `onchain_manifest.csv` update, run `npm run build`
 from `frontend/` so `dist/` reflects the latest `candidates.json` and map data.
+
+### Change-feed / Wayback refresh (2026-09-12)
+
+```bash
+# From repo root (needs data/out/changes_v0.csv + pages.csv)
+.venv/bin/civicord changes
+.venv/bin/civicord wayback-spike --limit 150   # resume-friendly; caches HTML under data/out/
+.venv/bin/civicord diff-spike                  # writes frontend/src/data/content_diffs.json + docs
+
+cd frontend && npm run build
+env -u CLOUDFLARE_API_KEY -u CLOUDFLARE_ACCOUNT_ID -u CLOUDFLARE_BASE_URL \
+  npx wrangler pages deploy dist --project-name civicord --branch main
+```
+
+Commit `content_diffs.json` (compact scores only — never raw `.bin` bodies).
+Browse filter: `/browse?sig=transformed`. Method: [wayback-spike.md](wayback-spike.md).
 
 Verify after deploy (check that a new constituency page is *not* the homepage):
 

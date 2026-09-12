@@ -16,11 +16,14 @@ web-monitoring and the Library of Congress's Elections Web Archive — see
 
 ## Status
 
-**2026-09-12 · Change feed v0.** The product north star is a **citable change
-feed** over campaign websites ([docs/change-feed.md](docs/change-feed.md)).
-The survival register (ENS + ledger + Graph) is the spine. v0 derives
-`gone` / `repurposed_suspect` / `redirected` / `still_attested` signals from the
-Sep 2026 audit (not paragraph diffs yet — those need Wayback/re-crawl).
+**2026-09-12 · Change feed + Wayback significance spike.** Product north star:
+a **citable change feed** ([docs/change-feed.md](docs/change-feed.md)).
+Audit-derived signals (`gone` / `repurposed_suspect` / `redirected` /
+`still_attested`) on records + browse `?change=`. Wayback CDX spike (~135
+persons, 112 scored) → `content_diffs.json`, candidate **Content chronology**,
+browse `?sig=` ([docs/wayback-spike.md](docs/wayback-spike.md)). Survival
+register (ENS + ledger + Graph) remains the spine. Full-corpus diffs + policy
+taxonomy still open (license blocker).
 
 **2026-09-11 · Phase 0 + map + seat context + gateway LIVE (3,031 html + 652 json + 650 deeds).** Liveness audit of all 2,375 scraped candidate
 websites: **64% still live ~17 months after the scrape** — 363 domains gone
@@ -86,6 +89,8 @@ Deployed via Cloudflare Pages (https://civicord.pages.dev); see
 | [`/og/constituencies/{slug}.svg`](frontend/scripts/build-og.mjs) | 650 stipple-deed share cards (1200×630 SVG from one template) |
 | [skills/civicord-graph/SKILL.md](skills/civicord-graph/SKILL.md) | Agent skill — live Subgraph Studio queries + ledger join |
 | [docs/phase0-findings.md](docs/phase0-findings.md) | Phase 0 liveness-audit baseline (64% live) |
+| [docs/change-feed.md](docs/change-feed.md) | North star: change signals v0 + content chronology roadmap |
+| [docs/wayback-spike.md](docs/wayback-spike.md) | Wayback CDX spike findings + significance classes |
 | [docs/outreach.md](docs/outreach.md) | Partner strategy and draft outreach emails |
 | [RESEARCH.md](RESEARCH.md) | Adjacent projects, validated gaps, prior art |
 

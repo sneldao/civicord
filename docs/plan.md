@@ -91,7 +91,8 @@ The survival register (ENS + audit ledger + Graph) is the spine — see
   data package); license resolution (**open blocker**).
   **Spike (2026-09-12):** `civicord diff-spike` → `content_diffs.json`,
   candidate “Content chronology”, browse `?sig=` — see
-  [wayback-spike.md](wayback-spike.md). Full-corpus + policy taxonomy still open.- **Phase 3 — continuous monitoring (Q2):** monthly robots-aware crawl via
+  [wayback-spike.md](wayback-spike.md). Full-corpus + policy taxonomy still open.
+- **Phase 3 — continuous monitoring (Q2):** monthly robots-aware crawl via
   GitHub Actions; change alerts for significant diffs; candidate→MP website
   transition tracking (the flagship story).
 - **Phase 4 — productisation:** public API; seed-nomination flow for future
