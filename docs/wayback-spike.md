@@ -8,17 +8,31 @@ cohorts (`gone` + `repurposed_suspect`).
 
 | Metric | Result |
 |---|---|
-| Sample | **135** URL attempts (gone + repurpose-suspect, unique persons preferred) |
-| Bodies cached | **125** `.bin` files · **135** person dirs |
-| Classifiable diffs | **112** unique persons (`civicord diff-spike`) |
-| Published to frontend | **112** rows in `content_diffs.json` |
-| Coverage (April tokens ⊂ Wayback) | min **0.00** · median **0.28** · max **1.00** |
-| Significance | unchanged **16** · minor **23** · major **41** · transformed **32** · incomparable **23** |
+| Sample | **135** person dirs (gone + repurpose; unique persons; social URLs skipped) |
+| Bodies cached | growing toward all ~287 scrapeable with-pages targets (`--limit 310`) |
+| Classifiable diffs | **92** after quality filters (`civicord diff-spike`) |
+| Published to frontend | **92** rows in `content_diffs.json` |
+| Coverage (April tokens ⊂ Wayback) | min **0.00** · median **0.29** · max **1.00** |
+| Significance | unchanged **12** · minor **22** · major **41** · transformed **17** · incomparable **43** |
+| Apr-window snaps among scored | **54 / 92** (`snapshotInWindow`) |
 
 Snapshot picker prefers `20250301–20250531`, then any 2024–2025 hit closest to
 mid-April. Frontend publishes compact rows to `frontend/src/data/content_diffs.json`
 (no HTML bodies); candidate pages show **Content chronology**; browse accepts
-`?sig=`.
+`?sig=`. Out-of-window snaps are labelled on the record.
+
+### Spot-check (2026-09-12) — ~20 `transformed` rows
+
+Manual review of the worst-scoring transformed cohort:
+
+| Finding | Action |
+|---|---|
+| Empty / no-CDX pairs scored as `transformed` | Require both sides + `snapshot_ts` → `incomparable` |
+| Chrome-only extracts (e.g. nav chrome vs 200k April dump) | Reject when `length_ratio < 0.02` and coverage `< 0.10` |
+| YouTube / social URLs in the spike | Skip in `select_spike_targets` |
+| Most transformed snaps outside Apr window (24/32 before fix) | Publish `snapshotInWindow`; UI caveat on candidate pages |
+
+After filters: **transformed 17** (4 in-window). Treat out-of-window `transformed` as weak evidence.
 
 ### Earlier n=14 raw-similarity spike
 
@@ -28,10 +42,9 @@ coverage fixed the join; see the section below for the current score table.
 
 ## What this unlocks
 
-1. **Scale CDX + `id_` further** — treat Wayback as primary for dead domains;
-   next enlargement past `--limit 150` (resume-friendly; unique persons).
-2. **Normalize + significance — shipped** — `civicord diff-spike` (trafilatura +
-   token coverage); surface on timelines via `content_diffs.json`.
+1. **Scale CDX + `id_` further** — in flight: `--limit 310` (~287 unique
+   scrapeable with-pages targets); resume-friendly.
+2. **Normalize + significance — shipped** — with empty/chrome/social filters.
 3. **Browse filter — shipped** — `/browse?sig=transformed` (etc.).
 4. **On-chain next:** `snapshot_sha256` text records once we trust the body.
 5. **Product next:** theme rollups over many diffs.
@@ -41,43 +54,28 @@ coverage fixed the join; see the section below for the current score table.
 Re-diff of existing Wayback `id_` bodies vs April Campaign Lab text,
 after **trafilatura** (or fallback) extraction + shared plaintext normalize.
 
-**Pairs:** 135 · **classifiable:** 112
+**Pairs:** 135 · **classifiable:** 92
 
 ### Significance classes
 
 | class | n | meaning |
 | --- | --- | --- |
-| unchanged | 16 | related ≥ 0.75 (coverage or similarity) |
-| minor | 23 | related 0.40–0.75 |
+| unchanged | 12 | related ≥ 0.75 (coverage or similarity) |
+| minor | 22 | related 0.40–0.75 |
 | major | 41 | related 0.15–0.40 |
-| transformed | 32 | related < 0.15 |
-| incomparable | 23 | missing one side |
+| transformed | 17 | related < 0.15 |
+| incomparable | 43 | missing one side |
 
 ### Metrics (normalized)
 
-- **Coverage** (April tokens in Wayback): min 0.00 · median 0.28 · max 1.00
+- **Coverage** (April tokens in Wayback): min 0.00 · median 0.29 · max 1.00
 - **Similarity** (SequenceMatcher): min 0.00 · median 0.03 · max 1.00
 
 | person_id | coverage | similarity | significance | score | extractor |
 | --- | --- | --- | --- | --- | --- |
-| 71402 | 0.00 | — | transformed | 1.00 | none |
-| 5190 | 0.00 | — | transformed | 1.00 | none |
-| 41937 | 0.00 | — | transformed | 1.00 | none |
-| 116618 | 0.00 | — | transformed | 1.00 | none |
-| 9688 | 0.00 | — | transformed | 1.00 | none |
-| 34885 | 0.00 | — | transformed | 1.00 | none |
-| 110111 | 0.00 | — | transformed | 1.00 | none |
-| 6947 | 0.00 | — | transformed | 1.00 | none |
-| 5912 | 0.01 | 0.00 | transformed | 0.99 | trafilatura |
 | 4119 | 0.01 | 0.01 | transformed | 0.99 | trafilatura |
-| 96054 | 0.00 | 0.01 | transformed | 0.99 | trafilatura |
 | 49736 | 0.00 | 0.01 | transformed | 0.99 | trafilatura |
-| 99579 | 0.04 | 0.00 | transformed | 0.96 | trafilatura |
-| 19734 | 0.05 | 0.01 | transformed | 0.95 | trafilatura |
 | 94344 | 0.05 | 0.00 | transformed | 0.95 | trafilatura |
-| 5443 | 0.02 | 0.06 | transformed | 0.94 | trafilatura |
-| 4653 | 0.02 | 0.06 | transformed | 0.94 | trafilatura |
-| 98205 | 0.08 | 0.01 | transformed | 0.92 | trafilatura |
 | 117470 | 0.09 | 0.04 | transformed | 0.91 | trafilatura |
 | 116314 | 0.09 | 0.06 | transformed | 0.91 | trafilatura |
 | 84208 | 0.11 | 0.01 | transformed | 0.89 | trafilatura |
@@ -146,7 +144,6 @@ after **trafilatura** (or fallback) extraction + shared plaintext normalize.
 | 6071 | 0.49 | 0.24 | minor | 0.51 | trafilatura |
 | 65537 | 0.50 | 0.00 | minor | 0.50 | trafilatura |
 | 48819 | 0.50 | 0.02 | minor | 0.50 | trafilatura |
-| 1478 | 0.25 | 0.52 | minor | 0.48 | trafilatura |
 | 113192 | 0.55 | 0.17 | minor | 0.45 | trafilatura |
 | 97574 | 0.58 | 0.02 | minor | 0.42 | trafilatura |
 | 84358 | 0.59 | 0.36 | minor | 0.41 | trafilatura |
@@ -168,10 +165,6 @@ after **trafilatura** (or fallback) extraction + shared plaintext normalize.
 | 117586 | 1.00 | 1.00 | unchanged | 0.00 | trafilatura |
 | 113763 | 1.00 | 1.00 | unchanged | 0.00 | trafilatura |
 | 2757 | 1.00 | 0.96 | unchanged | 0.00 | trafilatura |
-| 81674 | 1.00 | 1.00 | unchanged | 0.00 | trafilatura |
-| 36983 | 1.00 | 1.00 | unchanged | 0.00 | trafilatura |
-| 7722 | 1.00 | 1.00 | unchanged | 0.00 | trafilatura |
-| 112350 | 1.00 | 1.00 | unchanged | 0.00 | trafilatura |
 
 ## Read
 
@@ -189,6 +182,6 @@ Artifacts: `data/out/wayback_spike/diff_summary.csv` (gitignored under `data/`).
 
 ```bash
 civicord changes
-civicord wayback-spike --limit 150  # resume-friendly; caches under data/out/
+civicord wayback-spike --limit 310  # resume-friendly; caches under data/out/
 civicord diff-spike                 # re-extract + significance (offline)
 ```

@@ -269,6 +269,9 @@ const personShareText =
             <li>
               Compared April Campaign Lab text to Wayback{" "}
               <code>{String(contentDiff.snapshotTs).slice(0, 8)}</code>
+              {contentDiff.snapshotInWindow === false && (
+                <> (outside Apr 2025 scrape window — treat with care)</>
+              )}
               {contentDiff.waybackUrl && (
                 <>
                   {" "}

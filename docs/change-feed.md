@@ -14,7 +14,7 @@ every delta can point at a public name and an auditable fact.
 |---|---|---|
 | Survival register | Shipped | Is the site live / gone / redirected? Can I cite `p{id}.civicord.eth`? |
 | **Change signals v0** | **Shipped** | What *kind* of change does the Apr 2025 → Sep 2026 audit imply? |
-| Content chronology | Spike (n≈135 persons) | Normalized Wayback vs April text → significance on candidate pages + browse `?sig=` |
+| Content chronology | Spike (92 scored / ~287 targets) | Normalized Wayback vs April text → significance on candidate pages + browse `?sig=` |
 | Theme rollup | Later | Which topics get walked back across seats and parties? |
 
 ## Change signals v0

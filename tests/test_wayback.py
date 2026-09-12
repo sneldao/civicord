@@ -119,3 +119,25 @@ def test_select_spike_dedupes_person_ids(tmp_path: Path):
     ids = [r["person_id"] for r in rows]
     assert len(ids) == len(set(ids))
     assert len(ids) == 4
+
+
+def test_select_spike_skips_youtube(tmp_path: Path):
+    from civicord.wayback import select_spike_targets
+
+    changes = tmp_path / "changes.csv"
+    changes.write_text(
+        "person_id,person_name,url,change_signal\n"
+        "1,A,https://youtu.be/abc,gone\n"
+        "2,B,https://b.com,gone\n"
+        "3,C,https://c.com,repurposed_suspect\n",
+        encoding="utf-8",
+    )
+    pages = tmp_path / "pages.csv"
+    pages.write_text(
+        "person_id,page_key,char_count,text\n1,k,10,a\n2,k,10,b\n3,k,10,c\n",
+        encoding="utf-8",
+    )
+    rows = select_spike_targets(changes, pages_csv=pages, limit=4)
+    urls = {r["url"] for r in rows}
+    assert "https://youtu.be/abc" not in urls
+    assert "https://b.com" in urls

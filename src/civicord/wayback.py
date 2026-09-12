@@ -205,6 +205,25 @@ def similarity(a: str, b: str) -> float | None:
     return SequenceMatcher(None, aa, bb).ratio()
 
 
+def _is_scrapeable_url(url: str) -> bool:
+    """Drop social / video hosts that are not campaign-site snapshots."""
+    u = (url or "").lower()
+    if not u.startswith(("http://", "https://")):
+        return False
+    blocked = (
+        "youtu.be/",
+        "youtube.com/",
+        "facebook.com/",
+        "fb.me/",
+        "instagram.com/",
+        "twitter.com/",
+        "x.com/",
+        "tiktok.com/",
+        "linkedin.com/",
+    )
+    return not any(b in u for b in blocked)
+
+
 def select_spike_targets(
     changes_csv: Path,
     *,
@@ -229,6 +248,8 @@ def select_spike_targets(
             sig = r.get("change_signal", "")
             if sig not in wanted:
                 continue
+            if not _is_scrapeable_url(r.get("url", "")):
+                continue
             # Prefer persons with April scrape text.
             if with_pages and r.get("person_id") not in with_pages:
                 continue
@@ -238,7 +259,11 @@ def select_spike_targets(
         with open(changes_csv, encoding="utf-8", newline="") as f:
             for r in csv.DictReader(f):
                 sig = r.get("change_signal", "")
-                if sig in wanted and not any(x["url"] == r["url"] for x in wanted[sig]):
+                if sig not in wanted:
+                    continue
+                if not _is_scrapeable_url(r.get("url", "")):
+                    continue
+                if not any(x["url"] == r["url"] for x in wanted[sig]):
                     wanted[sig].append(r)
 
     half = max(1, limit // 2)

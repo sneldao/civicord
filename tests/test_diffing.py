@@ -28,6 +28,36 @@ def test_compare_coverage_prefers_fragment_join():
     april = "Ada Lovelace will fight for the NHS and schools in this constituency."
     # Wayback page is longer but contains the April fragment.
     wayback = ("Home About Contact " + april + " Donate today. Privacy policy cookies.") * 3
-    r = compare_texts(person_id="1", april_text=april, wayback_text=wayback)
+    r = compare_texts(
+        person_id="1",
+        april_text=april,
+        wayback_text=wayback,
+        snapshot_ts="20250415120000",
+    )
     assert r.coverage is not None and r.coverage > 0.8
     assert r.significance in ("unchanged", "minor")
+
+
+def test_compare_requires_both_sides():
+    empty = compare_texts(person_id="1", april_text="", wayback_text="")
+    assert empty.significance == "incomparable"
+    no_wb = compare_texts(
+        person_id="1", april_text="Ada fights for the NHS", wayback_text="", snapshot_ts="20250401"
+    )
+    assert no_wb.significance == "incomparable"
+    no_ts = compare_texts(
+        person_id="1",
+        april_text="Ada fights for the NHS",
+        wayback_text="Ada fights for the NHS and schools",
+        snapshot_ts=None,
+    )
+    assert no_ts.significance == "incomparable"
+
+
+def test_compare_rejects_chrome_only_extract():
+    april = ("Ada Lovelace will fight for the NHS and schools in this constituency. ") * 40
+    wayback = "Home About Contact Donate"
+    r = compare_texts(
+        person_id="1", april_text=april, wayback_text=wayback, snapshot_ts="20250401120000"
+    )
+    assert r.significance == "incomparable"

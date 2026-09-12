@@ -98,16 +98,44 @@ def compare_texts(
     wayback_text: str,
     snapshot_ts: str | None = None,
     extractor: str = "plaintext",
+    min_wayback_chars: int = 80,
 ) -> DiffResult:
     apr = normalize_plaintext(april_text)
     wb = normalize_plaintext(wayback_text)
+    # No snapshot / empty side → cannot claim content change.
+    if not apr or not wb or not snapshot_ts or len(wb) < min_wayback_chars:
+        return DiffResult(
+            person_id=person_id,
+            snapshot_ts=snapshot_ts,
+            apr_chars=len(apr),
+            wayback_chars=len(wb),
+            similarity=None,
+            coverage=None,
+            jaccard=None,
+            length_ratio=None,
+            significance="incomparable",
+            significance_score=1.0,
+            extractor=extractor,
+        )
     sim = _ratio(apr, wb)
     cov = _coverage(apr, wb)
     jac = _jaccard(apr, wb)
-    if apr and wb:
-        length_ratio = min(len(apr), len(wb)) / max(len(apr), len(wb))
-    else:
-        length_ratio = None
+    length_ratio = min(len(apr), len(wb)) / max(len(apr), len(wb))
+    # Chrome-only / wrong-page extracts: tiny Wayback body vs huge April corpus.
+    if length_ratio < 0.02 and (cov or 0.0) < 0.10:
+        return DiffResult(
+            person_id=person_id,
+            snapshot_ts=snapshot_ts,
+            apr_chars=len(apr),
+            wayback_chars=len(wb),
+            similarity=round(sim, 4) if sim is not None else None,
+            coverage=round(cov, 4) if cov is not None else None,
+            jaccard=round(jac, 4) if jac is not None else None,
+            length_ratio=round(length_ratio, 4),
+            significance="incomparable",
+            significance_score=1.0,
+            extractor=extractor,
+        )
     label, score = classify_significance(similarity=sim, coverage=cov)
     return DiffResult(
         person_id=person_id,
@@ -117,7 +145,7 @@ def compare_texts(
         similarity=round(sim, 4) if sim is not None else None,
         coverage=round(cov, 4) if cov is not None else None,
         jaccard=round(jac, 4) if jac is not None else None,
-        length_ratio=round(length_ratio, 4) if length_ratio is not None else None,
+        length_ratio=round(length_ratio, 4),
         significance=label,
         significance_score=score,
         extractor=extractor,

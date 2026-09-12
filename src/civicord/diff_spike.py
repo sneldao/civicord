@@ -225,13 +225,18 @@ def publish_frontend_snapshot(
     for r in results:
         if r.significance == "incomparable":
             continue
+        if not r.snapshot_ts:
+            continue
         m = meta.get(r.person_id, {})
+        day = r.snapshot_ts[:8]
+        in_window = "20250301" <= day <= "20250531"
         payload["byPerson"][r.person_id] = {
             "significance": r.significance,
             "significanceScore": r.significance_score,
             "coverage": r.coverage,
             "similarity": r.similarity,
             "snapshotTs": r.snapshot_ts,
+            "snapshotInWindow": in_window,
             "changeSignal": m.get("change_signal"),
             "url": m.get("url"),
             "waybackUrl": (
@@ -253,7 +258,7 @@ def write_docs(results: list[diffing.DiffResult], docs_path: Path) -> None:
         "\n## Reproduce\n\n"
         "```bash\n"
         "civicord changes\n"
-        "civicord wayback-spike --limit 150  # resume-friendly; caches under data/out/\n"
+        "civicord wayback-spike --limit 310  # resume-friendly; caches under data/out/\n"
         "civicord diff-spike                 # re-extract + significance (offline)\n"
         "```\n"
     )

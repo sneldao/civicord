@@ -416,6 +416,7 @@ components:
             coverage: { type: number, nullable: true }
             similarity: { type: number, nullable: true }
             snapshotTs: { type: string, nullable: true }
+            snapshotInWindow: { type: boolean, description: Snapshot timestamp falls in Apr 2025 scrape window }
             waybackUrl: { type: string, nullable: true }
             changeSignal: { type: string, nullable: true }
             url: { type: string, nullable: true }
