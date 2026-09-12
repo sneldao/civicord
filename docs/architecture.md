@@ -145,8 +145,10 @@ endpoints humans use — there is no separate agent backend, no key, no mock.
   14/14 CDX+body on a gone/repurpose sample; naïve CL-text vs HTML similarity
   is low → normalize extracts before Phase 2 diffs.
 - **diff** — text-level diff (trafilatura-extracted markdown + difflib) between
-  consecutive snapshots; significance heuristics (% changed, section weight,
-  page type). LLM claim-extraction is a later, optional pass.
+  consecutive snapshots; significance heuristics (% changed, coverage of April
+  tokens, page type). **Spike:** `civicord diff-spike` — coverage median **0.25**
+  vs raw-similarity median 0.03; see [wayback-spike.md](wayback-spike.md).
+  LLM claim-extraction is a later, optional pass.
 - **outputs** — static per-candidate timelines (GitHub Pages, like Campaign
   Lab's), plus bulk Parquet + CDX-style index exports.
 - **map** (build-time, 2026-09-10) — JOIN `posts → PCON24CD` via ONS Names

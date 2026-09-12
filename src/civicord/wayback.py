@@ -16,7 +16,6 @@ import logging
 import re
 import time
 from dataclasses import asdict, dataclass
-from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import quote
 
@@ -59,39 +58,11 @@ class SpikeResult:
     note: str
 
 
-class _TextExtractor(HTMLParser):
-    def __init__(self) -> None:
-        super().__init__(convert_charrefs=True)
-        self._chunks: list[str] = []
-        self._skip = 0
-
-    def handle_starttag(self, tag: str, attrs) -> None:
-        if tag in ("script", "style", "noscript"):
-            self._skip += 1
-
-    def handle_endtag(self, tag: str) -> None:
-        if tag in ("script", "style", "noscript") and self._skip:
-            self._skip -= 1
-
-    def handle_data(self, data: str) -> None:
-        if self._skip:
-            return
-        t = data.strip()
-        if t:
-            self._chunks.append(t)
-
-    def text(self) -> str:
-        return re.sub(r"\s+", " ", " ".join(self._chunks)).strip()
-
-
 def html_to_text(html: str) -> str:
-    p = _TextExtractor()
-    try:
-        p.feed(html)
-        p.close()
-    except Exception:  # noqa: BLE001 — best-effort extract
-        return re.sub(r"<[^>]+>", " ", html)
-    return p.text()
+    """Backward-compatible wrapper — prefer extract.extract_main_text for new code."""
+    from .extract import extract_main_text
+
+    return extract_main_text(html)
 
 
 def id_url(timestamp: str, original: str) -> str:

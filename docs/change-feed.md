@@ -60,6 +60,7 @@ Frontend build attaches `website.changeSignal` / `person.changeSignal` in
    `civicord wayback-spike` — see [wayback-spike.md](wayback-spike.md).
 2. **Phase 2 — Text diffs:** significance heuristics + fixed policy taxonomy;
    per-candidate timelines (see [architecture.md](architecture.md)).
+   **Started:** `civicord diff-spike` (trafilatura normalize + coverage/significance).
 3. **Phase 3 — Themes:** rollups over many diffs; alerts; candidate→MP transition.
 
 License blocker for bulk public reuse of Campaign Lab scrape text remains open

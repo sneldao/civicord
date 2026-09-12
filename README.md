@@ -57,6 +57,7 @@ civicord ingest                   # → data/out/{candidacies,websites,pages}.cs
 civicord audit --content-check    # liveness pass → data/out/audit_liveness.csv
 civicord changes                  # change signals → data/out/changes_v0.csv
 civicord wayback-spike --limit 15 # Phase 1 CDX+id_ sample → data/out/wayback_spike/
+civicord diff-spike               # normalize extracts + significance (offline)
 civicord report                   # → data/out/audit_report.md
 pytest
 

@@ -310,9 +310,23 @@ def cmd_wayback_spike(args: argparse.Namespace) -> None:
     docs = Path(__file__).resolve().parents[2] / "docs" / "wayback-spike.md"
     docs.write_text(
         findings
-        + "\n## Reproduce\n\n```bash\ncivicord changes\ncivicord wayback-spike --limit 15\n```\n",
+        + "\n## Reproduce\n\n```bash\ncivicord changes\ncivicord wayback-spike --limit 15\ncivicord diff-spike\n```\n",
         encoding="utf-8",
     )
+    print(findings)
+    print(f"Saved: {out_md}")
+    print(f"Docs:  {docs}")
+
+
+def cmd_diff_spike(args: argparse.Namespace) -> None:
+    from . import diff_spike
+
+    results = diff_spike.run_diff_spike(data_dir=args.data_dir)
+    findings = diff_spike.render_diff_findings(results)
+    out_md = args.data_dir / "out" / "wayback_spike" / "DIFF_FINDINGS.md"
+    out_md.write_text(findings, encoding="utf-8")
+    docs = Path(__file__).resolve().parents[2] / "docs" / "wayback-spike.md"
+    diff_spike.write_docs(results, docs)
     print(findings)
     print(f"Saved: {out_md}")
     print(f"Docs:  {docs}")
@@ -373,6 +387,12 @@ def main(argv: list[str] | None = None) -> int:
         help="Seconds between Wayback requests (be polite)",
     )
     p.set_defaults(func=cmd_wayback_spike)
+
+    p = sub.add_parser(
+        "diff-spike",
+        help="Offline: normalize Wayback spike bodies + score significance vs April text",
+    )
+    p.set_defaults(func=cmd_diff_spike)
 
     args = parser.parse_args(argv)
     args.func(args)
