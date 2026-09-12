@@ -299,6 +299,25 @@ def cmd_changes(args: argparse.Namespace) -> None:
             print(f"  {sig:<22} {n:>5}")
 
 
+def cmd_wayback_spike(args: argparse.Namespace) -> None:
+    from . import wayback
+
+    results = wayback.run_spike(data_dir=args.data_dir, limit=args.limit, sleep_s=args.sleep)
+    findings = wayback.render_findings(results)
+    out_md = args.data_dir / "out" / "wayback_spike" / "FINDINGS.md"
+    out_md.write_text(findings, encoding="utf-8")
+    # Durable summary into docs/ (no raw HTML bodies).
+    docs = Path(__file__).resolve().parents[2] / "docs" / "wayback-spike.md"
+    docs.write_text(
+        findings
+        + "\n## Reproduce\n\n```bash\ncivicord changes\ncivicord wayback-spike --limit 15\n```\n",
+        encoding="utf-8",
+    )
+    print(findings)
+    print(f"Saved: {out_md}")
+    print(f"Docs:  {docs}")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="civicord", description="Civicord: UK candidate website tracker"
@@ -341,6 +360,19 @@ def main(argv: list[str] | None = None) -> int:
         help="Derive change signals (gone/repurposed/redirected/…) from the liveness audit",
     )
     p.set_defaults(func=cmd_changes)
+
+    p = sub.add_parser(
+        "wayback-spike",
+        help="Phase 1 spike: CDX + id_ fetch for a small gone/repurpose sample; diff vs April text",
+    )
+    p.add_argument("--limit", type=int, default=15, help="Number of URLs to sample (default 15)")
+    p.add_argument(
+        "--sleep",
+        type=float,
+        default=0.8,
+        help="Seconds between Wayback requests (be polite)",
+    )
+    p.set_defaults(func=cmd_wayback_spike)
 
     args = parser.parse_args(argv)
     args.func(args)

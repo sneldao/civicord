@@ -56,7 +56,8 @@ Frontend build attaches `website.changeSignal` / `person.changeSignal` in
 ## Roadmap
 
 1. **Phase 1 — Wayback / re-crawl:** CDX + `id_` bodies for gone and
-   repurpose-suspect URLs; sha256 per snapshot.
+   repurpose-suspect URLs; sha256 per snapshot. **Spike shipped:**
+   `civicord wayback-spike` — see [wayback-spike.md](wayback-spike.md).
 2. **Phase 2 — Text diffs:** significance heuristics + fixed policy taxonomy;
    per-candidate timelines (see [architecture.md](architecture.md)).
 3. **Phase 3 — Themes:** rollups over many diffs; alerts; candidate→MP transition.

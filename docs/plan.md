@@ -81,6 +81,7 @@ The survival register (ENS + audit ledger + Graph) is the spine — see
   No second page corpus yet — not paragraph diffs.
 - **Phase 1 — historical baseline (weeks 3–6):** Wayback CDX backfill per URL
   (Apr 2025 ± 30 days; Jul 2024 GE), `id_` fetch + sha256, source per snapshot.
+  **Spike (2026-09-12):** `civicord wayback-spike` — see [wayback-spike.md](wayback-spike.md).
   Dead domains often have richer Wayback coverage than live sites — treat
   Wayback as a primary source, not a fallback. Priority: the 863 non-live
   sites; then redirect-destination clustering (repurposing analysis).

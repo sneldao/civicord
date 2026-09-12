@@ -163,8 +163,8 @@ def wayback_cdx_url(url: str, from_ts: str = "20250401", to_ts: str = "20250501"
 
     Phase 1 (docs/plan.md): for the ~863 non-live sites, query the CDX API for
     snapshots around the April 2025 scrape, then fetch with the `id_` suffix to
-    strip the Wayback toolbar and sha256 the body. This helper only builds the
-    query — fetching/hashing lands with the Phase 1 wayback module.
+    strip the Wayback toolbar and sha256 the body. Fetching lives in
+    `civicord.wayback` (`civicord wayback-spike`).
     """
     from urllib.parse import quote
 

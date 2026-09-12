@@ -141,6 +141,9 @@ endpoints humans use — there is no separate agent backend, no key, no mock.
   `civicord changes`. Not paragraph diffs — those need Wayback/re-crawl bodies.
 - **wayback** — CDX API per URL around (a) the April 2025 scrape date and
   (b) the July 2024 GE; fetch with `id_` suffix to strip toolbar; hash + store.
+  **Spike:** `civicord wayback-spike` ([wayback-spike.md](wayback-spike.md)) —
+  14/14 CDX+body on a gone/repurpose sample; naïve CL-text vs HTML similarity
+  is low → normalize extracts before Phase 2 diffs.
 - **diff** — text-level diff (trafilatura-extracted markdown + difflib) between
   consecutive snapshots; significance heuristics (% changed, section weight,
   page type). LLM claim-extraction is a later, optional pass.
