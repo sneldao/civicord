@@ -56,7 +56,7 @@ def main() -> None:
         abi_encode_words(
             keccak("OwnedResolver"),
             bytes.fromhex(deployer.removeprefix("0x")),
-            (0).to_bytes(32, "big"),
+            (1).to_bytes(32, "big"),
         )
     )
 
@@ -64,7 +64,11 @@ def main() -> None:
     if resolver_addr and proxy_address_for(rpc, resolver_addr):
         print(f"Resolver proxy already deployed: {resolver_addr}")
     else:
-        init = encode_init("initialize(address,uint256,bytes[])", deployer, hex(ALL_ROLES), "[]")
+        init = encode_init(
+            "initialize((address,uint256)[],bytes[])",
+            f"[({deployer},{ALL_ROLES})]",
+            "[]",
+        )
         resolver_addr = deploy_proxy(rpc, pk, resolver_impl, resolver_salt, init)
         print(f"Resolver proxy deployed: {resolver_addr}")
         state["resolver"] = resolver_addr
@@ -75,7 +79,7 @@ def main() -> None:
         abi_encode_words(
             keccak("UserRegistry"),
             parent_node,
-            (0).to_bytes(32, "big"),
+            (1).to_bytes(32, "big"),
         )
     )
 
@@ -83,7 +87,10 @@ def main() -> None:
     if registry_addr and proxy_address_for(rpc, registry_addr):
         print(f"UserRegistry proxy already deployed: {registry_addr}")
     else:
-        init = encode_init("initialize(address,uint256)", deployer, hex(ALL_ROLES))
+        init = encode_init(
+            "initialize((address,uint256)[])",
+            f"[({deployer},{ALL_ROLES})]",
+        )
         registry_addr = deploy_proxy(rpc, pk, registry_impl, registry_salt, init)
         print(f"UserRegistry proxy deployed: {registry_addr}")
         state["registry"] = registry_addr

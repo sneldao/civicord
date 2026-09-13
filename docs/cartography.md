@@ -36,7 +36,7 @@ All built at `astro build` from `candidates.json` JOIN boundaries. No tile serve
 2. Each `/constituencies/[slug]` is a share target and embed: `?format=svg` returns the halftone tile — no API key, static file.
 
 **ETHGlobal / ENS stakeholder**
-1. Every dot *is* `p{id}.civicord.eth`. Hover tooltip shows ENS + status; click goes to `app.ens.domains` + Sepolia Etherscan.
+1. Every dot *is* `p{id}.civicord.eth`. Hover tooltip shows ENS + status; click goes to the hackathon ENS App + Sepolia Etherscan.
 2. Map re-shades from the Subgraph (`text(url/status)`) — the picture *is* the on-chain register. Footer `Sepolia #xxxx — 1,512 live` + per-constituency Merkle root.
 
 **Interaction contract (why it stays intuitive):**

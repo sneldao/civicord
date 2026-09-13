@@ -49,9 +49,18 @@ type Stat @entity(immutable: false) {
 }
 
 # Helper lookup from ENSv2 namehash node (bytes32 as hex) to the candidate person ID.
-# Created by LabelRegistered so TextChanged/ResolverUpdated can find the candidate
+# Created by LabelRegistered so ResolverUpdated/Linked can find the candidate
 # without scanning the whole registry.
 type NodeToCandidate @entity(immutable: false) {
   id: ID! # node.toHexString()
+  candidate: Candidate!
+}
+
+# Helper lookup from resolver record ID to the candidate person ID. The hackathon
+# PermissionedResolver keys records by recordId, not node: `Linked(recordId, node,
+# name)` is emitted when a name is associated with a record, so we record both the
+# recordId→candidate join and the node join here.
+type RecordToCandidate @entity(immutable: false) {
+  id: ID! # recordId as decimal string
   candidate: Candidate!
 }

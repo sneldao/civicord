@@ -10,10 +10,14 @@ import {
   LabelUnregistered as LabelUnregisteredEvent,
   ResolverUpdated as ResolverUpdatedEvent,
 } from "../generated/UserRegistry/UserRegistry";
-import { TextChanged as TextChangedEvent } from "../generated/PermissionedResolver/PermissionedResolver";
+import {
+  Linked as LinkedEvent,
+  TextUpdated as TextUpdatedEvent,
+} from "../generated/PermissionedResolver/PermissionedResolver";
 import {
   Candidate,
   NodeToCandidate,
+  RecordToCandidate,
   TextRecord,
   TextRecordChange,
   Stat,
@@ -187,16 +191,35 @@ export function handleResolverUpdated(event: ResolverUpdatedEvent): void {
 }
 
 // ── PermissionedResolver handlers ─────────────────────────────────────────────
+// Hackathon resolver: records keyed by recordId, not node. `Linked(recordId,
+// node, name)` fires when a name is associated with a record (first write mints
+// it); `TextUpdated(recordId, keyHash, key, value)` carries the writes.
 
-export function handleTextChanged(event: TextChangedEvent): void {
+export function handleLinked(event: LinkedEvent): void {
   const nId = nodeHex(event.params.node);
   const nodeMap = NodeToCandidate.load(nId);
   if (nodeMap === null) {
-    // Not one of our candidate names (different ENS tree or pre-v0.0.1 block).
+    // Name not registered under our UserRegistry.
+    return;
+  }
+  const recordKey = event.params.recordId.toString();
+  let link = RecordToCandidate.load(recordKey);
+  if (link === null) {
+    link = new RecordToCandidate(recordKey);
+  }
+  link.candidate = nodeMap.candidate;
+  link.save();
+}
+
+export function handleTextUpdated(event: TextUpdatedEvent): void {
+  const recordKey = event.params.recordId.toString();
+  const link = RecordToCandidate.load(recordKey);
+  if (link === null) {
+    // Record not linked to one of our candidates.
     return;
   }
 
-  const personId = nodeMap.candidate;
+  const personId = link.candidate;
   let candidate = Candidate.load(personId);
   if (candidate === null) {
     return;
@@ -204,7 +227,7 @@ export function handleTextChanged(event: TextChangedEvent): void {
 
   const key = event.params.key;
   const value = event.params.value;
-  const recordId = nId + "/" + key;
+  const recordId = recordKey + "/" + key;
 
   let record = TextRecord.load(recordId);
   let oldValue: string = "";

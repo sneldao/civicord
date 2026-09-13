@@ -4,7 +4,7 @@
  */
 
 export const SUBGRAPH_URL =
-  "https://api.studio.thegraph.com/query/101650/civicord/v0.0.4";
+  "https://api.studio.thegraph.com/query/101650/civicord/v0.0.5";
 
 /** Prefer same-origin worker proxy in the browser; Studio direct in Node/scripts. */
 export function graphEndpoint(): string {

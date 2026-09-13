@@ -1,12 +1,18 @@
 """ENSv2 EAC grant → write → revoke demo on a few candidate names.
 
-Proves PermissionedResolver per-record roles end-to-end:
-  1. Deployer grants `authorizeTextRoles(..., key, delegate, true)`
-  2. Delegate successfully `setText` on that key only
-  3. Deployer revokes
-  4. Delegate `setText` reverts (EACUnauthorized)
+Proves PermissionedResolver setter-scoped roles end-to-end (hackathon API):
+  1. Deployer grants `grantSetterRoles(setter, delegate)` — setter is the
+     ABI-encoded `setText` calldata; only selector + key matter, so the grant
+     is scoped to one text key
+  2. Delegate successfully `setText` on that key
+  3. Deployer revokes via `revokeRoles(resource, ROLE_SET_TEXT, delegate)`
+     where resource = uint256(keccak256(key))
+  4. Delegate `setText` reverts (EACUnauthorized*)
 
-Uses a dedicated text key `vnd.civicord.eac_demo` so url/status stay intact.
+Scoped grants cover every name served by this resolver instance — that is the
+documented ENSv2 model (per-name isolation requires a separate resolver
+instance). Uses a dedicated text key `vnd.civicord.eac_demo` so url/status
+stay intact.
 
 Usage:
   export PK=$(tr -d '\\n' < ~/.config/civicord/sepolia.key)
@@ -26,7 +32,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from ensv2 import _cast, call, env, namehash, send
+from ensv2 import _cast, dns_encode, env, namehash, send
+from publish import read_text
 
 REPO_ROOT = Path(__file__).parent.parent.parent
 STATE_FILE = Path(__file__).parent / ".deployed.json"
@@ -34,18 +41,6 @@ DELEGATE_KEY_FILE = Path.home() / ".config" / "civicord" / "eac-delegate.key"
 DEMO_KEY = "vnd.civicord.eac_demo"
 DEFAULT_IDS = "5693,17372,2504"
 ROLE_SET_TEXT = 1 << 4  # PermissionedResolver ROLE_SET_TEXT
-
-
-def dns_encode(name: str) -> str:
-    """DNS wire-format name as 0x-hex (for authorize* `bytes toName`)."""
-    out = b""
-    for label in name.strip(".").split("."):
-        b = label.encode("utf-8")
-        if len(b) > 63:
-            raise ValueError(f"label too long: {label!r}")
-        out += bytes([len(b)]) + b
-    out += b"\x00"
-    return "0x" + out.hex()
 
 
 def decode_string(hexdata: str) -> str:
@@ -120,23 +115,23 @@ def main() -> None:
     state = json.loads(STATE_FILE.read_text())
     resolver, deployer = state["resolver"], state["deployer"]
     parent = state["parent_name"]
-    alias_parent = state.get("alias_parent_name", "civicordhq.eth")
 
     delegate, delegate_pk = load_delegate()
     print(f"resolver  {resolver}", flush=True)
     print(f"deployer  {deployer}", flush=True)
     print(f"delegate  {delegate}", flush=True)
     print(f"demo key  {DEMO_KEY}", flush=True)
-    print(
-        f"alias note: registry also wired under {alias_parent} "
-        "(dual parent label ≠ PermissionedResolver.setAlias)",
-        flush=True,
-    )
 
     ensure_delegate_funded(rpc, pk, deployer, delegate)
 
     ids = [x.strip() for x in args.ids.split(",") if x.strip()]
     results: list[dict] = []
+
+    # Setter calldata for the key-scoped grant: only selector + key are read;
+    # name and value are ignored by grantSetterRoles.
+    setter = _cast(["calldata", "setText(bytes,string,string)", "0x", DEMO_KEY, ""])
+    # Key-scoped resource = uint256(keccak256(key-as-utf8-bytes))
+    resource = str(int(_cast(["keccak", DEMO_KEY]).strip(), 16))
 
     for person_id in ids:
         full = f"p{person_id}.{parent}"
@@ -144,27 +139,17 @@ def main() -> None:
         dns = dns_encode(full)
         print(f"\n=== {full} ===", flush=True)
 
-        # 1. Grant per-record ROLE_SET_TEXT for DEMO_KEY
-        print("  grant authorizeTextRoles…", flush=True)
+        # 1. Grant the delegate ROLE_SET_TEXT scoped to DEMO_KEY only
+        print("  grant grantSetterRoles(setter, delegate)…", flush=True)
         tx_g = send(
             rpc,
             pk,
             resolver,
-            "authorizeTextRoles(bytes,string,address,bool)",
-            dns,
-            DEMO_KEY,
+            "grantSetterRoles(bytes,address)",
+            setter,
             delegate,
-            "true",
         )
         print(f"    grant tx {tx_g}", flush=True)
-
-        # Also show name-level grant path exists (documented; one name only)
-        if person_id == ids[0]:
-            print(
-                f"  (claim path) authorizeNameRoles ROLE_SET_TEXT={ROLE_SET_TEXT} "
-                "would grant all text keys on this name — skipped to keep demo scoped",
-                flush=True,
-            )
 
         value = f"eac-ok:{int(time.time())}"
         if not args.skip_write:
@@ -174,28 +159,27 @@ def main() -> None:
                 rpc,
                 delegate_pk,
                 resolver,
-                "setText(bytes32,string,string)",
-                node,
+                "setText(bytes,string,string)",
+                dns,
                 DEMO_KEY,
                 value,
             )
             print(f"    write tx {tx_w}", flush=True)
-            onchain = decode_string(call(resolver, "text(bytes32,string)", node, DEMO_KEY))
+            onchain = read_text(resolver, dns, node, DEMO_KEY)
             if onchain != value:
                 raise SystemExit(f"readback mismatch: got {onchain!r} want {value!r}")
             print(f"    readback ok: {onchain}", flush=True)
 
-        # 3. Revoke
-        print("  revoke authorizeTextRoles…", flush=True)
+        # 3. Revoke the key-scoped role on the key's resource
+        print("  revoke revokeRoles(resource, ROLE_SET_TEXT, delegate)…", flush=True)
         tx_r = send(
             rpc,
             pk,
             resolver,
-            "authorizeTextRoles(bytes,string,address,bool)",
-            dns,
-            DEMO_KEY,
+            "revokeRoles(uint256,uint256,address)",
+            resource,
+            str(ROLE_SET_TEXT),
             delegate,
-            "false",
         )
         print(f"    revoke tx {tx_r}", flush=True)
 
@@ -206,8 +190,8 @@ def main() -> None:
                 [
                     "call",
                     resolver,
-                    "setText(bytes32,string,string)",
-                    node,
+                    "setText(bytes,string,string)",
+                    dns,
                     DEMO_KEY,
                     "should-fail",
                     "--from",

@@ -12,6 +12,35 @@ Civicord key can update a candidate's records.
 
 > **2026-09-11 23:05:** gateway `civicord-aieyq.bazgateway.com` LIVE (`MCP Live · 5 tools`, Marketplace *Pending verification*, `100`/`200` mcents), subgraph `v0.0.3` `QmUcjfa4x4…` (`hasIndexingErrors:false` @ 8149999, syncing to 11677k — `v0.0.2` `QmQqGfVx…` faulted @ 11660475 due to unpadded `BigInt.toHexString()` → `Bytes.fromHexString` throw, `v0.0.1` pruned). See [ops.md](ops.md) and [plan.md](plan.md) for verify cURLs.
 
+## Status (2026-09-13 — migrated to the dedicated ETHOnline deployment)
+
+Civicord now lives on the **dedicated ETHOnline ENSv2 hackathon deployment**
+(per the organizer notice: build against the hackathon addresses, not the
+production docs). New state:
+
+- `civicord.eth` registered on hackathon ETHRegistrar
+  `0x7d1b7f586a62ac3f54b9a396849757814283270b`; ETHRegistry
+  `0x1d78834d97c1d7b1a38c1dedbd1a287cfed3971e` `getSubregistry("civicord")` →
+  our UserRegistry.
+- **UserRegistry proxy** `0x097bdb198cb1a40cbd0c05ff801efe83bb151428`;
+  **PermissionedResolver proxy** `0xa90747f2d95a9c4d0cad151669a9af31a3cad630`
+  (deployed via hackathon VerifiableFactory
+  `0x894bc9cc8ff1ad96b8a288c86a8c71d662c07780`, salt version bumped — CREATE2
+  salts are per-factory deterministic).
+- **Resolver API drift handled:** hackathon impls take tuple-array
+  initializers, `text()`/`setText()` are name-based (`dnsName` strings), reads
+  go through `resolve(bytes,bytes)`; EAC is `grantSetterRoles` /
+  `revokeRoles(keccak256(key), ROLE_SET_TEXT, account)` — setter grants are
+  resolver-wide, not per-name.
+- **Worker** `_worker.js` now `eth_call`s `resolve(bytes,bytes)` (DNS-encoded
+  name + inner `text(bytes32,string)` calldata); EAC demo re-run on the new
+  deployment (grant `0x5425f0…`, write `0x21cb4f…`, revoke `0xfa572b…`).
+- **Subgraph v0.0.5** re-sourced to the new proxies; new event model
+  (`Linked(recordId,node,name)` + `TextUpdated(recordId,key,…)` joined via
+  `RecordToCandidate`). Endpoint `…/civicord/v0.0.5`.
+- **Registration blast** re-running on the new deployment (idempotent resume).
+- Superseded beta state below kept as history.
+
 ## Status (2026-09-09 21:30 BST — Alchemy + pending + decode fixes — baseline)
 
 - **Live parent name: `civicord.eth`** (registered 2026-09-08 via the official
@@ -108,14 +137,23 @@ civicord.eth (parent .eth name on Sepolia, owned by deployer; civicordhq.eth ali
 
 ## Sepolia deployment addresses (official ENSv2)
 
-Sourced from `ensdomains/contracts-v2` → `contracts/deployments/sepolia/`:
+Dedicated ETHOnline deployment (per
+`feature-permres-inode-refact.docs-bao.pages.dev/learn/deployments#sepolia-ensv2-beta`):
 
 | Contract | Address |
 |---|---|
-| VerifiableFactory | `0x118bc31a50d559f7015a8da26d54b3b030cdb70f` |
-| UserRegistryImpl | from `deployments/sepolia/UserRegistryImpl.json` (script reads it) |
-| PermissionedResolverImpl | from `deployments/sepolia/PermissionedResolverImpl.json` |
-| ETHRegistry | from `deployments/sepolia/ETHRegistry.json` |
+| VerifiableFactory | `0x894bc9cc8ff1ad96b8a288c86a8c71d662c07780` |
+| ETHRegistry | `0x1d78834d97c1d7b1a38c1dedbd1a287cfed3971e` |
+| ETHRegistrar | `0x7d1b7f586a62ac3f54b9a396849757814283270b` |
+| Universal Resolver | `0xd26f2040d083af1cd2962ba303f4bea0c4faf142` (must override viem/ethers built-in) |
+| UserRegistryImpl | `0x47b442d0cf617c41cabaff5f02f44dd1e5f72546` |
+| PermissionedResolverImpl | `0xa9d3814ab151bf6e37a427432795371a8361614e` |
+| ENS App | `hackathon-deployment-manager-app-v4.ens-cf.workers.dev` |
+| ENS Explorer | `hackathon-deployment-portal-app.ens-cf.workers.dev` |
+
+Historical beta table (superseded): VerifiableFactory
+`0x118bc31a50d559f7015a8da26d54b3b030cdb70f`; impls read from
+`ensdomains/contracts-v2` `deployments/sepolia/` at run time.
 
 The publish scripts fetch these ABIs/addresses directly from the
 `ensdomains/contracts-v2` GitHub repo at run time, so addresses never go stale in our

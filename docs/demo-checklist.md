@@ -25,11 +25,11 @@ Deadline: **Sun 2026-09-13 12:00 EDT / 17:00 UK**.
 | Live Studio client + WebMCP Graph tools + compare join | Done |
 | Same-origin `POST /api/graph` worker proxy | Done |
 | AgentView on seat **and** candidate pages | Done |
-| Subgraph **v0.0.4** namehash fix (TextChanged join) | Done · ~2375 candidates · ~7122 texts |
+| Subgraph **v0.0.5** on dedicated ETHOnline deployment (Linked/TextUpdated join) | Done · syncing new registrations |
 | Live `GET /api/ens` eth_call verify + candidate **Verify on-chain** | Done |
 | EAC grant → write → revoke demo (`eac_demo.py`) | Done · see [ens-claim-path.md](ens-claim-path.md) |
 | Manifest rebuild from Graph (chips ≈ full set) | Done via `rebuild_manifest_from_graph.py` |
-| Full 2,375 records blast | Already on-chain (Graph); optional re-publish |
+| Full 2,375 records blast | Re-publishing onto hackathon deployment (resumable; see onchain-plan) |
 
 ## Verify before pressing record
 
@@ -37,7 +37,7 @@ Deadline: **Sun 2026-09-13 12:00 EDT / 17:00 UK**.
 # Graph
 curl -s -X POST -H 'content-type: application/json' \
   -d '{"query":"{ candidate(id:\"5693\") { ensName status url textRecordCount } }"}' \
-  https://api.studio.thegraph.com/query/101650/civicord/v0.0.4
+  https://api.studio.thegraph.com/query/101650/civicord/v0.0.5
 
 # Live resolver text (after Pages deploy)
 curl -s 'https://civicord.pages.dev/api/ens?id=5693'

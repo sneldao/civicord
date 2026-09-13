@@ -18,7 +18,7 @@ const name = Astro.props.name;
 const samplePersonId = Astro.props.samplePersonId ?? "5693";
 
 const GATEWAY = "https://civicord-aieyq.bazgateway.com";
-const SUBGRAPH = "https://api.studio.thegraph.com/query/101650/civicord/v0.0.4";
+const SUBGRAPH = "https://api.studio.thegraph.com/query/101650/civicord/v0.0.5";
 const mcents = 200;
 const priceUsd = (mcents / 1000 / 100).toFixed(4).replace(/0+$/, "").replace(/\.$/, ".0");
 
@@ -130,8 +130,8 @@ const mcpSnippet =
 
     <p class="muted av-foot">
       Live queries run on demand; a failure is shown honestly, never replaced with a cached response.
-      Verify independently: <a href={`https://app.ens.domains/p${samplePersonId}.civicord.eth`} rel="noopener">ENS</a> ·
-      <a href="https://sepolia.etherscan.io/address/0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67" rel="noopener">resolver</a> ·
+      Verify independently: <a href={`https://hackathon-deployment-manager-app-v4.ens-cf.workers.dev/p${samplePersonId}.civicord.eth`} rel="noopener">ENS</a> ·
+      <a href="https://sepolia.etherscan.io/address/0xa90747f2d95a9c4d0cad151669a9af31a3cad630" rel="noopener">resolver</a> ·
       <a href="https://thegraph.com/studio/subgraph/civicord" rel="noopener">Subgraph Studio</a> ·
       <a href="/api/graph">/api/graph</a> ·
       <a href="/openapi.yaml">openapi.yaml</a> ·

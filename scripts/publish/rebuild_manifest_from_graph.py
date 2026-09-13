@@ -24,7 +24,7 @@ from ensv2 import namehash
 REPO_ROOT = Path(__file__).parent.parent.parent
 MANIFEST = REPO_ROOT / "data" / "out" / "onchain_manifest.csv"
 WEBSITES = REPO_ROOT / "data" / "out" / "websites.csv"
-SUBGRAPH = "https://api.studio.thegraph.com/query/101650/civicord/v0.0.4"
+SUBGRAPH = "https://api.studio.thegraph.com/query/101650/civicord/v0.0.5"
 PAGE = 1000
 
 

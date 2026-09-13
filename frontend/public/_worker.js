@@ -12,14 +12,15 @@
 // All other requests fall through to the static Astro assets.
 
 const SUBGRAPH_STUDIO =
-  "https://api.studio.thegraph.com/query/101650/civicord/v0.0.4";
+  "https://api.studio.thegraph.com/query/101650/civicord/v0.0.5";
 
-const ENS_RESOLVER = "0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67";
+const ENS_RESOLVER = "0xa90747f2d95a9c4d0cad151669a9af31a3cad630";
 const ENS_PARENT = "civicord.eth";
 const ENS_PARENT_NODE =
   "58cd121c6585c4277ede8c4346da1debf473ececccbc87b788e669ed80392499";
 const SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
 const TEXT_SELECTOR = "59d1d43c"; // keccak256("text(bytes32,string)")[:4]
+const RESOLVE_SELECTOR = "9061b923"; // keccak256("resolve(bytes,bytes)")[:4] — hackathon resolver
 const DEFAULT_TEXT_KEYS = ["url", "status", "vnd.civicord.person_name", "vnd.civicord.eac_demo"];
 
 const corsJson = {
@@ -745,6 +746,78 @@ function encodeTextCall(nodeBytes, key) {
   return "0x" + hexOf(data);
 }
 
+function dnsEncode(name) {
+  // DNS wire format: len-prefixed labels + root 0x00 — the hackathon
+  // PermissionedResolver takes `bytes name`, not a namehash node.
+  const parts = name.replace(/\.$/, "").split(".");
+  const enc = new TextEncoder();
+  const chunks = [];
+  let total = 1;
+  for (const p of parts) {
+    const b = enc.encode(p);
+    if (b.length > 63) throw new Error(`label too long: ${p}`);
+    chunks.push(b);
+    total += 1 + b.length;
+  }
+  const out = new Uint8Array(total);
+  let off = 0;
+  for (const b of chunks) {
+    out[off++] = b.length;
+    out.set(b, off);
+    off += b.length;
+  }
+  return out;
+}
+
+function pad32(bytes) {
+  const out = new Uint8Array(Math.ceil(bytes.length / 32) * 32);
+  out.set(bytes);
+  return out;
+}
+
+function encodeResolveCall(dnsBytes, innerHex) {
+  // resolve(bytes name, bytes data): selector + two dynamic args.
+  const inner = Uint8Array.from(
+    innerHex.replace(/^0x/, "").match(/.{2}/g).map((h) => parseInt(h, 16))
+  );
+  const dnsPadded = pad32(dnsBytes);
+  const innerPadded = pad32(inner);
+  const data = new Uint8Array(4 + 32 * 2 + 32 + dnsPadded.length + 32 + innerPadded.length);
+  data.set([0x90, 0x61, 0xb9, 0x23], 0); // RESOLVE_SELECTOR
+  data[4 + 31] = 0x40; // offset of arg A
+  // offset B is relative to args start (after selector): 0x40 + 32 + dnsPadded
+  const offBVal = 0x40 + 32 + dnsPadded.length;
+  data[4 + 32 + 28] = (offBVal >>> 24) & 0xff;
+  data[4 + 32 + 29] = (offBVal >>> 16) & 0xff;
+  data[4 + 32 + 30] = (offBVal >>> 8) & 0xff;
+  data[4 + 32 + 31] = offBVal & 0xff;
+  let p = 4 + 64;
+  // arg A: len + data
+  const la = dnsBytes.length;
+  data[p + 28] = (la >>> 24) & 0xff;
+  data[p + 29] = (la >>> 16) & 0xff;
+  data[p + 30] = (la >>> 8) & 0xff;
+  data[p + 31] = la & 0xff;
+  data.set(dnsPadded, p + 32);
+  p += 32 + dnsPadded.length;
+  // arg B: len + data
+  const lb = inner.length;
+  data[p + 28] = (lb >>> 24) & 0xff;
+  data[p + 29] = (lb >>> 16) & 0xff;
+  data[p + 30] = (lb >>> 8) & 0xff;
+  data[p + 31] = lb & 0xff;
+  data.set(innerPadded, p + 32);
+  return "0x" + hexOf(data);
+}
+
+function decodeAbiBytes(hex) {
+  const raw = hex.replace(/^0x/, "");
+  if (raw.length < 128) return "";
+  const length = parseInt(raw.slice(64, 128), 16);
+  if (!length) return "";
+  return "0x" + raw.slice(128, 128 + length * 2);
+}
+
 function decodeAbiString(hex) {
   const raw = hex.replace(/^0x/, "");
   if (raw.length < 128) return "";
@@ -756,8 +829,9 @@ function decodeAbiString(hex) {
   return new TextDecoder().decode(bytes);
 }
 
-async function ethCallText(nodeBytes, key) {
-  const data = encodeTextCall(nodeBytes, key);
+async function ethCallText(dnsName, nodeBytes, key) {
+  const inner = encodeTextCall(nodeBytes, key);
+  const data = encodeResolveCall(dnsEncode(dnsName), inner);
   const res = await fetch(SEPOLIA_RPC, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -770,7 +844,7 @@ async function ethCallText(nodeBytes, key) {
   });
   const payload = await res.json();
   if (payload.error) throw new Error(payload.error.message || JSON.stringify(payload.error));
-  return decodeAbiString(payload.result || "0x");
+  return decodeAbiString(decodeAbiBytes(payload.result || "0x"));
 }
 
 async function handleEnsVerify(request, url) {
@@ -813,12 +887,13 @@ async function handleEnsVerify(request, url) {
   const keys = keysParam
     ? keysParam.split(",").map((k) => k.trim()).filter(Boolean)
     : DEFAULT_TEXT_KEYS;
+  const dnsName = `p${personId}.${ENS_PARENT}`;
   const nodeBytes = candidateNode(personId);
   const node = "0x" + hexOf(nodeBytes);
   const texts = {};
   for (const key of keys) {
     try {
-      const value = await ethCallText(nodeBytes, key);
+      const value = await ethCallText(dnsName, nodeBytes, key);
       texts[key] = value || null;
     } catch (err) {
       texts[key] = { error: String(err?.message || err) };
@@ -832,7 +907,7 @@ async function handleEnsVerify(request, url) {
         personId,
         node,
         resolver: ENS_RESOLVER,
-        source: "eth_call text(bytes32,string)",
+        source: "eth_call resolve(bytes,bytes) → text(bytes32,string)",
         texts,
         etherscan: `https://sepolia.etherscan.io/address/${ENS_RESOLVER}#readContract`,
       },

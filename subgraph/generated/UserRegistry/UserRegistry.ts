@@ -546,6 +546,31 @@ export class UserRegistry__getStateResultStateStruct extends ethereum.Tuple {
   }
 }
 
+export class UserRegistry__getURIResult {
+  value0: string;
+  value1: Address;
+
+  constructor(value0: string, value1: Address) {
+    this.value0 = value0;
+    this.value1 = value1;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromString(this.value0));
+    map.set("value1", ethereum.Value.fromAddress(this.value1));
+    return map;
+  }
+
+  getUri_(): string {
+    return this.value0;
+  }
+
+  getRenderer(): Address {
+    return this.value1;
+  }
+}
+
 export class UserRegistry extends ethereum.SmartContract {
   static bind(address: Address): UserRegistry {
     return new UserRegistry("UserRegistry", address);
@@ -981,6 +1006,26 @@ export class UserRegistry extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  getURI(): UserRegistry__getURIResult {
+    let result = super.call("getURI", "getURI():(string,address)", []);
+
+    return new UserRegistry__getURIResult(
+      result[0].toString(),
+      result[1].toAddress(),
+    );
+  }
+
+  try_getURI(): ethereum.CallResult<UserRegistry__getURIResult> {
+    let result = super.tryCall("getURI", "getURI():(string,address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new UserRegistry__getURIResult(value[0].toString(), value[1].toAddress()),
+    );
   }
 
   grantRoles(anyId: BigInt, roleBitmap: BigInt, account: Address): boolean {
@@ -1597,12 +1642,8 @@ export class InitializeCall__Inputs {
     this._call = call;
   }
 
-  get rootAccount(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get roleBitmap(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
+  get grants(): Array<InitializeCallGrantsStruct> {
+    return this._call.inputValues[0].value.toTupleArray<InitializeCallGrantsStruct>();
   }
 }
 
@@ -1611,6 +1652,16 @@ export class InitializeCall__Outputs {
 
   constructor(call: InitializeCall) {
     this._call = call;
+  }
+}
+
+export class InitializeCallGrantsStruct extends ethereum.Tuple {
+  get account(): Address {
+    return this[0].toAddress();
+  }
+
+  get roleBitmap(): BigInt {
+    return this[1].toBigInt();
   }
 }
 

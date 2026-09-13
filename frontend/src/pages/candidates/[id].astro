@@ -45,9 +45,9 @@ const siteWord =
   : firstStatus === "dns_error" ? "unreachable at the audit"
   : firstStatus ? `flagged: ${statusLabels[firstStatus] ?? firstStatus}` : "archived";
 const ens = person.onchain?.ens ?? `p${person.id}.civicord.eth`;
-const ensUrl = `https://app.ens.domains/${ens}`;
+const ensUrl = `https://hackathon-deployment-manager-app-v4.ens-cf.workers.dev/${ens}`;
 const resolverUrl =
-  "https://sepolia.etherscan.io/address/0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67#readContract";
+  "https://sepolia.etherscan.io/address/0xa90747f2d95a9c4d0cad151669a9af31a3cad630";
 
 // Verdict banner (verdict-first page): overall status across the websites.
 const verdict =

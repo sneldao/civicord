@@ -106,7 +106,7 @@ Deployed via Cloudflare Pages (https://civicord.pages.dev); see
 
 ## Continuity (ETHGlobal / The Graph)
 
-Civicord predates the AI×Graph deepening. **Pre-existing:** ENSv2 registry, static audit ledger, Subgraph Studio deploy, Bazantic x402 gateway. **During Continuity work:** live Studio consumption in WebMCP (`compare_onchain_to_ledger`), same-origin `/api/graph` proxy, AgentView “Query The Graph”, `skills/civicord-graph/SKILL.md`, and subgraph **v0.0.4** (namehash fix so `TextChanged` joins candidates). Demo checklist: [docs/demo-checklist.md](docs/demo-checklist.md).
+Civicord predates the AI×Graph deepening. **Pre-existing:** ENSv2 registry, static audit ledger, Subgraph Studio deploy, Bazantic x402 gateway. **During Continuity work:** live Studio consumption in WebMCP (`compare_onchain_to_ledger`), same-origin `/api/graph` proxy, AgentView “Query The Graph”, `skills/civicord-graph/SKILL.md`, and subgraph **v0.0.5** (re-sourced to the dedicated ETHOnline ENSv2 deployment; `Linked`/`TextUpdated` join via `RecordToCandidate`). Demo checklist: [docs/demo-checklist.md](docs/demo-checklist.md).
 
 ## AI-assisted development
 

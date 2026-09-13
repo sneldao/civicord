@@ -114,7 +114,7 @@ for (const c of constituencies) {
   </g>
 
   <!-- context line -->
-  <text x="48" y="395" font-family="system-ui, sans-serif" font-size="13" fill="#5b6472">Audit fields on ENS Sepolia: each candidate is <tspan font-family="ui-monospace, monospace" fill="#1c2434">p{id}.civicord.eth</tspan> — verify at app.ens.domains</text>
+  <text x="48" y="395" font-family="system-ui, sans-serif" font-size="13" fill="#5b6472">Audit fields on ENS Sepolia: each candidate is <tspan font-family="ui-monospace, monospace" fill="#1c2434">p{id}.civicord.eth</tspan> — verify via the ENS app (Sepolia)</text>
 
   <!-- CTA pills (purely decorative in image) -->
   <g transform="translate(48, 430)">

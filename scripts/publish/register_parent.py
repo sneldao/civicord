@@ -64,17 +64,18 @@ def main() -> None:
     # Probe payment tokens
     for name, token in (("native-ETH(0x0)", ZERO), (f"MockUSDC {mock_usdc}", mock_usdc)):
         try:
-            base, premium = call(
+            out = call(
                 registrar,
-                "rentPrice(string,address,uint64,address)",
+                "getRegisterPrice(string,uint64,address)(uint256,uint256)",
                 label,
-                deployer,
                 DURATION,
                 token,
-            ).split()
-            print(f"rentPrice via {name}: base={base} premium={premium}")
+            )
+            print(f"getRegisterPrice via {name}: {out.strip()!r}")
         except RuntimeError as e:
-            print(f"rentPrice via {name}: failed ({e.args[0].splitlines()[-1] if e.args else e})")
+            print(
+                f"getRegisterPrice via {name}: failed ({e.args[0].splitlines()[-1] if e.args else e})"
+            )
 
     payment_token = mock_usdc  # default; adjust after seeing probe output
     # Try to mint MockUSDC if a faucet exists
@@ -108,6 +109,7 @@ def main() -> None:
     time.sleep(75)
 
     print("Registering…")
+    send(rpc, pk, payment_token, "approve(address,uint256)", registrar, str(10**25))
     send(
         rpc,
         pk,

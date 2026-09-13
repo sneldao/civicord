@@ -25,6 +25,7 @@ from ensv2 import (
     _cast,
     blast_send,
     call,
+    dns_encode,
     env,
     get_pending_nonce,
     namehash,
@@ -65,6 +66,18 @@ def decode_string(hexdata: str) -> str:
     if len(hex_data) < length * 2:
         return ""
     return bytes.fromhex(hex_data).decode("utf-8", "replace")
+
+
+def read_text(resolver: str, dns_name: str, node_hex: str, key: str) -> str:
+    """Read a text record via resolve(bytes,bytes) — the hackathon resolver
+    has no standalone getters; the node inside the inner calldata is derived
+    from `name`, but we pass the namehash anyway for a well-formed call."""
+    inner = _cast(["calldata", "text(bytes32,string)", node_hex, key])
+    out = call(resolver, "resolve(bytes,bytes)", dns_name, inner).removeprefix("0x")
+    if len(out) < 128:
+        return ""
+    inner_len = int(out[64:128], 16)
+    return decode_string("0x" + out[128 : 128 + inner_len * 2])
 
 
 def main() -> None:
@@ -139,6 +152,7 @@ def main() -> None:
         label = f"p{c['person_id']}"  # ENS labels must start with a letter/digit-safe token
         full = f"{label}.{parent}"
         node = namehash(full)
+        dns = dns_encode(full)
         print(f"[{i}] {full} ({c['name']}) status={c.get('status', 'unknown')}", flush=True)
 
         reg_sig = "register(string,address,address,address,uint256,uint64)"
@@ -150,7 +164,7 @@ def main() -> None:
             "0",
             str(MAX_U64),
         )
-        txt_sig = "setText(bytes32,string,string)"
+        txt_sig = "setText(bytes,string,string)"
 
         if not args.records_only:
             if args.blast:
@@ -184,9 +198,7 @@ def main() -> None:
             already_onchain = False
             if args.blast:
                 # resume support: skip if url record already matches
-                current = decode_string(
-                    call(resolver, "text(bytes32,string)", "0x" + node.hex(), "url")
-                )
+                current = read_text(resolver, dns, "0x" + node.hex(), "url")
                 if current == c["sites"][0]:
                     print("    records already on-chain — skipping", flush=True)
                     already_onchain = True
@@ -213,7 +225,7 @@ def main() -> None:
                                 deployer,
                                 resolver,
                                 txt_sig,
-                                "0x" + node.hex(),
+                                dns,
                                 key,
                                 value,
                                 nonce=nonce,
@@ -221,7 +233,7 @@ def main() -> None:
                             )
                             nonce += 1
                         else:
-                            send(rpc, pk, resolver, txt_sig, "0x" + node.hex(), key, value)
+                            send(rpc, pk, resolver, txt_sig, dns, key, value)
                 except Exception as e:  # noqa: BLE001 - transient; wrapper retries after drain
                     failed += 1
                     msg = str(e).strip().splitlines()[-1][:180]
@@ -251,7 +263,7 @@ def main() -> None:
         )
 
     MANIFEST.parent.mkdir(parents=True, exist_ok=True)
-    new_file = not MANIFEST.exists() or args.start == 0
+    new_file = not MANIFEST.exists() or (args.start == 0 and not args.ids.strip())
     with open(MANIFEST, "a" if not new_file else "w", newline="") as f:
         w = csv.DictWriter(
             f, fieldnames=["ens_name", "person_id", "person_name", "url", "status", "node"]

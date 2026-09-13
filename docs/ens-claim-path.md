@@ -6,13 +6,17 @@ Today every `p{id}.civicord.eth` is owned by the Civicord deployer, with text
 records (`url`, `status`, `vnd.civicord.person_name`) written by the publisher.
 ENSv2’s Permissioned Resolver Enhanced Access Control (EAC) is how a
 **candidate, party, or agent** later gets write rights **without** taking over
-the whole name:
+the whole name. On the dedicated ETHOnline deployment the EAC surface is
+setter-scoped:
 
 | Scope | Call | Effect |
 |---|---|---|
-| One text key on one name | `authorizeTextRoles(dnsName, key, account, true)` | Account may `setText` that key only |
-| All text keys on one name | `authorizeNameRoles(dnsName, ROLE_SET_TEXT, account, true)` | Account may set any text on that name |
-| Revoke | Same call with `false` | Write rights removed; further `setText` reverts |
+| One text key (all names on this resolver) | `grantSetterRoles(setTextCalldata, account)` | Account may `setText` that key only — resource derived from `keccak256(key)` |
+| Revoke | `revokeRoles(keccak256(key), ROLE_SET_TEXT, account)` | Write rights removed; further `setText` reverts |
+
+`ROLE_SET_TEXT = 1 << 4`. Note the honest scoping caveat: a setter grant applies
+to **every name served by that resolver instance** — per-name isolation would
+require separate resolver instances.
 
 Admin roles stay with the deployer until explicitly granted — so Civicord can
 hand a candidate the pen for `url`/`status` corrections without making the
@@ -22,13 +26,15 @@ record unilaterally deletable by a third party.
 
 Script: `python scripts/publish/eac_demo.py` (default ids `5693,17372,2504`).
 
-Flow run on-chain:
+Flow run on-chain (hackathon deployment, `p5693.civicord.eth`):
 
 1. Fund a throwaway **delegate** EOA
-2. `authorizeTextRoles(..., "vnd.civicord.eac_demo", delegate, true)`
+2. `grantSetterRoles(setText("vnd.civicord.eac_demo", …) calldata, delegate)`
 3. Delegate `setText` succeeds; `eth_call` readback matches
-4. Revoke with `false`
+4. `revokeRoles(keccak256("vnd.civicord.eac_demo"), ROLE_SET_TEXT, delegate)`
 5. Delegate `setText` **reverts** (`EACUnauthorized` / execution reverted)
+
+Txs: grant `0x5425f0…ea7b`, write `0x21cb4f…a7dc`, revoke `0xfa572b…3952`.
 
 Log: [eac-demo-log.json](eac-demo-log.json) (written by the script). Dedicated
 key `vnd.civicord.eac_demo` so `url`/`status` used by the ledger stay intact.
@@ -37,16 +43,19 @@ key `vnd.civicord.eac_demo` so `url`/`status` used by the ledger stay intact.
 
 Candidate pages with an on-chain chip expose **Verify on-chain** →
 `GET /api/ens?id={personId}` (Pages worker) → Sepolia `eth_call` of
-`text(bytes32,string)` on PermissionedResolver
-`0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67`. No wallet required to read.
+`resolve(bytes,bytes)` on PermissionedResolver
+`0xa90747f2d95a9c4d0cad151669a9af31a3cad630` (dedicated ETHOnline deployment —
+inner call is `text(bytes32,string)`). No wallet required to read.
 
-## Alias note (honest)
+## Deployment note (honest)
 
-- **Registry dual parent:** `civicord.eth` and `civicordhq.eth` both point at the
-  same UserRegistry (`setSubregistry`). Subnames resolve under either tree.
-- **Not showcased:** PermissionedResolver `setAlias` (record-level alias
-  pointer). Dual parent ≠ `setAlias`; we document the distinction rather than
-  overclaim.
+- **Current:** dedicated ETHOnline hackathon deployment — UserRegistry
+  `0x097bdb198cb1a40cbd0c05ff801efe83bb151428`, PermissionedResolver
+  `0xa90747f2d95a9c4d0cad151669a9af31a3cad630`. `civicord.eth` registered on the
+  hackathon ETHRegistrar; resolves in the hackathon ENS App/Explorer.
+- **Historical:** an earlier deployment on the standard ENSv2 Sepolia Beta
+  (UserRegistry `0x0895…2aa9`, resolver `0x340d…ee67`, dual parent
+  `civicord.eth`/`civicordhq.eth`) is superseded; kept here for provenance.
 
 ## Rebuild frontend chips from The Graph
 

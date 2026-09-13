@@ -691,6 +691,63 @@ export class NodeToCandidate extends Entity {
   }
 }
 
+export class RecordToCandidate extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save RecordToCandidate entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type RecordToCandidate must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`,
+      );
+      store.set("RecordToCandidate", id.toString(), this);
+    }
+  }
+
+  static loadInBlock(id: string): RecordToCandidate | null {
+    return changetype<RecordToCandidate | null>(
+      store.get_in_block("RecordToCandidate", id),
+    );
+  }
+
+  static load(id: string): RecordToCandidate | null {
+    return changetype<RecordToCandidate | null>(
+      store.get("RecordToCandidate", id),
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get candidate(): string {
+    let value = this.get("candidate");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set candidate(value: string) {
+    this.set("candidate", Value.fromString(value));
+  }
+}
+
 export class TextRecordLoader extends Entity {
   _entity: string;
   _field: string;

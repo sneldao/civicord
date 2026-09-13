@@ -163,7 +163,7 @@ paths:
       operationId: queryGraph
       summary: Live GraphQL against The Graph Studio (proxied)
       description: |
-        **Free.** Forwards the body to `api.studio.thegraph.com/query/101650/civicord/v0.0.4`.
+        **Free.** Forwards the body to `api.studio.thegraph.com/query/101650/civicord/v0.0.5`.
         Use person id as `Candidate.id` (e.g. `"5693"`), never a constituency slug.
         Pair with `/api/candidates/{id}` for audit outcomes (or WebMCP `compare_onchain_to_ledger`).
       tags: [graph]

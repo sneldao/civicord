@@ -8,9 +8,9 @@ dataSources:
     name: UserRegistry
     network: sepolia
     source:
-      address: "0x08953da0c2ff527a825686a24a12c7bb2ae22aa9"
+      address: "0x097bdb198cb1a40cbd0c05ff801efe83bb151428"
       abi: UserRegistry
-      startBlock: 8150000
+      startBlock: 11696000
     mapping:
       kind: ethereum
       apiVersion: 0.0.7
@@ -34,9 +34,9 @@ dataSources:
     name: PermissionedResolver
     network: sepolia
     source:
-      address: "0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67"
+      address: "0xa90747f2d95a9c4d0cad151669a9af31a3cad630"
       abi: PermissionedResolver
-      startBlock: 8150000
+      startBlock: 11696000
     mapping:
       kind: ethereum
       apiVersion: 0.0.7
@@ -45,6 +45,7 @@ dataSources:
       entities:
         - Candidate
         - NodeToCandidate
+        - RecordToCandidate
         - TextRecord
         - TextRecordChange
         - Stat
@@ -52,5 +53,7 @@ dataSources:
         - name: PermissionedResolver
           file: ./abis/PermissionedResolver.json
       eventHandlers:
-        - event: TextChanged(indexed bytes32,indexed string,string,string)
-          handler: handleTextChanged
+        - event: Linked(indexed uint256,indexed bytes32,bytes)
+          handler: handleLinked
+        - event: TextUpdated(indexed uint256,indexed string,string,string)
+          handler: handleTextUpdated

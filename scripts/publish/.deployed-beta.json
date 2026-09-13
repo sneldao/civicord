@@ -1,0 +1,9 @@
+{
+  "resolver": "0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67",
+  "registry": "0x08953da0c2ff527a825686a24a12c7bb2ae22aa9",
+  "deployer": "0xfa104deA24CbC347100adE461883403bdd79E0eC",
+  "parent_name": "civicord.eth",
+  "parent_node": "0x58cd121c6585c4277ede8c4346da1debf473ececccbc87b788e669ed80392499",
+  "alias_parent_name": "civicordhq.eth",
+  "alias_parent_node": "0x138b1396b6a22232b8ad442f501881345562a26039cce1e0b6ef4c06591f46d4"
+}

@@ -19,7 +19,7 @@ CONTRACTS_REPO_RAW = (
     "contracts/deployments/sepolia/{name}.json"
 )
 
-VERIFIABLE_FACTORY = "0x118bc31a50d559f7015a8da26d54b3b030cdb70f"
+VERIFIABLE_FACTORY = "0x894bc9cc8ff1ad96b8a288c86a8c71d662c07780"
 USER_REGISTRY_IMPL_JSON = "UserRegistryImpl"
 RESOLVER_IMPL_JSON = "PermissionedResolverImpl"
 ETH_REGISTRY_JSON = "ETHRegistry"
@@ -295,6 +295,18 @@ def proxy_address_for(rpc: str, address: str) -> str | None:
     """Return the address if it has deployed code, else None."""
     code = _cast(["code", address, "--rpc-url", rpc])
     return None if code in ("0x", "") else address
+
+
+def dns_encode(name: str) -> str:
+    """DNS wire-format name as 0x-hex (hackathon resolver takes `bytes name`)."""
+    out = b""
+    for label in name.strip(".").split("."):
+        b = label.encode("utf-8")
+        if len(b) > 63:
+            raise ValueError(f"label too long: {label!r}")
+        out += bytes([len(b)]) + b
+    out += b"\x00"
+    return "0x" + out.hex()
 
 
 def str_to_uint256(s: str) -> str:
