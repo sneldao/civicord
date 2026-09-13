@@ -5,6 +5,7 @@ Deadline: **Sun 2026-09-13 12:00 EDT / 17:00 UK**.
 ## What you need to do (human)
 
 1. **Record the 2–4 min demo** (see [demo-script.md](demo-script.md))
+   - ✅ Recorded: https://www.loom.com/share/05347c30a5784d45abe9b9256509bff9
    - Must-show beat: `/candidates/5693` → View evidence → **Verify this record** → **Verify on-chain** → **Query The Graph**
    - ENS beat: **Verify on-chain** (live `eth_call` texts) + mention EAC claim path
    - Say Continuity: *subgraph + ENSv2 registry existed; we made agents/UI consume them live*
