@@ -74,14 +74,14 @@ const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
 ---
 
 {hasHexes ? (
-  <section class="hexmap-wrap" id="map" aria-label={`Jurisdiction map — ${hexes.length || 650} equal hexes, halftone by survival`}>
+  <section class="hexmap-wrap" id="map" aria-label={`Jurisdiction map — ${hexes.length || 650} equal hexes, halftone by HTTP response rate`}>
     <div class="hexmap-head">
       <h2>One hex, one seat</h2>
-      <p class="muted hexmap-lede">Colour = still live. Dot density = how much vanished. Click to peek.</p>
+      <p class="muted hexmap-lede">Colour and dots encode HTTP response rate at the audit, not content survival. Click to peek.</p>
       <div class="hex-legend" role="group" aria-label="Map legend">
-        <span class="hl"><i class="sq" style="background: var(--live)"></i> 66–100% live <b class="dotmark">·</b></span>
-        <span class="hl"><i class="sq" style="background: var(--warn)"></i> 40–65% live <b class="dotmark">··</b></span>
-        <span class="hl"><i class="sq" style="background: var(--gone)"></i> 0–39% live <b class="dotmark">···</b></span>
+        <span class="hl"><i class="sq" style="background: var(--live)"></i> 66–100% responding <b class="dotmark">·</b></span>
+        <span class="hl"><i class="sq" style="background: var(--warn)"></i> 40–65% responding <b class="dotmark">··</b></span>
+        <span class="hl"><i class="sq" style="background: var(--gone)"></i> 0–39% responding <b class="dotmark">···</b></span>
         <span class="hl"><i class="sq empty"></i> no site ({emptyCount || 17})</span>
       </div>
     </div>
@@ -93,11 +93,11 @@ const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
         class="hexmap-svg"
         viewBox={viewBox}
         role="img"
-        aria-label="United Kingdom jurisdiction hex map, halftone by site survival"
+        aria-label="United Kingdom jurisdiction hex map, halftone by HTTP response rate"
         aria-describedby="hexmap-kbd-hint"
         preserveAspectRatio="xMidYMid meet"
       >
-        <title>United Kingdom — 650 Westminster jurisdictions, halftone by candidate-site survival</title>
+        <title>United Kingdom — 650 Westminster jurisdictions, halftone by HTTP response rate</title>
         <defs>
           {/* keep patterns lightweight — we use dot count overlay instead of <pattern> for MVP */}
         </defs>
@@ -112,9 +112,9 @@ const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
               data-gone={String(h.stats.gone)}
               tabindex="0"
               role="button"
-              aria-label={`${h.name}: ${h.stats.sites ? `${h.stats.live} of ${h.stats.sites} sites live (${h.stats.livePct}%)` : 'no scraped site'}`}
+              aria-label={`${h.name}: ${h.stats.sites ? `${h.stats.live} of ${h.stats.sites} sites responding (${h.stats.livePct}%)` : 'no scraped site'}`}
             >
-              <title>{h.name}: {h.stats.sites ? `${h.stats.live}/${h.stats.sites} live · ${h.stats.gone} gone · p → ${h.slug}.civicord.eth` : 'no scraped site — 17 seats (e.g. Belfast North) had no candidate site in the April 2025 scrape'}</title>
+              <title>{h.name}: {h.stats.sites ? `${h.stats.live}/${h.stats.sites} responding · ${h.stats.gone} unreachable` : 'no scraped site — 17 seats (e.g. Belfast North) had no candidate site in the April 2025 scrape'}</title>
               <polygon
                 class="hex-poly"
                 points={pointsStr(h.points)}
@@ -220,7 +220,7 @@ const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
       const gone = el.dataset.gone || "0";
       tipName.textContent = name;
       if (sites === "0") tipStats.textContent = "— no scraped site";
-      else tipStats.textContent = `— ${livePct}% live · ${gone} gone · ${sites} sites`;
+      else tipStats.textContent = `— ${livePct}% responding · ${gone} unreachable · ${sites} sites`;
       tip.hidden = false;
     };
     const hide = () => { tip.hidden = true; };

@@ -29,6 +29,10 @@ Exclusive priority (first match wins):
 5. `still_attested` — `live` (surname present or unknown)
 6. `other` — `http_error`, `timeout`, residual classes
 
+Signals are audit heuristics, not content judgements: `repurposed_suspect` only
+means the surname was absent from the response body, and `live` means an HTTP
+success — the UI labels these “Responding” and “Surname absent (review needed)”.
+
 Person-level rollup = worst website signal (`gone` > `repurposed_suspect` >
 `redirected` > `other` > `still_attested` > `unaudited`).
 

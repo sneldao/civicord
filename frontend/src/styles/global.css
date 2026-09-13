@@ -1366,7 +1366,7 @@ tbody tr.is-settling {
 .door-regions { margin-top: 2.2rem; }
 @media (max-width: 860px) {
   .door-hero { grid-template-columns: 1fr; }
-  .door-visual { order: -1; max-width: 28rem; }
+  .door-visual { max-width: 28rem; }
 }
 .wordmark-link { margin: 0; }
 .wordmark-link a { text-decoration: none; color: inherit; }
@@ -1733,4 +1733,20 @@ tbody tr.is-settling {
   .halftone-dots circle { fill: #000 !important; }
   a { text-decoration: none; color: inherit; }
   footer { border-top: 1px solid #999; }
+}
+
+.start-here { margin-top: 2rem; border-top: 2px solid var(--ink); padding-top: 1rem; }
+.start-here h2, .record-evidence h2 { font-family: var(--serif); }
+.start-here h3 { font-family: var(--serif); margin: 0.25rem 0; font-size: 1.2rem; line-height: 1.25; }
+.record-actions { display: flex; flex-wrap: wrap; gap: 0.55rem; margin: 1rem 0 0.5rem; }
+.record-limit { max-width: 70ch; font-size: 0.85rem; }
+.record-evidence { margin-top: 1.8rem; border-top: 1px solid var(--rule); padding-top: 1rem; }
+#citation-fallback textarea { width: 100%; box-sizing: border-box; padding: 0.75rem; font: inherit; font-size: 0.85rem; }
+#citation-status:empty { display: none; }
+#evidence, #verification, #agent-view, #browse-map { scroll-margin-top: 1.5rem; }
+.browse-map { margin: 1.5rem 0; border-top: 1px solid var(--rule); padding-top: 1rem; }
+.browse-map > summary { cursor: pointer; font-family: var(--serif); font-weight: 700; }
+@media (max-width: 640px) {
+  .record-actions > * { flex: 1 1 45%; text-align: center; }
+  .filterbar select { max-width: 100%; }
 }

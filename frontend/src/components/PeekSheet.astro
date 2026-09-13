@@ -75,7 +75,13 @@
     const noSites = !s.sites;
     const share = noSites
       ? "No candidate site was recorded here in the April 2025 scrape — 17 seats are like this."
-      : `<b>${s.live} of ${s.sites}</b> sites still live (${s.livePct}%) · ${s.gone} gone · ${s.redirected} redirected`;
+      : `<b>${s.live} of ${s.sites}</b> sites responding (${s.livePct}%) · ${s.gone} unreachable · ${s.redirected} redirected`;
+
+    const STATUS_WORDS: Record<string, string> = {
+      live: "responding",
+      dns_error: "unreachable",
+      connection_error: "unreachable",
+    };
 
     const cands: any[] = Array.isArray(c.candidates) ? c.candidates : [];
     const dotCount = noSites ? 0 : dotsFor(s.livePct ?? 0);
@@ -84,14 +90,14 @@
       <p class="peek-share">${share}</p>
       ${noSites ? "" : `<div class="peek-dots" aria-hidden="true">${Array.from({ length: dotCount })
         .map(() => `<i class="peek-dot"></i>`)
-        .join("")}<span class="peek-dots-label">${dotCount} ${dotCount === 1 ? "dot" : "dots"} = ${dotCount === 1 ? "mostly holding" : dotCount === 2 ? "half gone" : "mostly gone"}</span></div>`}
+        .join("")}<span class="peek-dots-label">${dotCount} ${dotCount === 1 ? "dot" : "dots"} = ${dotCount === 1 ? "mostly responding" : dotCount === 2 ? "about half responding" : "low response rate"}</span></div>`}
       ${
         cands.length
           ? `<ul class="peek-cands">${cands
               .slice(0, 8)
               .map(
                 (cd) => `<li>
-                  <span class="badge ${esc(cd.statusClass)}">${esc(cd.statusClass)}</span>
+                  <span class="badge ${esc(cd.statusClass)}">${esc(STATUS_WORDS[cd.statusClass] ?? cd.statusClass)}</span>
                   <a href="/candidates/${esc(cd.id)}">${esc(cd.name)}</a>
                   <span class="muted">${esc(cd.party)}</span>
                   ${cd.onchain ? `<code title="${esc(cd.onchain.ens)}">${esc(cd.onchain.ens)}</code>` : ""}

@@ -5,9 +5,10 @@ Deadline: **Sun 2026-09-13 12:00 EDT / 17:00 UK**.
 ## What you need to do (human)
 
 1. **Record the 2–4 min demo** (see [demo-script.md](demo-script.md))
-   - Must-show beat: seat or `/candidates/5693` → Agent view → **Query The Graph**
-   - ENS beat: same page → **Verify on-chain** (live `eth_call` texts) + mention EAC claim path
+   - Must-show beat: `/candidates/5693` → View evidence → **Verify this record** → **Verify on-chain** → **Query The Graph**
+   - ENS beat: **Verify on-chain** (live `eth_call` texts) + mention EAC claim path
    - Say Continuity: *subgraph + ENSv2 registry existed; we made agents/UI consume them live*
+   - Language: `live` = HTTP success at the audit, not campaign survival — the script says this explicitly
 2. **ETHGlobal submission**
    - Tracks: **Best AI Tooling / Continuity** (Graph) **and** **ENS Continuity Integration** (primary ENS lane)
    - Optional stretch: **Best Use of ENSv2** if EAC grant/revoke + live verify are in the video

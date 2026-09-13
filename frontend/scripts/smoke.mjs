@@ -24,7 +24,9 @@ try {
 } catch {}
 
 const checks = [
-  ["/", 200, ["skip-link", "main", "hexmap", "Civicord"]],
+  ["/", 200, ["skip-link", "main", "start-title", "Civicord"]],
+  ["/uk", 200, ["hexmap", "q-hero-top"]],
+  ["/candidates/5693", 200, ["copy-citation", "evidence", "verification", "agent-view"]],
   ["/browse", 200, ["ledger-body", "pagination", "skip-link", "filterbar"]],
   ["/methodology", 200, ["Permanence", "main"]],
   ["/cohorts/gone", 200, ["masthead", "main"]],

@@ -35,11 +35,11 @@ const validParties = new Set(
 const cohortBoot = { statuses: [...VALID_STATUSES], parties: [...validParties] };
 
 const statusLabels: Record<string, string> = {
-  live: "Live",
-  gone: "Gone",
+  live: "Responding",
+  gone: "Unreachable",
   redirected: "Redirected ↳",
   http_error: "HTTP error",
-  dns_error: "Domain gone",
+  dns_error: "DNS failure",
   connection_error: "Conn. failed",
   timeout: "Timed out",
   ssl_error: "SSL error",
@@ -48,10 +48,10 @@ const statusLabels: Record<string, string> = {
 };
 
 const changeFilterLabels: Record<string, string> = {
-  gone: "Gone (domain dead)",
-  repurposed_suspect: "Repurpose suspect",
+  gone: "DNS / connection failure",
+  repurposed_suspect: "Surname absent (review needed)",
   redirected: "Redirected",
-  still_attested: "Still attested",
+  still_attested: "Responding, no redirect recorded",
   other: "Other / residual",
   unaudited: "Unaudited",
 };
@@ -76,8 +76,8 @@ for (const c of candidates) {
 }
 const significanceSampleN = Object.keys(significanceByPerson).length;
 const legendGroups: Array<[string, string, string[]]> = [
-  ["g-live", "Live", ["live"]],
-  ["g-gone", "Gone", ["dns_error", "connection_error"]],
+  ["g-live", "Responding", ["live"]],
+  ["g-gone", "Unreachable", ["dns_error", "connection_error"]],
   ["g-error", "Errors", ["http_error", "timeout", "ssl_error", "other_error"]],
   ["g-unknown", "Not audited", ["not_audited"]],
 ];
@@ -119,12 +119,12 @@ function slugify(name: string): string {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content={`Browse all ${candidates.length.toLocaleString("en-GB")} UK candidate records — filter by party, status, constituency and search. ${live.length} sites still live, ${dead.length} domains gone.`}
+      content={`Browse all ${candidates.length.toLocaleString("en-GB")} UK candidate records — filter by party, status, constituency and search. ${live.length} URLs responding, ${dead.length} DNS failures at the audit.`}
     />
     <meta property="og:title" content="Browse the ledger — Civicord" />
     <meta
       property="og:description"
-      content={`All ${candidates.length.toLocaleString("en-GB")} candidates, filterable by party, constituency and outcome. What survived and what didn't.`}
+      content={`All ${candidates.length.toLocaleString("en-GB")} candidates, filterable by party, constituency and HTTP outcome.`}
     />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
@@ -140,7 +140,8 @@ function slugify(name: string): string {
 
     <header class="masthead">
       <h1 class="wordmark">Browse<span class="dot">.</span></h1>
-      <p class="lede">All {candidates.length.toLocaleString("en-GB")} candidates — filter, search, then open the record. Pick a hex to see a seat.</p>
+      <p class="lede">All {candidates.length.toLocaleString("en-GB")} candidates — filter, search, then open the record.</p>
+      <p class="muted" style="font-size:0.85rem;max-width:70ch">Responding means HTTP success at the 7 September 2026 audit, not proof that campaign content survived. Redirects overlap HTTP outcomes.</p>
       <p class="tagline">
         Every row is a candidate website from Campaign Lab's April 2025 scrape, re-checked September 2026.
         <a href="/methodology">Methodology ↗</a> · <a href="/uk">← Back to UK overview</a>
@@ -148,8 +149,6 @@ function slugify(name: string): string {
     </header>
 
     <main id="main" tabindex="-1">
-    <HalftoneHexMap />
-
     <div id="constituency-banner" class="constituency-banner" hidden>
       <span>Showing <b id="constituency-banner-name"></b> — <span id="constituency-banner-stats"></span></span>
       <a id="constituency-banner-link" href="#">View seat page ↗</a>
@@ -203,11 +202,12 @@ function slugify(name: string): string {
     <div class="browse-toolbar">
       <button type="button" id="random-browse" class="btn-ghost btn-sm">Surprise me — random record 🎲</button>
       <button type="button" id="copy-link" class="btn-ghost btn-sm">Copy filtered link</button>
+      <a class="btn-ghost btn-sm" href="#browse-map">Explore map</a>
       <span id="copy-toast" class="copy-toast" hidden role="status" aria-live="polite"></span>
       <span class="toolbar-hint muted">Press <kbd>/</kbd> to search, <kbd>⌘K</kbd> to jump anywhere, <kbd>Esc</kbd> to clear · Click a hex to peek at the seat</span>
     </div>
 
-    <div class="table-wrap">
+    <div class="table-wrap" id="browse-results">
       <table aria-label="Candidate ledger">
         <thead>
           <tr><th>Candidate</th><th>Party</th><th>Election</th><th>Website</th><th>Status</th></tr>
@@ -233,7 +233,7 @@ function slugify(name: string): string {
                 >
                   <td class="who">
                     <a class="who-name" href={`/candidates/${c.id}`}>{c.name}</a>
-                    {c.onchain && <span class="onchain-chip" title={`${c.onchain.ens} — permanent public record`}>On-chain ✓</span>}
+                    {c.onchain && <span class="onchain-chip" title={`${c.onchain.ens} — audit fields on Sepolia testnet`}>Sepolia</span>}
                     {contentSig && (
                       <span class={`sig-chip sig-${contentSig}`} title="Wayback vs April content significance">
                         {contentSig}
@@ -265,13 +265,18 @@ function slugify(name: string): string {
       <p id="noresults-suggest" class="muted" hidden></p>
       <div class="noresults-actions">
         <button type="button" id="clear" class="btn-primary btn-sm">Clear filters</button>
-        <a href="/browse?status=gone" class="btn-ghost btn-sm">Browse Gone ({goneCount.toLocaleString("en-GB")})</a>
-        <a href="/browse?status=live" class="btn-ghost btn-sm">Browse Live ({liveCount.toLocaleString("en-GB")})</a>
+        <a href="/browse?status=gone" class="btn-ghost btn-sm">Browse unreachable ({goneCount.toLocaleString("en-GB")})</a>
+        <a href="/browse?status=live" class="btn-ghost btn-sm">Browse responding ({liveCount.toLocaleString("en-GB")})</a>
         <a href="/browse" class="btn-ghost btn-sm">Show all 2,375</a>
       </div>
     </div>
 
     <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
+
+    <details id="browse-map" class="browse-map">
+      <summary>Explore the constituency map</summary>
+      <HalftoneHexMap />
+    </details>
     </main>
 
     <footer>
@@ -369,7 +374,7 @@ function slugify(name: string): string {
           bannerName.textContent = name;
           if (c?.stats) {
             const s = c.stats;
-            bannerStats.textContent = s.sites ? `${s.live} of ${s.sites} live (${s.livePct}%)` : "no scraped site";
+            bannerStats.textContent = s.sites ? `${s.live} of ${s.sites} responding (${s.livePct}%)` : "no scraped site";
           } else {
             bannerStats.textContent = "";
           }
@@ -564,12 +569,12 @@ function slugify(name: string): string {
             }
           } else if (isDefault) {
             const pctLive = Math.round((filteredLive / total) * 100);
-            count.textContent = `${total.toLocaleString("en-GB")} entries · ${pctLive}% live · page ${currentPage} of ${totalPages}`;
+            count.textContent = `${total.toLocaleString("en-GB")} entries · ${pctLive}% responding · page ${currentPage} of ${totalPages}`;
           } else {
             const pctLive = Math.round((filteredLive / total) * 100);
             const label = activeConstituency ? constituencyBySlug.get(activeConstituency)?.name ?? activeConstituency : "";
             const prefix = activeConstituency ? `${label} · ` : "";
-            count.textContent = `${prefix}${total.toLocaleString("en-GB")} shown · ${pctLive}% live · page ${currentPage} of ${totalPages}`;
+            count.textContent = `${prefix}${total.toLocaleString("en-GB")} shown · ${pctLive}% responding · page ${currentPage} of ${totalPages}`;
           }
           noresults.hidden = total !== 0;
           renderPagination(total, currentPage, totalPages);
@@ -682,6 +687,7 @@ function slugify(name: string): string {
             currentPage = 1;
             syncUrl();
             apply();
+            banner?.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
           }
         });
 

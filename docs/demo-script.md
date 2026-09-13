@@ -1,95 +1,39 @@
-# Demo script — Civicord (2:40, screen capture, no talking head)
+# Demo script — Civicord
 
-> Record at 1440×900, mic on, `chrome --start-fullscreen`. Have
-> `civicord.pages.dev`, `civicord-aieyq.bazgateway.com/mcp`, Studio query
-> tab, and a terminal with `curl` ready. One take > perfect take.
-> Voice: calm, researcher — never “web3/blockchain/mint”, always
-> “permanent record / public register / verify”.
+## Start on the homepage
 
-## 0:00 — Cold open on hero (15s)
-**Screen:** `civicord.pages.dev` — masthead (`Region: UK · genesis`) + pointillist hero (2,375 dots = UK).
-**Line:** “2,375 candidates stood in the last UK election with a homepage.
-17 months later, this is what’s left.”
-Hover — gone dots are recording-red, voids around Humber/Highlands.
-“Every dot is a website. The gaps are where the record already vanished.”
-Point once at the region chip: “The UK is the first country we’ve done this
-for — not the only one it works for.”
+“Political websites can disappear after an election. Civicord lets you inspect the audit, read available source excerpts, and verify recorded fields without an account or wallet.”
 
-## 0:15 — Halftone hex = one seat, one jurisdiction (30s)
-**Screen:** Scroll to halftone hex on `/` then click into `/browse` — Map/List toggle stays synced.
-**Line:** “We joined those dots to 650 jurisdictions — one hex, one constituency.
-Colour and dot size both encode survival, so it survives colour-blindness and print.
-Hover a row, the hex pulses — the ledger and the map are the same register.”
-Click **Gone** in legend → ledger filters → URL becomes `?status=gone` — copy link.
+Show the three starting paths. The dots summarize HTTP outcomes; they are not one dot per candidate and do not prove content survival.
 
-## 0:45 — “What happened in Ynys Môn?” (40s)
-**Screen:** `/constituencies/ynys-mon` — halftone thumb + `3 of 4 live (75%)`,
-3 candidates with `p{id}.civicord.eth` + `Verify → app.ens.domains` + Etherscan.
-**Line:** “Ask for a place, not a metric. *What happened in Ynys Môn?*
-Two of three sites still live, one gone, three redirected. Every name has a
-permanent `p{id}.civicord.eth` you can verify on ENS — Sepolia, tamper-evident,
-same onchain record the map shades from.”
-Click **See filtered ledger →** — lands on `/browse?constituency=ynys-mon`.
-Show **Share** — `og:image` is `/og/constituencies/ynys-mon.svg`, 1200×630 stipple deed — paste in Slack.
-Candidate row → `/candidates/2504` — seat-context bar “in St Ives — 3 of 4 live”
-+ hex thumb + party live-share compare.
-Click **Verify on-chain** — live Sepolia `text()` for `url` / `status` / name
-(no wallet). One line: “Same Permissioned Resolver — we also proved EAC
-grant → write → revoke so a candidate can later claim a single text key.”
+## Open the worked example
 
-## 1:25 — Agent pay-per-seat (30s)
-**Screen:** Terminal.
-**Line:** “Humans browse free. Agents pay per jurisdiction — one constituency,
-one metered call.”
-```bash
-curl -s https://civicord-aieyq.bazgateway.com/api/summary | jq .
-# 200 free — 2,375 sites, 1,513 live, 633 seats with sites
+Open `/candidates/5693` (Dawn Furness).
 
-curl -s https://civicord-aieyq.bazgateway.com/api/constituencies/st-ives
-# 402 — x402Version:1, payment-required, Base USDC 0x8335… → 0x96F3…7446
+“The original URL returned HTTP 200 at the 7 September 2026 audit, but redirected to a domain-sale page. Responding is not the same as preserving a campaign. Even a surname match can be misleading.”
 
-curl -s -H "X-Payment: <x402>" https://civicord-aieyq.bazgateway.com/api/constituencies/st-ives | jq .slug
-# 200 — St Ives, 4 candidates, url/status/ENS, ogImage
-```
-“That’s the Bazantic gateway — `civicord-aieyq.bazgateway.com`, five tools at
-`/mcp`. `listConstituencies` is a penny, a single seat is two-tenths of a cent.
-The Recipe tells an agent when to call it: any UK place name → slug → one call.”
+Show the redirect destination. Select **View evidence** and show the April 2025 excerpts, clearly labeled as excerpts rather than complete archived pages. Select **Copy citation**.
 
-## 1:55 — The Graph is load-bearing (45s)
-**Screen:** `/constituencies/ynys-mon` → open **Agent view** → card 4 **Query The Graph**.
-Also show WebMCP / terminal Studio curl.
-**Line:** “The permanent names are on ENS. The Graph indexes them live — not a CSV.”
-Click **Query The Graph** — Studio block number + `candidate(id: "<person>")` +
-verdict joining on-chain registration to the audit ledger.
-```bash
-curl -s -X POST -H 'content-type: application/json' \
-  -d '{"query":"{ _meta { block { number } hasIndexingErrors } stat(id:\"civicord\") { candidateCount textRecordCount } candidate(id:\"5693\") { id ensName textRecordCount } }"}' \
-  https://api.studio.thegraph.com/query/101650/civicord/v0.0.4
-```
-**Line:** “Agents call `compare_onchain_to_ledger` — live Graph plus the audit JSON —
-so the answer cites both the register and the crawl. Continuity work: we wired Studio
-into WebMCP; the subgraph and ledger already existed.”
-If `textRecordCount` is 0: “Registrations are indexed; status text records land as
-`setText` continues — the agent still reasons with Graph identity + ledger audit.”
+## Verify the recorded fields
 
-## 2:40 — Close + verify (15s)
-**Screen:** Back to hero, scroll to “How it works: Collect → Record → Verify”
-and the infra strip, then land on the **“Built for one election. Designed for any.”**
-region cards (`UK · Live now` / France / US / Your democracy).
-**Line:** “Open, longitudinal, citable. Every fact links to the public register
-it came from — and nothing here is UK-special: a roster, a crawl, and a place to
-keep the record is all a region needs. Try your constituency — Civicord pages dot dev.”
-Overlay cards:
-`civicord.pages.dev` · `civicord-aieyq.bazgateway.com` · `github.com/sneldao/civicord`
+Select **Verify this record**, then **Verify on-chain**.
 
-## B-roll / captions to bake in
-- Lower-third on every URL change: `?constituency=…` / `?status=gone` / `?party=…`
-- x402 `402 → payment-required → 200` flash (2s)
-- Subgraph `v0.0.4` namehash fix → TextChanged joins · `_meta hasIndexingErrors:false` (v0.0.2 faulted — don't show it; v0.0.3 had wrong node keys)
+“These are live reads of ENS resolver fields on Sepolia: the candidate name, original URL and audit status. The stored value `live` means HTTP success at the audit, not campaign survival. The full website is not stored on-chain.”
 
-## What we cut if we hit 4:00
-- Candidate deep-dive (keep only the ynys-mon → st-ives hop)
-- Second `?country=Scotland` query — keep one filter demoe
+Select **Query The Graph**, then the query button in the expanded panel.
 
-## FEEDBACK.md skeleton (fill per sponsor, 200 words each)
-See `docs/FEEDBACK.md` — one section per prize: ENS / The Graph / Bazantic.
+“The Graph retrieves the indexed record alongside the audit ledger. This proves the integration is live; it does not prove that a political claim is true.”
+
+Show the returned block and fields. If a service fails, show the error honestly; do not present a cached response as live.
+
+## Show a visitor’s next step
+
+Follow the candidate’s constituency link, then its filtered ledger. The selected place and results appear before the optional map. Show **Copy filtered link**. Open the map only if useful.
+
+## Close with scope and continuity
+
+“UK first; designed for other regions. The current prototype has public audit fields on Sepolia. Permanent content storage is planned.”
+
+“For Continuity: the ENS registry and subgraph already existed. This iteration made the UI and agents consume them live.”
+
+Use the submission checklist for track-specific requirements. Rehearse against the deployed version before recording; do not read old seat counts from a script.

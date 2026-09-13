@@ -59,9 +59,9 @@
     { kind: "Go", label: "Home — any democracy", sub: "mission and regions", href: "/" },
     { kind: "Go", label: "United Kingdom — genesis dataset", sub: "stats, map, cohorts", href: "/uk" },
     { kind: "Go", label: "Browse the full ledger", sub: "2,375 records", href: "/browse" },
-    { kind: "Cohort", label: "Gone — domains that died", sub: "the graveyard", href: "/cohorts/gone" },
-    { kind: "Cohort", label: "Redirected — where they went", sub: "repurposed sites", href: "/cohorts/redirected" },
-    { kind: "Cohort", label: "Still live — the survivors", sub: "still mention the candidate", href: "/cohorts/live" },
+    { kind: "Cohort", label: "Unreachable URLs", sub: "DNS or connection failures at the audit", href: "/cohorts/gone" },
+    { kind: "Cohort", label: "Redirected URLs", sub: "destinations differed at the audit", href: "/cohorts/redirected" },
+    { kind: "Cohort", label: "Responding URLs", sub: "HTTP success, not content survival", href: "/cohorts/live" },
     { kind: "Read", label: "Methodology — how we checked", sub: "sources and definitions", href: "/methodology" },
   ];
 
@@ -106,7 +106,7 @@
             kind: "Jurisdiction",
             label: name,
             sub: sites
-              ? `${region ? region + " · " : ""}${livePct}% of ${sites} sites live`
+              ? `${region ? region + " · " : ""}${livePct}% of ${sites} sites responding`
               : `${region ? region + " · " : ""}no scraped site`,
             href: `/constituencies/${slug}`,
           });

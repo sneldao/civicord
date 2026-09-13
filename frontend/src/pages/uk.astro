@@ -117,8 +117,8 @@ const randomIds = candidates.map((c) => c.id);
         recorded under public names.
       </p>
       <p class="tagline">
-        Names on Sepolia today — mainnet next
-        (<a href="/methodology#permanence">why testnet first ↗</a>). No account, no wallet.
+        ENS fields on Sepolia testnet ·
+        <a href="/methodology#permanence">permanent content storage planned ↗</a>. No account, no wallet.
       </p>
     </header>
 
@@ -148,9 +148,9 @@ const randomIds = candidates.map((c) => c.id);
     <section class="stats" aria-label="Audit summary" data-reveal>
       <div class="stat"><b>{candidates.length.toLocaleString("en-GB")}</b><span>Candidates</span></div>
       <div class="stat"><b>{websites.length.toLocaleString("en-GB")}</b><span>Websites</span></div>
-      <div class="stat"><b>{audited.length ? pct(live.length, audited.length) : "—"}%</b><span>Still live</span></div>
-      <div class="stat"><b>{gone.length.toLocaleString("en-GB")}</b><span>Gone</span></div>
-      <div class="stat" title={`Redirect cuts across outcomes — ${liveAndRedirected.toLocaleString("en-GB")} still count as live`}>
+      <div class="stat"><b>{audited.length ? pct(live.length, audited.length) : "—"}%</b><span>URLs responding</span></div>
+      <div class="stat"><b>{gone.length.toLocaleString("en-GB")}</b><span>DNS / connection failures</span></div>
+      <div class="stat" title={`Redirect cuts across outcomes — ${liveAndRedirected.toLocaleString("en-GB")} still count as responding`}>
         <b>{redirected.length.toLocaleString("en-GB")}</b><span>Redirect elsewhere</span>
       </div>
     </section>
@@ -158,7 +158,7 @@ const randomIds = candidates.map((c) => c.id);
     <p class="decay-line" aria-label="Decay over time" data-reveal>
       <span class="decay-when"><b>April 2025</b></span>
       <span class="decay-arrow" aria-hidden="true">→</span>
-      <span class="decay-when"><b>September 2026</b> — <b class="decay-now">{livePctNow}%</b> still live</span>
+      <span class="decay-when"><b>September 2026</b> — <b class="decay-now">{livePctNow}%</b> responding</span>
     </p>
 
     <section class="cohort-features" aria-label="Explore by outcome" data-reveal>
@@ -166,22 +166,22 @@ const randomIds = candidates.map((c) => c.id);
       <p class="muted">Pick a lane, then drill to the ledger.</p>
       <div class="feature-grid" data-reveal-stagger>
         <a class="feature-card f-gone" href="/cohorts/gone">
-          <span class="f-label">Gone</span>
+          <span class="f-label">Unreachable</span>
           <b class="f-num">{bySlug.gone.sites.toLocaleString("en-GB")}</b>
-          <span class="f-meta">{bySlug.gone.share}% · domains that died with the campaign</span>
-          <span class="f-cta">The graveyard ↗</span>
+          <span class="f-meta">{bySlug.gone.share}% · DNS or connection failures at the audit</span>
+          <span class="f-cta">Inspect unreachable URLs ↗</span>
         </a>
         <a class="feature-card f-redirected" href="/cohorts/redirected">
           <span class="f-label">Redirected</span>
           <b class="f-num">{bySlug.redirected.sites.toLocaleString("en-GB")}</b>
-          <span class="f-meta">{bySlug.redirected.share}% · cross-cutting · {liveAndRedirected.toLocaleString("en-GB")} still live</span>
+          <span class="f-meta">{bySlug.redirected.share}% · overlaps HTTP outcomes · {liveAndRedirected.toLocaleString("en-GB")} responding</span>
           <span class="f-cta">Where they went ↗</span>
         </a>
         <a class="feature-card f-live" href="/cohorts/live">
-          <span class="f-label">Still live</span>
+          <span class="f-label">Responding</span>
           <b class="f-num">{bySlug.live.sites.toLocaleString("en-GB")}</b>
-          <span class="f-meta">{bySlug.live.share}% · still respond and still mention the candidate</span>
-          <span class="f-cta">The survivors ↗</span>
+          <span class="f-meta">{bySlug.live.share}% · successful HTTP responses at the audit; content may have changed</span>
+          <span class="f-cta">Inspect responding URLs ↗</span>
         </a>
       </div>
     </section>
@@ -190,8 +190,8 @@ const randomIds = candidates.map((c) => c.id);
       <HalftoneHexMap />
     </div>
 
-    <section class="cohorts" aria-label="Survival by party" data-reveal>
-      <h2>Which parties' sites survived?</h2>
+    <section class="cohorts" aria-label="HTTP response rate by party" data-reveal>
+      <h2>Which parties’ URLs responded?</h2>
       <p class="muted">Click a row to filter the ledger.</p>
       <ol class="board" id="party-board">
         {board.map((r) => (
@@ -201,7 +201,7 @@ const randomIds = candidates.map((c) => c.id);
               <span class="board-bar" aria-hidden="true">
                 <b style={`--w:${Math.round((r.sites / maxBoard) * 100)}%;--live:${r.livePct}%`} class={r.livePct >= 60 ? "ok" : r.livePct >= 40 ? "mid" : "low"}></b>
               </span>
-              <span class="board-num"><b>{r.livePct}%</b> live · {r.sites.toLocaleString("en-GB")} sites</span>
+              <span class="board-num"><b>{r.livePct}%</b> responding · {r.sites.toLocaleString("en-GB")} sites</span>
             </a>
           </li>
         ))}
@@ -212,12 +212,13 @@ const randomIds = candidates.map((c) => c.id);
       <summary>How the record is made</summary>
       <ol>
         <li>
-          <b>Collect.</b> National roster (Democracy Club) + Campaign Lab’s April 2025 crawl of every candidate site.
+          <b>Collect.</b> National roster (Democracy Club) + Campaign Lab’s April 2025 crawl of candidate sites.
         </li>
         <li>
-          <b>Audit.</b> Re-request every URL. “Live” means the site answers <em>and</em> still mentions the candidate —
-          <a href="/candidates/5693">Dawn Furness</a> now lists for sale;
-          <a href="/candidates/111463">Adam Pugh</a> forwards to about.me.
+          <b>Audit.</b> Re-request every URL. “Responding” means a successful HTTP response at the audit.
+          Candidate-name matching is a separate heuristic, not proof of campaign content —
+          <a href="/candidates/5693">Dawn Furness</a> led to a domain-sale page at the audit;
+          <a href="/candidates/111463">Adam Pugh</a> redirected to about.me at the audit.
         </li>
         <li>
           <b>Record.</b> Each candidate gets a public name —
@@ -226,13 +227,13 @@ const randomIds = candidates.map((c) => c.id);
           ) : (
             <code>p5693.civicord.eth</code>
           )}
-          — website, status, evidence. Mainnet path in <a href="/methodology#permanence">Methodology</a>.
+          — website URL, HTTP status and candidate name on Sepolia testnet. Path in <a href="/methodology#permanence">Methodology</a>.
         </li>
         <li>
           <b>Index.</b> Publish a change log so the record can be queried — by researchers, journalists, and agents.
         </li>
         <li>
-          <b>Verify.</b> No account, no wallet, no permission. Every claim links to the public record behind it.
+          <b>Verify.</b> No account, no wallet, no permission. Inspect the recorded fields and source evidence separately.
         </li>
       </ol>
 

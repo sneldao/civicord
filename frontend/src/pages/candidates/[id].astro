@@ -8,6 +8,7 @@ import AgentView from "../../components/AgentView.astro";
 import WebMCP from "../../components/WebMCP.astro";
 import { ClientRouter } from "astro:transitions";
 import { partyLiveShare } from "../../lib/cohorts";
+import { AUDIT_DATE, candidateCitation, recordVerdictCopy, statusLabels } from "../../lib/record-copy";
 import "../../styles/global.css";
 import constituenciesRaw from "../../data/constituencies.json";
 import hexesRaw from "../../data/hexes.json";
@@ -19,29 +20,20 @@ export async function getStaticPaths() {
 }
 
 const { person } = Astro.props;
-const statusLabels: Record<string, string> = {
-  live: "Live",
-  http_error: "HTTP error",
-  dns_error: "Domain gone",
-  timeout: "Timed out",
-  ssl_error: "SSL error",
-  connection_error: "Connection failed",
-  other_error: "Error",
-};
 const changeLabels: Record<string, string> = {
-  gone: "Domain no longer resolves",
+  gone: "DNS or connection failure at the audit",
   repurposed_suspect:
-    "Page responds, but the candidate’s surname is absent — may have been repurposed",
-  redirected: "URL now redirects elsewhere",
-  still_attested: "Still live; surname still present",
-  other: "Audited, but not a clean survival/repurpose class",
+    "Surname absent from the response body — a weak signal that needs review",
+  redirected: "URL redirected at the audit",
+  still_attested: "HTTP response recorded; inspect the candidate-name signal below",
+  other: "Other HTTP audit outcome",
   unaudited: "No audit yet",
 };
 const significanceLabels: Record<string, string> = {
-  unchanged: "April text still largely present in the archived page",
-  minor: "Small wording drift vs the April scrape",
-  major: "Substantial rewrite — only some April phrases remain",
-  transformed: "Little overlap with the April scrape — page may have changed role",
+  unchanged: "High text overlap with the compared archived page",
+  minor: "Small text difference from the compared archived page",
+  major: "Substantial text difference from the compared archived page",
+  transformed: "Low text overlap with the compared archived page — inspect both sources",
 };
 const diffsRoot: any = contentDiffsRaw as any;
 const contentDiff: any = (diffsRoot?.byPerson ?? diffsRoot?.default?.byPerson ?? {})[person.id] ?? null;
@@ -49,8 +41,8 @@ const parties = [...new Set(person.websites.flatMap((w) => w.parties))];
 const elections = [...new Set(person.websites.flatMap((w) => w.elections))];
 const firstStatus = person.websites[0]?.audit?.statusClass;
 const siteWord =
-  firstStatus === "live" ? "still live"
-  : firstStatus === "dns_error" ? "taken offline"
+  firstStatus === "live" ? "responding at the audit"
+  : firstStatus === "dns_error" ? "unreachable at the audit"
   : firstStatus ? `flagged: ${statusLabels[firstStatus] ?? firstStatus}` : "archived";
 const ens = person.onchain?.ens ?? `p${person.id}.civicord.eth`;
 const ensUrl = `https://app.ens.domains/${ens}`;
@@ -59,16 +51,12 @@ const resolverUrl =
 
 // Verdict banner (verdict-first page): overall status across the websites.
 const verdict =
-  person.websites.every((w) => w.audit?.statusClass === "live") ? "live"
+  person.websites.length === 0 ? "unknown"
+  : person.websites.every((w) => w.audit?.statusClass === "live") ? "live"
   : person.websites.some((w) => w.audit?.statusClass === "live") ? "mixed"
   : person.websites.every((w) => ["dns_error", "connection_error"].includes(w.audit?.statusClass ?? ""))
     ? "gone" : "unknown";
-const verdictCopy: Record<string, [string, string]> = {
-  live: ["Still live ✓", `${person.name}'s campaign site responds and still mentions them — checked September 2026.`],
-  mixed: ["Partly live ~", `Some of ${person.name}'s recorded sites are live, others are gone or broken — checked September 2026.`],
-  gone: ["Gone ✕", `${person.name}'s recorded campaign sites no longer resolve — checked September 2026.`],
-  unknown: ["Archived record", `Civicord holds what ${person.name} published — scraped April 2025, permanence recorded on-chain.`],
-};
+const verdictCopy = recordVerdictCopy(verdict, person.name);
 
 // Cold-arrival context line + breadcrumb: party / first constituency.
 const party = parties[0] ?? "Candidate";
@@ -138,19 +126,19 @@ const compareAvg = compareFound?.[1] ?? null;
 // Pre-computed for the compare line: keeps the template free of ternaries the
 // Astro parser mis-reads as fragment shorthand (astro(1002)).
 const personShareText =
-  personShare === null ? "" : personShare >= 1 ? "live" : personShare <= 0 ? "gone" : `${Math.round(personShare * 100)}% live`;
+  personShare === null ? "" : personShare >= 1 ? "responding" : personShare <= 0 ? "not responding" : `${Math.round(personShare * 100)}% responding`;
 ---
 
 <html lang="en-GB">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={`Public record for UK parliamentary candidate ${person.name}: was their campaign website still live, gone, or repurposed — permanently recorded and publicly verifiable.`} />
+    <meta name="description" content={`Public record for UK parliamentary candidate ${person.name}: HTTP audit and available source excerpts; Sepolia testnet record.`} />
     <meta property="og:title" content={`${person.name} — Civicord public record`} />
     <meta property="og:type" content="profile" />
     <meta
       property="og:description"
-      content={`${person.name} stood for ${parties.join(", ") || "Parliament"}. Their campaign site was ${siteWord}. Civicord holds this permanently on-chain — see the record.`}
+      content={`${person.name} stood for ${parties.join(", ") || "Parliament"}. Their recorded URLs were ${siteWord}. HTTP audit and source excerpts; Sepolia testnet record.`}
     />
     <meta name="twitter:card" content="summary" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -177,13 +165,26 @@ const personShareText =
       </ul>
     </header>
 
+    <div class="record-actions" aria-label="Use this record">
+      <button type="button" class="btn-primary" id="copy-citation" data-citation={candidateCitation(person)}>Copy citation</button>
+      <a class="btn-ghost" href="#evidence">View evidence</a>
+      {person.onchain && <a class="btn-ghost" href="#verification">Verify this record</a>}
+      <a class="btn-ghost" href="#agent-view">Query The Graph</a>
+    </div>
+    <p id="citation-status" class="muted" role="status" aria-live="polite"></p>
+    <div id="citation-fallback" hidden>
+      <label for="citation-text">Copy this citation manually</label>
+      <textarea id="citation-text" readonly rows="7">{candidateCitation(person)}</textarea>
+    </div>
+    <p class="muted record-limit">Snapshot audit, not a current availability check. HTTP success and surname matches do not prove campaign content survived. On-chain fields are on Sepolia testnet; full content is not stored on-chain.</p>
+
     <p class={`verdict v-${verdict}`} role="status">
-      <b>{verdictCopy[verdict][0]}</b> — {verdictCopy[verdict][1]}
+      <b>{verdictCopy[0]}</b> — {verdictCopy[1]}
     </p>
 
     {compareAvg !== null && personShare !== null && compareParty && (
       <p class="compare-line">
-        {compareParty}: <b>{Math.round(compareAvg * 100)}% of sites live</b> across the party ·
+        {compareParty}: <b>{Math.round(compareAvg * 100)}% responding</b> across the party ·
         this candidate: <b>{personShareText}</b>.
         <a href={`/browse?party=${encodeURIComponent(compareParty.toLowerCase())}`}>See the cohort ↗</a>
       </p>
@@ -223,13 +224,13 @@ const personShareText =
           <p class="seat-line">
             Stood in <a href={`/constituencies/${primarySeatInfo.constituency.slug}`}><b>{primarySeatInfo.constituency.name}</b></a>
             {primarySeatInfo.constituency.stats.sites > 0 ? (
-              <> — <b>{primarySeatInfo.constituency.stats.live} of {primarySeatInfo.constituency.stats.sites} sites live ({primarySeatInfo.constituency.stats.livePct}%)</b><span class="muted"> · {primarySeatInfo.constituency.stats.gone} gone · {primarySeatInfo.constituency.stats.redirected} redirected</span></>
+              <> — <b>{primarySeatInfo.constituency.stats.live} of {primarySeatInfo.constituency.stats.sites} sites responding ({primarySeatInfo.constituency.stats.livePct}%)</b><span class="muted"> · {primarySeatInfo.constituency.stats.gone} unreachable · {primarySeatInfo.constituency.stats.redirected} redirected</span></>
             ) : (
               <> — <span class="muted">no scraped site in this seat (17 like it)</span></>
             )}
           </p>
           <p class="muted seat-meta">
-            {primarySeatInfo.constituency.gssCode} · {primarySeatInfo.constituency.region}{primarySeatInfo.constituency.country ? ` · ${primarySeatInfo.constituency.country}` : ""}{primarySeatInfo.constituency.electorate ? ` · ${primarySeatInfo.constituency.electorate.toLocaleString("en-GB")} electorate` : ""} · Halftone: more / larger paper dots = more gone.
+            {primarySeatInfo.constituency.gssCode} · {primarySeatInfo.constituency.region}{primarySeatInfo.constituency.country ? ` · ${primarySeatInfo.constituency.country}` : ""}{primarySeatInfo.constituency.electorate ? ` · ${primarySeatInfo.constituency.electorate.toLocaleString("en-GB")} electorate` : ""} · Halftone: more / larger paper dots = lower response rate.
           </p>
           <div class="seat-actions">
             <a class="btn-primary btn-sm" href={`/constituencies/${primarySeatInfo.constituency.slug}`}>View {primarySeatInfo.constituency.name} ↗</a>
@@ -250,7 +251,7 @@ const personShareText =
       <li><b>Sep 2026</b><span>audited</span></li>
       <li aria-hidden="true" class="tick">→</li>
       <li class={person.onchain ? "" : "pending"}>
-        <b>{person.onchain ? "Recorded" : "Pending"}</b><span>on-chain</span>
+        <b>{person.onchain ? "Recorded" : "Pending"}</b><span>Sepolia</span>
       </li>
     </ol>
 
@@ -309,56 +310,83 @@ const personShareText =
               {changeLabels[change] ?? change}
             </p>
             <ul class="facts">
-              {w.audit?.statusCode && <li>HTTP {w.audit.statusCode} on 2026-09-07</li>}
-              {w.audit?.redirected && w.audit.finalUrl && (
-                <li class="fact-redir">
-                  ↳ now redirects to <a href={w.audit.finalUrl} rel="noopener noreferrer">{w.audit.finalUrl}</a>
+              {w.audit && (
+                <li>
+                  HTTP result: {statusLabels[w.audit.statusClass] ?? w.audit.statusClass}
+                  {w.audit.statusCode != null && <> (HTTP {w.audit.statusCode})</>} at the {AUDIT_DATE} audit
                 </li>
               )}
-              {w.audit?.nameFound === true && <li>Candidate surname still present on the current page</li>}
-              {w.audit?.nameFound === false && (
-                <li class="fact-warn">Surname absent from the current page — site may have been repurposed</li>
+              {w.audit?.redirected && w.audit.finalUrl && (
+                <li class="fact-redir">
+                  ↳ Redirect destination at audit: <a href={w.audit.finalUrl} rel="noopener noreferrer">{w.audit.finalUrl}</a>
+                </li>
               )}
+              {w.audit?.nameFound === true && <li>Candidate-name signal: surname matched in the response body (heuristic only)</li>}
+              {w.audit?.nameFound === false && (
+                <li class="fact-warn">Candidate-name signal: surname not found in the response body (heuristic only)</li>
+              )}
+              {w.audit && w.audit.nameFound == null && <li>Candidate-name signal: not assessed</li>}
             </ul>
           </article>
         );
       })}
     </section>
 
-    {person.pages.length > 0 && (
-      <details class="specimens">
-        <summary>Archived scrape — April 2025 (Campaign Lab) · {person.pages.length} pages</summary>
-        <table>
-          <thead>
-            <tr><th>Page</th><th>Chars</th><th>Opening text</th></tr>
-          </thead>
-          <tbody>
-            {person.pages.map((p) => (
-              <tr>
-                <td title={p.key}>{p.key.split("/").pop()}</td>
-                <td>{p.chars.toLocaleString("en-GB")}</td>
-                <td><pre>{p.snippet}…</pre></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </details>
-    )}
+    <section id="evidence" class="record-evidence" aria-labelledby="evidence-title" tabindex="-1">
+      <h2 id="evidence-title">Source evidence and excerpts</h2>
+      <p class="muted">
+        These are short excerpts from the April 2025 scrape, not complete archived
+        pages. Original filenames identify the stored extracts.{" "}
+        <a href="https://github.com/CampaignLab/candidate-website-scrape" rel="noopener noreferrer">Browse the Campaign Lab source dataset ↗</a>
+      </p>
+      {contentDiff?.waybackUrl && (
+        <p>
+          <a href={contentDiff.waybackUrl} rel="noopener noreferrer">Open the compared Wayback capture ↗</a>
+        </p>
+      )}
+      {person.pages.length > 0 ? (
+        <details class="specimens">
+          <summary>Scrape excerpts — April 2025 · {person.pages.length} shown</summary>
+          <table>
+            <thead>
+              <tr><th>Page</th><th>Chars</th><th>Opening excerpt</th></tr>
+            </thead>
+            <tbody>
+              {person.pages.map((p) => (
+                <tr>
+                  <td title={p.key}>{p.key.split("/").pop()}</td>
+                  <td>{p.chars.toLocaleString("en-GB")}</td>
+                  <td><pre>{p.snippet}…</pre></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </details>
+      ) : (
+        <p class="muted">No scrape excerpts are available for this candidate. A recorded URL or on-chain entry does not imply that its content was preserved.</p>
+      )}
+    </section>
 
     {person.onchain && (
-      <section class="ens-record" aria-label="Public record">
-        <h2>Public record <span class="onchain-chip">On-chain ✓</span></h2>
+      <section id="verification" class="ens-record" aria-label="Public record" tabindex="-1">
+        <h2>Public record <span class="onchain-chip">Sepolia testnet</span></h2>
         <p>
-          Permanent public name:{" "}
+          Public ENS label:{" "}
           <button type="button" class="ens-copy" data-copy={ens} title="Copy the ENS name">
             <code>{ens}</code>
           </button>
           .{" "}
-          {person.onchain.status && <>Recorded status: <b>{person.onchain.status}</b>. </>}
-          It holds this page's claims — website, status, evidence — in a public
-          register that can't be quietly edited or deleted. Same registry also
-          serves <code>p{person.id}.civicordhq.eth</code> (dual parent label).
+          {person.onchain.status && <>Recorded status: <b>{person.onchain.status}</b>{person.onchain.status === "live" && <> — a successful HTTP response at the audit, not proof of campaign survival</>}. </>}
+          Records the candidate name, original URL and HTTP audit status on
+          Sepolia testnet. Transaction history makes changes to those fields
+          observable; it does not prove the truth of political claims or preserve
+          the full source content. The same registry also serves{" "}
+          <code>p{person.id}.civicordhq.eth</code> (dual parent label).
         </p>
+        <ul class="facts">
+          <li>ENS: records identity and audit fields.</li>
+          <li>The Graph: retrieves indexed fields alongside the audit ledger — <a href="#agent-view">compare with The Graph</a>.</li>
+        </ul>
         <div
           class="ens-live"
           data-person-id={person.id}
@@ -387,8 +415,7 @@ const personShareText =
 
     <footer>
       <p>
-        Civicord record · permanent public identity via the Ethereum Name Service
-        (no account or wallet needed to read) ·
+        Civicord record · ENS fields on Sepolia testnet · no account or wallet needed to read ·
         <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
       </p>
     </footer>
@@ -402,6 +429,23 @@ const personShareText =
     <script>
       // Copy the ENS name + live Sepolia text() verify (view-transition safe).
       document.addEventListener("astro:page-load", () => {
+        const citationButton = document.querySelector<HTMLButtonElement>("#copy-citation");
+        citationButton?.addEventListener("click", async () => {
+          const status = document.querySelector<HTMLElement>("#citation-status");
+          const fallback = document.querySelector<HTMLElement>("#citation-fallback");
+          const text = document.querySelector<HTMLTextAreaElement>("#citation-text");
+          try {
+            await navigator.clipboard.writeText(citationButton.dataset.citation ?? "");
+            if (fallback) fallback.hidden = true;
+            if (status) status.textContent = "Citation copied.";
+          } catch {
+            if (fallback) fallback.hidden = false;
+            text?.focus();
+            text?.select();
+            if (status) status.textContent = "Clipboard unavailable. Select and copy the citation below.";
+          }
+        });
+
         const btn = document.querySelector<HTMLButtonElement>(".ens-copy");
         btn?.addEventListener("click", async () => {
           try {

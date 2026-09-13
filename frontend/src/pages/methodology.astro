@@ -49,9 +49,9 @@ const onchain = candidates.filter((c) => c.onchain);
     <article data-reveal>
       <h2>1. The source: Campaign Lab scrape, April 2025</h2>
       <p>
-        Every record starts from Campaign Lab's scrape of UK parliamentary
-        candidate campaign websites, captured during the 2024 general election
-        campaign. The dataset covers <b>{candidates.length.toLocaleString("en-GB")} candidates</b> and{" "}
+        Every record starts from{" "}
+        <a href="https://github.com/CampaignLab/candidate-website-scrape" rel="noopener noreferrer">Campaign Lab’s April 2025 scrape of UK candidate websites</a>.
+        The dataset covers <b>{candidates.length.toLocaleString("en-GB")} candidates</b> and{" "}
         <b>{websites.length.toLocaleString("en-GB")} websites</b>, keyed on Democracy Club
         person IDs — the stable public identifier for UK candidates.
       </p>
@@ -59,19 +59,19 @@ const onchain = candidates.filter((c) => c.onchain);
       <h2>2. The audit: re-checked after the election</h2>
       <p>
         Websites rot. Roughly 17 months after the scrape we re-requested every
-        URL and recorded what happened: <b>{live.length.toLocaleString("en-GB")} still live</b>,{" "}
-        <b>{dead.length.toLocaleString("en-GB")} domains gone or unreachable</b>, the rest
-        redirecting, erroring, or timing out.
+        URL and recorded what happened: <b>{live.length.toLocaleString("en-GB")} responding</b>,{" "}
+        <b>{dead.length.toLocaleString("en-GB")} DNS or connection failures</b>, and
+        the remaining URLs had HTTP errors, timeouts or other technical failures.
       </p>
-      <p>“Live” is deliberately strict — it means the site responds <em>and</em> still mentions the candidate by name. A live domain selling insurance or redirecting to a party homepage does not count.</p>
+      <p>The stored status “live” means a successful HTTP response after redirects. It does not establish that campaign content survived. Surname matching searches the response body and can match a domain-sale page or unrelated text; it is a weak signal, not content verification. Redirects are tracked separately and overlap HTTP outcomes.</p>
       <table>
         <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
         <tbody>
-          <tr><td>Live</td><td>Responds and still mentions the candidate</td></tr>
-          <tr><td>Domain gone</td><td>DNS fails or connection refused</td></tr>
+          <tr><td>Responding (live)</td><td>Successful HTTP response after redirects at the audit</td></tr>
+          <tr><td>Unreachable (gone)</td><td>DNS failure or connection failure at the audit</td></tr>
           <tr><td>HTTP error</td><td>Server responds with 4xx/5xx</td></tr>
           <tr><td>Timed out / SSL / Conn. failed</td><td>Unreachable for technical reasons — retry before concluding</td></tr>
-          <tr><td>↳ redirect</td><td>URL now sends visitors elsewhere (destination shown)</td></tr>
+          <tr><td>↳ redirect</td><td>URL sent visitors elsewhere at the audit (destination shown; overlaps HTTP outcomes)</td></tr>
         </tbody>
       </table>
 
@@ -79,46 +79,49 @@ const onchain = candidates.filter((c) => c.onchain);
       <p>
         <b>{onchain.length.toLocaleString("en-GB")} of {candidates.length.toLocaleString("en-GB")} candidates</b> have
         a public name of the form <code>p5693.civicord.eth</code> on the
-        Ethereum Name Service (Sepolia testnet today). Each name carries three public text
-        records — the campaign website URL, the audit status, and the candidate's
+        Ethereum Name Service (Sepolia testnet today). Core fields are the
+        campaign website URL, the audit status, and the candidate's
         name — readable by anyone, without an account, a wallet, or our permission.
       </p>
       <p>
-        On the resolver, records can't be quietly edited or deleted: any change is a
-        new on-chain transaction with a public history. That is the whole point —
-        a candidate (or anyone else) cannot rewrite what their site once said.
-        Today that history lives on Sepolia; the mainnet path is in <a href="#permanence">§4</a>.
+        Updates to resolver fields are on-chain transactions with a public
+        history. This makes changes observable; it does not prove a political
+        claim is true, preserve full website content, or establish candidate
+        ownership of a record. Today that history lives on Sepolia; the mainnet
+        path is in <a href="#permanence">§4</a>.
       </p>
       <p>
-        To verify a record yourself: open any candidate page, follow “Verify on the
-        register”, and read the <code>url</code>, <code>status</code>, and{" "}
-        <code>vnd.civicord.person_name</code> text records on the resolver
-        contract. Compare them with the claims on the page — they should match
-        exactly.
+        To verify a record yourself: open any candidate page, click “Verify
+        on-chain”, and independently read the <code>url</code>,{" "}
+        <code>status</code>, and <code>vnd.civicord.person_name</code> text
+        records on the resolver contract. Compare them with the claims on the
+        page — they should match exactly.
       </p>
 
-      <h2 id="permanence">4. Permanence, honestly: testnet today, mainnet next</h2>
+      <h2 id="permanence">4. Permanence, honestly: testnet prototype</h2>
       <p>
         Records currently live on the <b>Sepolia testnet</b> — free and public, but a
         test network. The path to a permanent home is deliberately boring and
         already scoped in <a href="https://github.com/sneldao/civicord/blob/main/docs/onchain-plan.md">docs/onchain-plan.md</a>:
       </p>
       <ol>
-        <li><b>Now (Sepolia):</b> every write is real, tamper-evident, and publicly verifiable on Etherscan. The record format, resolver roles, and change-log indexing are proven end to end.</li>
-        <li><b>Next (mainnet):</b> re-register the 2,375 names under <code>civicord.eth</code> on Ethereum mainnet via the same ENSv2 contracts — a scripted, idempotent re-run of the publisher, funded per-candidate (~0.002 ETH each at 1 gwei). Sepolia records are rehearsal data, not the citable record of truth.</li>
-        <li><b>Parallel (anchored evidence):</b> raw HTML snapshots get their <code>sha256</code> written into the same resolver records <em>and</em> mirrored to Arweave/IPFS, so the evidence survives even if this project doesn't. Verify the hash on either store.</li>
+        <li><b>Now (Sepolia):</b> public audit fields — name, original URL and HTTP audit status — are written and publicly verifiable on Etherscan.</li>
+        <li><b>Next (mainnet):</b> migration to Ethereum mainnet is planned via the same ENSv2 contracts. Sepolia records are rehearsal data, not the citable record of truth.</li>
+        <li><b>Planned (durable content):</b> content hashes plus durable storage for source snapshots — not yet implemented.</li>
       </ol>
       <p>
-        The claim we make today is the narrow, checkable one: <b>the record exists, it is
-        tamper-evident, and anyone can verify it without trusting us.</b> Where it lives
-        (testnet → mainnet) is an operational question, and the migration is a script,
-        not a rewrite.
+        The claim we make today is the narrow, checkable one: <b>public audit
+        fields can be read on Sepolia and compared with this ledger. Source
+        excerpts and archive links must be evaluated separately.</b>
       </p>
 
       <h2>5. Limits and honesty</h2>
       <ul>
+        <li>Source excerpts are short extracts, not complete archived pages.</li>
         <li>The scrape is a snapshot: it shows what sites said in April 2025, not today.</li>
         <li>The audit is a snapshot too: a site marked “timed out” may simply have been down that day.</li>
+        <li>Candidate-name matching is a heuristic with false positives — a responding URL is not proof that campaign content survived.</li>
+        <li>HTTP outcomes say nothing about intent: we do not infer deliberate deletion or retention.</li>
         <li>Records live on the Sepolia testnet — free and public, but a test network, not mainnet (see §4 for the migration path).</li>
         <li>Civicord tracks campaign websites only, not social media, leaflets, or hustings claims.</li>
       </ul>

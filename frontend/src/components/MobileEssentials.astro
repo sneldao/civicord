@@ -7,3 +7,22 @@
   <a class="me-item" href="/uk#map">Map</a>
   <button type="button" class="me-item" data-palette-open aria-label="Jump to a record">Jump</button>
 </nav>
+
+<script>
+  function revealLinkedSection(hash = location.hash) {
+    const target = hash === "#evidence"
+      ? document.querySelector<HTMLDetailsElement>("#evidence details")
+      : hash === "#agent-view" || hash === "#browse-map"
+        ? document.getElementById(hash.slice(1)) as HTMLDetailsElement | null
+        : null;
+    if (target?.tagName === "DETAILS") target.open = true;
+  }
+  document.addEventListener("astro:page-load", () => revealLinkedSection());
+  window.addEventListener("hashchange", () => revealLinkedSection());
+  document.addEventListener("click", (e) => {
+    const a = (e.target as HTMLElement)?.closest?.('a[href^="#"]') as HTMLAnchorElement | null;
+    if (!a) return;
+    const hash = a.getAttribute("href") ?? "";
+    revealLinkedSection(hash);
+  });
+</script>

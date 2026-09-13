@@ -50,8 +50,9 @@ for (const file of htmlFiles) {
     checked++;
     // Query strings on static routes: /browse?status=gone resolves to /browse —
     // the query is runtime filter state, not a file. Same for ?format=svg etc.
-    const pathname = raw.split("?")[0];
+    const pathname = raw.split(/[?#]/)[0];
     if (!pathname || pathname === "") continue;
+    if ((pathname === "/api/graph" || pathname === "/api/ens") && files.has("/_worker.js")) continue;
     let target;
     if (pathname.startsWith("/")) {
       target = path.join(distDir, pathname);

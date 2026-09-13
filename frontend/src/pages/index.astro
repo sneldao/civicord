@@ -34,12 +34,12 @@ const livePct = audited.length ? pct(live.length, audited.length) : 0;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Political websites disappear the day after the election. Civicord makes that record tamper-evident, verifiable and citable — for any democracy. The UK is the genesis dataset."
+      content="Inspect political website audit results and source excerpts. Public ENS fields on Sepolia testnet; UK first."
     />
     <meta property="og:title" content="Civicord — the public record for political websites" />
     <meta
       property="og:description"
-      content="A tamper-evident, verifiable record of what candidates published — and what happened to it. Built as a public good; designed for any democracy."
+      content="Inspect political website audit results and source excerpts. Public ENS fields on Sepolia testnet; UK first."
     />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
@@ -54,23 +54,37 @@ const livePct = audited.length ? pct(live.length, audited.length) : 0;
       <header class="masthead door-masthead">
         <h1 class="wordmark">Civicord<span class="dot">.</span></h1>
         <p class="lede door-lede">
-          Political websites disappear the day after the election. Civicord makes that
-          record tamper-evident, verifiable and citable — for any democracy.
+          Political websites can disappear after an election. Civicord helps you
+          inspect what was captured, what the audit found, and the public record behind it.
         </p>
         <p class="tagline door-support">No account, no wallet. UK first.</p>
+        <p class="tagline door-support muted">
+          Sepolia prototype · URL, status and name recorded on-chain ·{" "}
+          <a href="/methodology#permanence">permanent content storage planned</a>.
+        </p>
         <div class="door-cta" role="group" aria-label="Get started">
-          <a class="btn-primary" href="/uk">Explore the UK genesis dataset →</a>
-          <a class="btn-ghost" href="/methodology">How it works</a>
+          <a class="btn-primary" href="/browse">Find a candidate or constituency →</a>
+          <a class="btn-ghost" href="/candidates/5693">See a worked example</a>
         </div>
       </header>
 
-      <a class="door-visual" href="/uk" aria-label={`United Kingdom genesis dataset — ${livePct}% of sites still live`}>
+      <a class="door-visual" href="/uk" aria-label={`United Kingdom genesis dataset — ${livePct}% of audited URLs responding`}>
         <DoorField livePct={livePct} candidates={candidates.length} />
         <span class="door-visual-cta">Open the UK record ↗</span>
       </a>
     </div>
 
     <main id="main" tabindex="-1">
+      <section class="start-here" aria-labelledby="start-title">
+        <h2 id="start-title">Start with a question</h2>
+        <p class="muted">Find a record, inspect the evidence, then verify what was recorded.</p>
+        <div class="feature-grid">
+          <a class="feature-card" href="/browse"><span class="f-label">For citizens</span><h3>Find your candidate or constituency</h3><span class="f-meta">Search the UK audit by name or place. No account or wallet.</span><span class="f-cta">Search the records →</span></a>
+          <a class="feature-card" href="/candidates/5693#evidence"><span class="f-label">For journalists and researchers</span><h3>A responding URL is not a surviving campaign</h3><span class="f-meta">Dawn Furness’s URL led to a domain-sale page at the audit. Inspect the redirect and earlier scrape excerpts.</span><span class="f-cta">Explore the worked example →</span></a>
+          <a class="feature-card" href="/candidates/5693#verification"><span class="f-label">For judges and developers</span><h3>Verify a record without a wallet</h3><span class="f-meta">Read ENS fields on Sepolia, then query The Graph alongside the audit ledger.</span><span class="f-cta">Inspect the live integrations →</span></a>
+        </div>
+      </section>
+
       <section class="future door-regions" id="regions" aria-label="Regions" data-reveal>
         <h2>Built for one election. Designed for any.</h2>
         <p class="muted future-lede">

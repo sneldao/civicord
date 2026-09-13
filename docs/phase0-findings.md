@@ -7,8 +7,13 @@ followed; 12 concurrent; optional surname content-check). Raw outputs live in
 
 ## Headline
 
-**1,512 of 2,375 candidate websites (64%) were still live on 2026-09-07 —
-roughly 17 months after the April 2025 scrape.** The other 36% are gone or broken.
+**1,512 of 2,375 candidate websites (64%) returned successful HTTP responses
+on 2026-09-07 — roughly 17 months after the April 2025 scrape.** The other 36%
+errored or were unreachable.
+
+> Terminology: the site labels this class **“Responding”** — HTTP success after
+> redirects, not proof that campaign content survived. The surname content-check
+> is a separate heuristic that can match domain-sale pages.
 
 | Status class | Count | Share |
 | --- | --- | --- |

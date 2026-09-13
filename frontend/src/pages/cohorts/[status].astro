@@ -30,12 +30,12 @@ const indexLink =
     ? "/browse?status=live"
     : cohort.slug === "gone"
       ? "/browse?status=gone"
-      : "/browse";
+      : "/browse?status=redirected";
 
 const blurb: Record<StatusCohort["slug"], string> = {
-  live: "These sites respond today and still mention their candidate by name. Everything else on this site is measured against them.",
-  gone: "DNS failures and refused connections — the domain itself is gone. For these candidates the April 2025 scrape may be the only surviving record.",
-  redirected: "The URL resolves, but somewhere else. Some moved home to a party page; others now sell insurance, host domain-parking ads, or belong to someone new entirely.",
+  live: "These URLs returned successful HTTP responses at the audit. Response success does not establish that campaign content survived.",
+  gone: "DNS or connection failures at the audit. Temporary failures do not prove permanent removal — for these candidates the April 2025 scrape may be the only available record.",
+  redirected: "The URL responded, but sent visitors somewhere else at the audit. A redirect may be a legitimate move or a change of use.",
 };
 ---
 
@@ -78,7 +78,7 @@ const blurb: Record<StatusCohort["slug"], string> = {
     {cohort.destinations.length > 0 && (
       <section aria-label="Top redirect destinations">
         <h2>Top destinations</h2>
-        <p class="muted">Where dead campaign URLs most often land today.</p>
+        <p class="muted">Redirect destinations recorded at the audit.</p>
         <table>
           <thead><tr><th>Destination</th><th>Sites</th></tr></thead>
           <tbody>

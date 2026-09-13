@@ -5,6 +5,7 @@ import WebMCP from "../../components/WebMCP.astro";
 import CommandPalette from "../../components/CommandPalette.astro";
 import MobileEssentials from "../../components/MobileEssentials.astro";
 import ScrollReveal from "../../components/ScrollReveal.astro";
+import { statusLabels } from "../../lib/record-copy";
 import "../../styles/global.css";
 import constituenciesRaw from "../../data/constituencies.json";
 import hexesRaw from "../../data/hexes.json";
@@ -18,12 +19,12 @@ export async function getStaticPaths() {
 const { c } = Astro.props as { c: any };
 const verdict = c.stats.sites === 0 ? "empty" : c.stats.livePct >= 66 ? "live" : c.stats.livePct >= 40 ? "mixed" : "gone";
 const verdictCopy: Record<string, [string,string]> = {
-  empty: ["No scraped site", "This seat had no candidate site in the April 2025 scrape — nothing to audit. 17 seats are like this (e.g. Belfast North)."],
-  live: ["Mostly live", "Most candidate sites here still respond."],
-  mixed: ["Partly gone", "About half the sites here are gone or error."],
-  gone: ["Mostly gone", "Most candidate sites here no longer resolve."],
+  empty: ["No scraped site", "No candidate website from this seat is included in the April 2025 scrape, so there is no URL to audit here."],
+  live: ["Mostly responding", "The rounded HTTP response rate at the audit was at least 66%. This does not establish that campaign content survived."],
+  mixed: ["Mixed HTTP results", "The rounded HTTP response rate at the audit was between 40% and 65%. Inspect each URL for its result."],
+  gone: ["Low response rate", "The rounded HTTP response rate at the audit was below 40%. Technical failures do not establish permanent removal."],
 };
-const shareLine = c.stats.sites ? `${c.stats.live} of ${c.stats.sites} sites live (${c.stats.livePct}%) · ${c.stats.gone} gone · ${c.stats.redirected} redirected` : "no sites to show";
+const shareLine = c.stats.sites ? `${c.stats.live} of ${c.stats.sites} sites responding (${c.stats.livePct}%) · ${c.stats.gone} unreachable · ${c.stats.redirected} redirected` : "no sites to show";
 
 function thumbFills(livePct: number) {
   if (livePct >= 66) return "var(--live)";
@@ -43,7 +44,7 @@ try {
 const siteUrl = "https://civicord.pages.dev";
 const ogImage = `${siteUrl}/og/constituencies/${c.slug}.svg`;
 const ogTitle = `${c.name} — Civicord`;
-const ogDesc = c.stats.sites ? `${c.name}: ${shareLine}. Permanent record on civicord.eth.` : `${c.name}: no candidate site in the April 2025 scrape. Permanent record on civicord.eth.`;
+const ogDesc = c.stats.sites ? `${c.name}: ${shareLine}. Audit snapshot; ENS fields on Sepolia testnet.` : `${c.name}: no candidate site in the April 2025 scrape. Audit snapshot; ENS fields on Sepolia testnet.`;
 const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
 ---
 
@@ -111,31 +112,31 @@ const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
             );
           })()}
         </svg>
-        <span class="thumb-label">Halftone: more / larger paper dots = more gone.</span>
+        <span class="thumb-label">Halftone: more / larger paper dots = lower response rate.</span>
       </div>
     )}
 
     <section class="entries">
       <h2>Candidates in this seat</h2>
       {c.stats.sites === 0 ? (
-        <p class="muted">No candidate stood here with a homepage recorded in the scrape. See <a href="/methodology">Methodology</a> and the <a href="/browse">full ledger</a>.</p>
+        <p class="muted">No candidate website from this seat is included in this scrape. See <a href="/methodology">Methodology</a> and the <a href="/browse">full ledger</a>.</p>
       ) : (
         c.candidates.map((cand: any) => (
           <article class={`entry st-${cand.statusClass}`}>
             <header>
-              <span class={`badge ${cand.statusClass}`}>{cand.statusClass}</span>
+              <span class={`badge ${cand.statusClass}`}>{statusLabels[cand.statusClass] ?? cand.statusClass}</span>
               {cand.redirected && <span class="redir" title={cand.finalUrl ?? ""}> ↳</span>}
               <a class="site-url" href={cand.url} rel="noopener noreferrer">{cand.url.replace(/^https?:\/\//,"").replace(/\/$/,"")}</a>
             </header>
             <p class="muted" style="margin:0.45rem 0 0">
               <a href={`/candidates/${cand.id}`}>{cand.name}</a> · {cand.party}
-              {cand.onchain && <> · <span class="onchain-chip">On-chain ✓</span> <code style="font-size:0.78em">{cand.onchain.ens}</code></>}
+              {cand.onchain && <> · <span class="onchain-chip">Sepolia</span> <code style="font-size:0.78em">{cand.onchain.ens}</code></>}
             </p>
             <ul class="facts">
               {cand.statusCode && <li>HTTP {cand.statusCode}</li>}
-              {cand.redirected && cand.finalUrl && <li class="fact-redir">↳ now redirects to <a href={cand.finalUrl} rel="noopener noreferrer">{cand.finalUrl}</a></li>}
-              {cand.nameFound === true && <li>candidate surname still present</li>}
-              {cand.nameFound === false && <li class="fact-warn">surname absent — may have been repurposed</li>}
+              {cand.redirected && cand.finalUrl && <li class="fact-redir">↳ Redirect destination at audit: <a href={cand.finalUrl} rel="noopener noreferrer">{cand.finalUrl}</a></li>}
+              {cand.nameFound === true && <li>Candidate-name signal: surname matched in the response body (heuristic only)</li>}
+              {cand.nameFound === false && <li class="fact-warn">Candidate-name signal: surname not found in the response body (heuristic only)</li>}
             </ul>
           </article>
         ))

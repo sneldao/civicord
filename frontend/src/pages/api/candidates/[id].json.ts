@@ -5,6 +5,7 @@ import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 import constituenciesRaw from "../../../data/constituencies.json";
 import contentDiffsRaw from "../../../data/content_diffs.json";
+import { candidateCitation, recordVerdictCopy } from "../../../lib/record-copy";
 
 export const prerender = true;
 
@@ -25,17 +26,6 @@ function verdictOf(p: any): string {
   if (p.websites.some((w: any) => w.audit?.statusClass === "live")) return "mixed";
   if (p.websites.every((w: any) => ["dns_error", "connection_error"].includes(w.audit?.statusClass ?? ""))) return "gone";
   return "unknown";
-}
-
-function verdictCopy(verdict: string, name: string): [string, string] {
-  const n = name ?? "this candidate";
-  const copies: Record<string, [string, string]> = {
-    live: ["Still live \u2713", n + "'s campaign site responds and still mentions them \u2014 checked September 2026."],
-    mixed: ["Partly live ~", "Some of " + n + "'s recorded sites are live, others are gone or broken \u2014 checked September 2026."],
-    gone: ["Gone \u2715", n + "'s recorded campaign sites no longer resolve \u2014 checked September 2026."],
-    unknown: ["Archived record", "Civicord holds what " + n + " published \u2014 scraped April 2025, permanence recorded on-chain."],
-  };
-  return copies[verdict] ?? ["Unknown", "Civicord holds what " + n + " published."];
 }
 
 function seatInfo(p: any): { name: string; constituency: { slug: string; name: string } | null; electorate?: number | null } | null {
@@ -79,7 +69,8 @@ export const GET: APIRoute = async ({ params }) => {
     parties,
     elections,
     verdict,
-    verdictCopy: verdictCopy(verdict, p.name),
+    verdictCopy: recordVerdictCopy(verdict, p.name),
+    citation: candidateCitation(p),
     seat: seatInfo(p),
     ens,
     onchain: p.onchain

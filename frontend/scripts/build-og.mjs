@@ -64,8 +64,8 @@ for (const c of constituencies) {
   const gss = c.gssCode ?? "";
   const region = c.region ?? c.country ?? "";
   const electorate = c.electorate ? `${Number(c.electorate).toLocaleString("en-GB")} electorate` : "";
-  const shareLine = sites ? `${live} of ${sites} live (${livePct}%)` : "no scraped site";
-  const detailLine = sites ? `${gone} gone · ${redirected} redirected` : "17 seats had no candidate site in the April 2025 scrape";
+  const shareLine = sites ? `${live} of ${sites} responding (${livePct}%)` : "no scraped site";
+  const detailLine = sites ? `${gone} unreachable · ${redirected} redirected` : "17 seats had no candidate site in the April 2025 scrape";
   const altLine = c.altName && c.altName !== name ? ` · ${escXml(c.altName)}` : "";
 
   const hex = hexBySlug.get(c.slug);
@@ -100,7 +100,7 @@ for (const c of constituencies) {
   <!-- hairline top rule — Civicord wordmark language -->
   <rect x="48" y="40" width="${W - 96}" height="3" fill="#1c2434"/>
   <text x="48" y="88" font-family="Georgia, serif" font-size="28" font-weight="700" fill="#1c2434" letter-spacing="-0.02em">Civicord<tspan fill="#c73a1d">.</tspan></text>
-  <text x="48" y="112" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#5b6472" letter-spacing="0.08em">THE PUBLIC RECORD CANDIDATES CAN'T DELETE  ·  civicord.pages.dev</text>
+  <text x="48" y="112" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#5b6472" letter-spacing="0.08em">POLITICAL WEBSITE AUDIT · SEPOLIA TESTNET PROTOTYPE  ·  civicord.pages.dev</text>
 
   <!-- left: constituency identity -->
   <text x="48" y="210" font-family="Georgia, serif" font-size="56" font-weight="700" fill="#1c2434" letter-spacing="-0.02em">${escXml(name)}</text>
@@ -109,12 +109,12 @@ for (const c of constituencies) {
   <!-- verdict line — mirrors page verdict -->
   <g transform="translate(48, 285)">
     <rect x="0" y="0" width="4" height="56" rx="2" fill="${fill}"/>
-    <text x="18" y="20" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#1c2434">${sites === 0 ? "No scraped site" : livePct >= 66 ? "Mostly live" : livePct >= 40 ? "Partly gone" : "Mostly gone"} — <tspan fill="#1c2434" font-weight="700">${escXml(shareLine)}</tspan></text>
+    <text x="18" y="20" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#1c2434">${sites === 0 ? "No scraped site" : livePct >= 66 ? "Mostly responding" : livePct >= 40 ? "Mixed HTTP results" : "Low response rate"} — <tspan fill="#1c2434" font-weight="700">${escXml(shareLine)}</tspan></text>
     <text x="18" y="42" font-family="system-ui, sans-serif" font-size="13" fill="#5b6472">${escXml(detailLine)}</text>
   </g>
 
   <!-- context line -->
-  <text x="48" y="395" font-family="system-ui, sans-serif" font-size="13" fill="#5b6472">Permanent record on ENS Sepolia: each candidate is <tspan font-family="ui-monospace, monospace" fill="#1c2434">p{id}.civicord.eth</tspan> — verify at app.ens.domains</text>
+  <text x="48" y="395" font-family="system-ui, sans-serif" font-size="13" fill="#5b6472">Audit fields on ENS Sepolia: each candidate is <tspan font-family="ui-monospace, monospace" fill="#1c2434">p{id}.civicord.eth</tspan> — verify at app.ens.domains</text>
 
   <!-- CTA pills (purely decorative in image) -->
   <g transform="translate(48, 430)">
@@ -131,7 +131,7 @@ for (const c of constituencies) {
       <polygon points="${polyPoints}" fill="${fill}" fill-opacity="${sites === 0 ? "0.32" : "0.92"}" stroke="#1c2434" stroke-width="1.2" stroke-linejoin="round"/>
       ${sites === 0 ? `<circle cx="60" cy="60" r="8" fill="#1c2434" opacity="0.18"/>` : dotSvg}
     </svg>
-    <text x="110" y="245" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#5b6472" letter-spacing="0.04em">${escXml(gss)} · halftone: more / larger dots = more gone</text>
+    <text x="110" y="245" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#5b6472" letter-spacing="0.04em">${escXml(gss)} · halftone: more / larger dots = lower response rate</text>
   </g>
 
   <!-- bottom rule -->

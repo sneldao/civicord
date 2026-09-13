@@ -39,6 +39,7 @@ const mcpSnippet =
 ---
 
 <details
+  id="agent-view"
   class="agentview"
   data-mode={mode}
   data-slug={slug}
@@ -48,7 +49,7 @@ const mcpSnippet =
 >
   <summary class="av-summary">
     <span class="av-kicker">Agent view</span>
-    <span class="av-title">What this page looks like to a machine</span>
+    <span class="av-title">Inspect the data and verify the record</span>
     {mode === "seat" ? (
       <span class="av-price" title={`${mcents} mcents per call`}>${priceUsd} / seat</span>
     ) : (
@@ -65,8 +66,9 @@ const mcpSnippet =
         </>
       ) : (
         <>
-          Humans read this candidate free. Agents join the live The Graph registration
-          with the audit ledger — same tools WebMCP exposes. Nothing here is mocked.
+          The audit ledger above is a static snapshot. The buttons below run live
+          queries against The Graph and the ledger JSON — only when you click them.
+          Nothing fetches automatically and nothing here is mocked.
         </>
       )}
     </p>
@@ -127,6 +129,7 @@ const mcpSnippet =
     </div>
 
     <p class="muted av-foot">
+      Live queries run on demand; a failure is shown honestly, never replaced with a cached response.
       Verify independently: <a href={`https://app.ens.domains/p${samplePersonId}.civicord.eth`} rel="noopener">ENS</a> ·
       <a href="https://sepolia.etherscan.io/address/0x340d18ecb0bbe7bd67b53e836f2f68cf620aee67" rel="noopener">resolver</a> ·
       <a href="https://thegraph.com/studio/subgraph/civicord" rel="noopener">Subgraph Studio</a> ·
