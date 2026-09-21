@@ -1750,3 +1750,38 @@ tbody tr.is-settling {
   .record-actions > * { flex: 1 1 45%; text-align: center; }
   .filterbar select { max-width: 100%; }
 }
+
+/* ── Persona paths: homepage doors + roster digest (docs/personas.md) ── */
+.persona-doors { margin-top: 2rem; border-top: 2px solid var(--ink); padding-top: 1rem; }
+.persona-doors h2 { font-family: var(--serif); margin: 0 0 0.35rem; }
+.persona-doors h3 { font-family: var(--serif); margin: 0.25rem 0; font-size: 1.2rem; line-height: 1.25; }
+.feature-card--wide { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1rem; }
+@media (max-width: 640px) { .feature-card--wide { grid-template-columns: 1fr; } }
+.wide-cta { font-family: var(--serif); font-weight: 700; color: var(--accent); white-space: nowrap; }
+.also-links { margin: 0.9rem 0 0; font-size: 0.82rem; color: var(--muted); }
+.also-links a { color: var(--muted); text-decoration: underline; text-underline-offset: 2px; }
+.also-links a:hover { color: var(--accent); }
+
+.digest-group { margin: 1.4rem 0 0; border-top: 1px solid var(--rule); padding-top: 0.6rem; }
+.digest-group > summary {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.6rem;
+  cursor: pointer; font-family: var(--serif); font-size: 1.15rem; font-weight: 700;
+}
+.digest-group > summary .dg-count { font-family: var(--sans, inherit); font-size: 0.82rem; font-weight: 600; color: var(--muted); }
+.digest-group summary::marker { color: var(--accent); }
+.dg-action { margin: 0.5rem 0 0.15rem; font-size: 0.92rem; max-width: 72ch; }
+.dg-caveat { margin: 0.15rem 0 0.6rem; font-size: 0.82rem; max-width: 72ch; }
+.dg-rollup { margin: 0.4rem 0; }
+.dg-rollup a { color: inherit; text-decoration: none; }
+.dg-rollup a:hover { color: var(--accent); }
+.dg-dest { font-size: 0.72em; color: var(--warn); margin-top: 0.15rem; }
+.dg-foot { display: flex; flex-wrap: wrap; gap: 0.55rem; margin: 0.8rem 0 0.4rem; }
+.digest-caveats { margin: 2rem 0 1rem; border-top: 2px solid var(--ink); padding-top: 0.8rem; }
+.digest-caveats > summary { cursor: pointer; font-family: var(--serif); font-size: 1.05rem; }
+.digest-caveats ul { margin: 0.6rem 0 0; padding-left: 1.2rem; color: var(--muted); font-size: 0.9rem; }
+.digest-caveats li { margin: 0.3rem 0; max-width: 78ch; }
+#export-status { margin: 1rem 0; font-size: 0.85rem; color: var(--live); }
+.dg-scroll { max-height: 34rem; overflow-y: auto; border: 1px solid var(--rule); border-radius: 6px; }
+.dg-scroll thead th { position: sticky; top: 0; background: var(--paper); box-shadow: 0 1px 0 var(--rule); }
+.dg-scrollhint { font-size: 0.8rem; margin: 0.4rem 0; }
+@media (max-width: 640px) { .dg-scroll { max-height: none; overflow-y: visible; border: 0; } }

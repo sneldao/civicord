@@ -1,0 +1,195 @@
+---
+// Roster-steward digest: action-needed groups over the same audit facts as the
+// ledger. Derivations live in src/lib/steward.ts (shared taxonomy with browse).
+import { ClientRouter } from "astro:transitions";
+import CommandPalette from "../components/CommandPalette.astro";
+import MobileEssentials from "../components/MobileEssentials.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
+import WebMCP from "../components/WebMCP.astro";
+import { stewardGroups, CHECKED_AT, STATUS_LABELS, REDIRECT_HOST } from "../lib/steward";
+import { slugify } from "../lib/slug";
+import "../styles/global.css";
+
+const { groups, sampleN } = await stewardGroups();
+const checkedLabel = "7 September 2026";
+const worst = groups.filter((g) => g.rows.length > 0);
+const needsAttention = worst.reduce((n, g) => n + new Set(g.rows.map((r) => r.candidateId)).size, 0);
+---
+
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Roster-care digest for people who look after candidate websites: what died, what now points at a parked domain, what changed — grouped by action needed, with CSV export."
+    />
+    <meta property="og:title" content="Roster digest — Civicord" />
+    <meta
+      property="og:description"
+      content={`Sites that died, sites now parked, surname-absent pages and material content changes at the ${CHECKED_AT} audit — grouped by action needed.`}
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Roster digest — Civicord</title>
+    <ClientRouter />
+  </head>
+  <body class="reveal-root">
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <p class="crumb"><a href="/">Civicord</a> · <a href="/uk">United Kingdom</a> / <b>Roster digest</b></p>
+
+    <header class="masthead">
+      <h1 class="wordmark">Roster digest<span class="dot">.</span></h1>
+      <p class="lede">
+        For whoever is looking after a roster of campaign websites: what changed
+        since the April 2025 scrape, grouped by the action it asks for.
+      </p>
+      <p class="muted" style="font-size:0.85rem;max-width:70ch">
+        One audit pass ({checkedLabel}) over {groups.reduce((n, g) => n + g.rows.length, 0).toLocaleString("en-GB")} flagged
+        websites across {needsAttention.toLocaleString("en-GB")} candidates. These are HTTP observations, not judgements — each group says
+        what it can and cannot prove.
+      </p>
+      <p class="tagline">
+        Prefer the whole ledger? <a href="/browse">Browse filtered views ↗</a> · <a href="/methodology">Methodology ↗</a>
+      </p>
+    </header>
+
+    <main id="main" tabindex="-1">
+      {worst.map((g) => (
+        <details class="digest-group" id={`dg-${g.key}`} open={g.open}>
+          <summary>
+            <b>{g.title}</b>
+            <span class="dg-count">{g.rows.length.toLocaleString("en-GB")} sites · {g.candidates.toLocaleString("en-GB")} candidates</span>
+          </summary>
+          <p class="dg-action">{g.action}</p>
+          {g.caveat && <p class="dg-caveat muted">{g.caveat}</p>}
+
+          {g.parties.length > 0 && (
+            <ul class="chips dg-rollup" aria-label={`Top parties in ${g.title}`}>
+              {g.parties.map((p) => (
+                <li>
+                  <a href={`/browse${g.changeParam ? `?change=${g.changeParam}` : ""}${g.changeParam ? "&" : "?"}party=${encodeURIComponent(p.party.toLowerCase())}`}>
+                    {p.party} <b>{p.count}</b>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+          {g.seats.length > 0 && (
+            <ul class="chips dg-rollup" aria-label={`Top constituencies in ${g.title}`}>
+              {g.seats.map((s) => (
+                <li><a href={`/browse?constituency=${slugify(s.seat)}`}>{s.seat} <b>{s.count}</b></a></li>
+              ))}
+            </ul>
+          )}
+
+          {g.rows.length > 60 && (
+            <p class="dg-scrollhint muted">Showing all {g.rows.length.toLocaleString("en-GB")} rows in a scrollable table — or {`“${g.browseLabel ?? "open in the ledger"}”`} below.</p>
+          )}
+          <div class={`table-wrap${g.rows.length > 60 ? " dg-scroll" : ""}`}>
+            <table>
+              <caption class="visually-hidden">{g.title} — {g.rows.length} sites at the {CHECKED_AT} audit</caption>
+              <thead>
+                <tr><th>Candidate</th><th>Party</th><th>Seat</th><th>Website</th><th>At audit</th></tr>
+              </thead>
+              <tbody>
+                {g.rows.map((r) => (
+                  <tr
+                    data-candidate={r.candidateName}
+                    data-id={r.candidateId}
+                    data-party={r.party}
+                    data-seat={r.seat}
+                    data-url={r.url}
+                    data-status={STATUS_LABELS[r.statusClass] ?? r.statusClass}
+                    data-final={r.finalUrl}
+                    data-signal={r.changeSignal}
+                  >
+                    <td class="who"><a class="who-name" href={`/candidates/${r.candidateId}`}>{r.candidateName}</a></td>
+                    <td class="muted" data-label="Party">{r.party}</td>
+                    <td class="muted" data-label="Seat">{r.seat}</td>
+                    <td class="url" data-label="Website">
+                      <a class="url" href={r.url} rel="noopener noreferrer">{r.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}</a>
+                      {r.finalUrl && <div class="dg-dest">↳ {REDIRECT_HOST(r.finalUrl)}</div>}
+                    </td>
+                    <td data-label="At audit">
+                      <span class={`badge ${r.statusClass}`}>{STATUS_LABELS[r.statusClass] ?? r.statusClass}</span>
+                      {r.significance && <span class={`sig-chip sig-${r.significance}`}>{r.significance}</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p class="dg-foot">
+            {g.browseHref && <a class="btn-ghost btn-sm" href={g.browseHref}>{g.browseLabel} →</a>}
+            <button type="button" class="btn-ghost btn-sm export-btn" data-group={g.key} aria-label={`Export ${g.title} as CSV, ${g.rows.length} rows`}>
+              Export CSV ({g.rows.length.toLocaleString("en-GB")} rows)
+            </button>
+          </p>
+        </details>
+      ))}
+
+      <details class="digest-caveats">
+        <summary><b>What we can’t tell you</b></summary>
+        <ul>
+          <li>One audit pass ({checkedLabel}), so nothing here says “new since last check” — repeated audits are planned.</li>
+          <li>“Died” means DNS or connection failure on the day. Temporary outages look identical to removals.</li>
+          <li>Redirect intent is unread: a redirect may be a legitimate move, a lapse, or a change of use. Parked detection reads the destination's domain, not the page.</li>
+          <li>“Surname absent” is a heuristic — it asks for review, it does not establish repurposing.</li>
+          <li>Content-change classes cover a Wayback sample ({sampleN} candidates), not the whole roster.</li>
+          <li>“Responding” is an HTTP-success class, not proof that campaign content survived.</li>
+          <li>Candidates cannot claim or correct a record yet — the “take the pen” flow is designed but not shipped.</li>
+        </ul>
+      </details>
+      <p class="copy-toast" id="export-status" role="status" aria-live="polite" hidden></p>
+    </main>
+
+    <footer>
+      <p>
+        <a href="/">Home</a> · <a href="/uk">UK overview</a> · <a href="/browse">Ledger</a> · <a href="/methodology">Methodology</a> · Audit 2026-09-07
+        · <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
+      </p>
+    </footer>
+
+    <CommandPalette />
+    <MobileEssentials />
+    <ScrollReveal />
+    <WebMCP />
+
+    <script define:vars={{ checkedAt: CHECKED_AT }}>
+      document.addEventListener("astro:page-load", () => {
+        const toast = document.getElementById("export-status");
+        const say = (msg) => {
+          if (!toast) return;
+          toast.textContent = msg;
+          toast.hidden = false;
+          setTimeout(() => { toast.hidden = true; }, 4000);
+        };
+        const cell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+        document.querySelectorAll(".export-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const group = btn.getAttribute("data-group");
+            const table = document.querySelector(`#dg-${group} table`);
+            if (!table) return;
+            const headers = ["Candidate", "Civicord ID", "Party", "Seat", "Original URL", "Status at audit", "Final URL", "Change signal"];
+            const lines = [headers.map(cell).join(",")];
+            table.querySelectorAll("tbody tr").forEach((tr) => {
+              const d = tr.dataset;
+              lines.push([d.candidate, d.id, d.party, d.seat, d.url, d.status, d.final, d.signal].map(cell).join(","));
+            });
+            const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `civicord-${group}-${checkedAt}.csv`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+            say(`Exported ${lines.length - 1} rows — ${group}, audit of ${checkedAt}.`);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

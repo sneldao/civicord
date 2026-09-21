@@ -1,0 +1,138 @@
+---
+// Journalist orientation: the change feed as a tip line. Counts are computed
+// at build time from the same derivations as /steward and /browse, so a lead
+// quoted from this page matches the ledger it links to.
+import { ClientRouter } from "astro:transitions";
+import CommandPalette from "../components/CommandPalette.astro";
+import MobileEssentials from "../components/MobileEssentials.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
+import WebMCP from "../components/WebMCP.astro";
+import { stewardGroups } from "../lib/steward";
+import { statusCohorts } from "../lib/cohorts";
+import contentDiffsRaw from "../data/content_diffs.json";
+import "../styles/global.css";
+
+const { groups, sampleN } = await stewardGroups();
+const count = (key: string) => groups.find((g) => g.key === key)?.rows.length ?? 0;
+const cohorts = await statusCohorts();
+const destinations = cohorts.find((c) => c.slug === "redirected")?.destinations ?? [];
+const topDest = destinations[0];
+
+const diffsRoot: any = contentDiffsRaw as any;
+let transformed = 0;
+for (const row of Object.values(diffsRoot?.byPerson ?? {})) {
+  if ((row as any)?.significance === "transformed") transformed += 1;
+}
+
+const leads: Array<{ href: string; n: number; title: string; meta: string }> = [
+  {
+    href: "/browse?change=repurposed_suspect",
+    n: count("repurposed"),
+    title: "A page that answers, but no longer mentions the candidate",
+    meta: "HTTP-success pages where the candidate's surname is absent — review needed, not proof of repurposing.",
+  },
+  {
+    href: "/browse?change=gone",
+    n: count("died"),
+    title: "Domains that no longer resolve",
+    meta: "DNS or connection failures at the 7 September 2026 audit — outages and removals look identical.",
+  },
+  {
+    href: "/browse?sig=transformed",
+    n: transformed,
+    title: `Content transformed since the scrape (one of ${sampleN} Wayback-scored candidates)`,
+    meta: "Normalized before/after text diffs classified by significance.",
+  },
+];
+---
+
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Civicord for journalists: pre-filtered leads from the candidate-website change feed — dead domains, surname-absent pages, transformed content — each record citable and verifiable."
+    />
+    <meta property="og:title" content="For journalists — Civicord" />
+    <meta property="og:description" content="The story is in the change: leads from the UK candidate-website audit, with citations you can stand behind." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>For journalists — Civicord</title>
+    <ClientRouter />
+  </head>
+  <body class="reveal-root">
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <p class="crumb"><a href="/">Civicord</a> · <a href="/uk">United Kingdom</a> / <b>For journalists</b></p>
+
+    <header class="masthead">
+      <h1 class="wordmark">For journalists<span class="dot">.</span></h1>
+      <p class="lede">The story is in the change. Every candidate website from the
+        April 2025 scrape was re-audited in September 2026 — these are the
+        leads the diff surfaced, each one a citable record.</p>
+      <p class="muted" style="font-size:0.85rem;max-width:70ch">
+        Plain HTTP observations, precisely labelled: a responding URL is not
+        proof a campaign survived; “surname absent” asks for review; a redirect
+        may be a move. The methodology page carries the full caveats.
+      </p>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <section aria-labelledby="leads-title" data-reveal>
+        <h2 id="leads-title">Three pre-filtered leads</h2>
+        <div class="feature-grid">
+          {leads.map((l) => (
+            <a class="feature-card" href={l.href}>
+              <span class="f-label">{l.n.toLocaleString("en-GB")} sites</span>
+              <h3>{l.title}</h3>
+              <span class="f-meta">{l.meta}</span>
+              <span class="f-cta">Open the filtered ledger →</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section class="record-evidence" aria-labelledby="worked-title" data-reveal>
+        <h2 id="worked-title">Worked examples</h2>
+        <ul class="facts">
+          <li><a href="/candidates/5693#evidence">Dawn Furness</a> — her URL returned HTTP 200 at the audit, but led to a
+            domain-sale page. HTTP said “live”; the evidence says what actually happened.
+            Copy citation puts a verifiable reference on the record.</li>
+          {topDest && (
+            <li>The largest redirect cluster runs to <b>{topDest.url}</b> — {topDest.count} candidate
+              URLs now land there (<a href="/browse?change=redirected">all redirected sites</a>).</li>
+          )}
+        </ul>
+      </section>
+
+      <section class="record-evidence" aria-labelledby="cite-title" data-reveal>
+        <h2 id="cite-title">Stand behind your citation</h2>
+        <ul class="facts">
+          <li>Every record page has <b>Copy citation</b> — candidate, URL, audit date, observed outcome.</li>
+          <li>Every filtered ledger view has <b>Copy filtered link</b> — a permalink to exactly the rows you saw.</li>
+          <li>Selected records carry a public ENS name on Sepolia, so a third party can check what was recorded, when.</li>
+          <li>Full sourcing and definitions: <a href="/methodology">methodology</a>. Data: Campaign Lab April 2025 scrape (CC-BY), Democracy Club person IDs.</li>
+        </ul>
+        <p class="context-line" style="margin-top:1rem">
+          Working on a story from this data, or looking after a roster?
+          <a href="/steward">Try the roster digest</a> — or reach the maintainers via
+          <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        <a href="/">Home</a> · <a href="/browse">Ledger</a> · <a href="/steward">Roster digest</a> · <a href="/methodology">Methodology</a> · Audit 2026-09-07
+        · <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
+      </p>
+    </footer>
+
+    <CommandPalette />
+    <MobileEssentials />
+    <ScrollReveal />
+    <WebMCP />
+  </body>
+</html>

@@ -2,6 +2,7 @@
 // (party leaderboard, OG tags) and methodology.astro. Imported as a module
 // so the numbers can't drift between pages.
 import { getCollection } from "astro:content";
+import { GONE } from "./steward";
 
 export interface PartyRow {
   party: string;
@@ -36,8 +37,6 @@ export interface StatusCohort {
   // Top redirect destinations (redirected cohort only).
   destinations: Array<{ url: string; count: number }>;
 }
-
-const GONE = new Set(["dns_error", "connection_error"]);
 
 export async function cohortStats(): Promise<CohortStats> {
   const entries = await getCollection("candidates");

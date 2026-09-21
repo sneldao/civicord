@@ -75,14 +75,25 @@ const livePct = audited.length ? pct(live.length, audited.length) : 0;
     </div>
 
     <main id="main" tabindex="-1">
-      <section class="start-here" aria-labelledby="start-title">
-        <h2 id="start-title">Start with a question</h2>
-        <p class="muted">Find a record, inspect the evidence, then verify what was recorded.</p>
+      <section class="persona-doors" aria-labelledby="doors-title">
+        <h2 id="doors-title">Choose how you work with the record</h2>
+        <p class="muted">Same audit facts, shaped around the question you actually arrive with.</p>
         <div class="feature-grid">
-          <a class="feature-card" href="/browse"><span class="f-label">For citizens</span><h3>Find your candidate or constituency</h3><span class="f-meta">Search the UK audit by name or place. No account or wallet.</span><span class="f-cta">Search the records →</span></a>
-          <a class="feature-card" href="/candidates/5693#evidence"><span class="f-label">For journalists and researchers</span><h3>A responding URL is not a surviving campaign</h3><span class="f-meta">Dawn Furness’s URL led to a domain-sale page at the audit. Inspect the redirect and earlier scrape excerpts.</span><span class="f-cta">Explore the worked example →</span></a>
-          <a class="feature-card" href="/candidates/5693#verification"><span class="f-label">For judges and developers</span><h3>Verify a record without a wallet</h3><span class="f-meta">Read ENS fields on Sepolia, then query The Graph alongside the audit ledger.</span><span class="f-cta">Inspect the live integrations →</span></a>
+          <a class="feature-card feature-card--wide" href="/steward">
+            <span>
+              <span class="f-label">For roster stewards</span>
+              <h3>I look after a roster of campaign sites</h3>
+              <span class="f-meta">What died, what now points at a parked domain, what changed — grouped by action needed, with CSV export per group.</span>
+              <span class="f-cta">Open the roster digest →</span>
+            </span>
+            <span class="wide-cta" aria-hidden="true">{livePct}% responding<br />last audit · Sept 2026</span>
+          </a>
+          <a class="feature-card" href="/journalists"><span class="f-label">For journalists</span><h3>The story is in the change</h3><span class="f-meta">Three pre-filtered leads from the change feed — dead domains, surname-absent pages, transformed content — each one citable.</span><span class="f-cta">See the leads →</span></a>
+          <a class="feature-card" href="/browse?change=repurposed_suspect"><span class="f-label">For researchers</span><h3>Longitudinal, stable, citable</h3><span class="f-meta">2,375 candidate records keyed on Democracy Club IDs, filterable by outcome, party and place. Copy citation on every record.</span><span class="f-cta">Enter the ledger →</span></a>
         </div>
+        <p class="also-links">
+          Also: <a href="/candidates/5693#verification">verify a record on-chain</a> · <a href="/candidates/5693#agent-view">agent view</a> · <a href="https://civicord-aieyq.bazgateway.com/mcp">MCP endpoint</a>
+        </p>
       </section>
 
       <section class="future door-regions" id="regions" aria-label="Regions" data-reveal>

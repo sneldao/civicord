@@ -16,6 +16,14 @@ web-monitoring and the Library of Congress's Elections Web Archive — see
 
 ## Status
 
+**2026-09-21 · Persona-shaped product.** Stakeholder feedback said the UI
+exposed the system's internal model, not users' tasks. [docs/personas.md](docs/personas.md)
+is now the north star: **roster stewards** get a digest-style `/steward`
+(action-needed groups, worst-first, CSV export, ledger deep links);
+journalists get `/journalists` (change feed as tip line); the homepage
+routes by persona door and the on-chain/agent surfaces stay reachable but
+demoted. Candidate claim flow ("take the pen") = deferred keystone bet.
+
 **2026-09-13 · Visitor-facing polish for ETHGlobal submission.** Precise
 language throughout: `live` is an HTTP-response class, not content survival;
 redirects overlap outcomes; surname matching is a heuristic. Guided homepage
@@ -90,6 +98,7 @@ Deployed via Cloudflare Pages (https://civicord.pages.dev); see
 
 | Doc | Purpose |
 | --- | --- |
+| [docs/personas.md](docs/personas.md) | **North star**: who actually uses this, their cadence and jobs; roadmap re-derived from it |
 | [docs/plan.md](docs/plan.md) | Delivery plan, current sprint, risks & blockers |
 | [docs/ops.md](docs/ops.md) | Internal runbook: Cloudflare accounts, deploys, data snapshots, gotchas |
 | [docs/architecture.md](docs/architecture.md) | System design, data model, data sources, pipeline, map layer |
