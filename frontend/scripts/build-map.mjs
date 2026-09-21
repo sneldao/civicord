@@ -86,6 +86,23 @@ function transformCoord([x, y]) {
   return [x - minX, maxY - y];
 }
 
+// --- guard: pipeline CSVs (fresh clones have none — data/ is gitignored) ---
+// Same philosophy as build-data.mjs: prefer pipeline outputs, fall back to
+// the committed src/data snapshots, and never fail the build for missing input.
+const committedConstituencies = path.join(outDir, "constituencies.json");
+const committedHexes = path.join(outDir, "hexes.json");
+if (!existsSync(path.join(dataDir, "candidacies.csv"))) {
+  if (existsSync(committedConstituencies) && existsSync(committedHexes)) {
+    console.log("No pipeline CSVs (data/out absent) — keeping committed src/data map outputs");
+    process.exit(0);
+  }
+  console.log("No pipeline CSVs and no committed map outputs — writing empty map outputs");
+  mkdirSync(outDir, { recursive: true });
+  writeFileSync(path.join(outDir, "constituencies.json"), JSON.stringify([], null, 2));
+  writeFileSync(path.join(outDir, "hexes.json"), JSON.stringify({ viewBox: "0 0 700 1000", hexes: [] }, null, 2));
+  process.exit(0);
+}
+
 // --- load pipeline ---
 const candidacies = readCsv("candidacies.csv");
 const auditRows = readCsv("audit_liveness.csv", { required: false });

@@ -190,6 +190,157 @@ def cmd_audit(args: argparse.Namespace) -> None:
     print(f"Liveness: {live}/{total} live ({live / total:.0%})" if total else "No URLs audited")
 
 
+def cmd_recrawl(args: argparse.Namespace) -> None:
+    """Re-crawl roster URLs storing normalized text bodies (the second corpus).
+
+    Comparability protocol recrawl-v1: bodies are normalized with
+    extract.extract_main_text (same function the Wayback diff path uses) and
+    every manifest row records the protocol version. Respects robots.txt.
+    """
+    import datetime
+
+    from . import recrawl
+
+    checked_at = args.date or datetime.datetime.now(datetime.UTC).date().isoformat()
+    recrawl_dir = args.data_dir / "out" / f"recrawl_{checked_at.replace('-', '')}"
+    pages_dir = recrawl_dir / "pages"
+    pages_dir.mkdir(parents=True, exist_ok=True)
+    manifest_path = recrawl_dir / "recrawl.csv"
+
+    with open(args.data_dir / "out" / "websites.csv", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    targets_all = [(r["url"], r["person_id"], r["person_name"]) for r in rows]
+    if args.limit and args.limit < len(targets_all):
+        rng = random.Random(42)  # fixed seed: reproducible sample
+        targets_all = rng.sample(targets_all, args.limit)
+
+    done: dict[str, dict] = {}
+    if not args.no_resume:
+        for row in recrawl.read_manifest_rows(manifest_path):
+            if row.get("url"):
+                done[row["url"]] = row
+    targets = [t for t in targets_all if t[0] not in done]
+    logger.info(
+        "Recrawling %d URLs into %s (concurrency=%d, %d already captured)...",
+        len(targets),
+        recrawl_dir,
+        args.concurrency,
+        len(done),
+    )
+    if targets:
+        results = asyncio.run(
+            recrawl.run_recrawl(
+                targets,
+                checked_at,
+                pages_dir,
+                concurrency=args.concurrency,
+                timeout=args.timeout,
+            )
+        )
+        for r in results:
+            done[r.url] = recrawl.result_to_row(r)
+
+    ordered = [done[t[0]] for t in targets_all if t[0] in done]
+    recrawl.write_manifest_rows(ordered, manifest_path)
+
+    bodies = sum(1 for r in ordered if r.get("file"))
+    print(f"\nRecrawl of {len(ordered)} URLs -> {manifest_path} ({bodies} bodies stored)")
+    print(f"Protocol {recrawl.PROTOCOL_VERSION}; bodies under {pages_dir}/")
+
+
+def cmd_claimdiff(args: argparse.Namespace) -> None:
+    """Claim-level diff: April baseline sentences vs recrawl bodies.
+
+    April side = Campaign Lab per-candidate JSONs (site-wide text);
+    recrawl side = homepage fetches. See claimdiff.SCOPE_NOTE — "deleted"
+    means "in April's text but not the current homepage fetch".
+    """
+    from collections import Counter
+
+    from . import claimdiff
+    from .campaignlab import parse_candidate_json
+
+    out = args.data_dir / "out"
+    raw = args.data_dir / "raw" / "campaignlab"
+    if args.recrawl_dir:
+        recrawl_dir = out / args.recrawl_dir
+    else:
+        candidates = sorted((p for p in out.glob("recrawl_*") if p.is_dir()), reverse=True)
+        recrawl_dir = candidates[0] if candidates else out / "recrawl_none"
+    manifest_path = recrawl_dir / "recrawl.csv"
+    if not manifest_path.exists():
+        print(f"No manifest at {manifest_path} — run `civicord recrawl` first")
+        return
+
+    with open(manifest_path, encoding="utf-8") as f:
+        rows = [r for r in csv.DictReader(f) if r.get("file")]
+    # One diff per person: a candidate with several URLs gets a single
+    # alignment (April site-wide text vs concatenated recrawl bodies), so
+    # person counts never double-count and the frontend join stays 1:1.
+    by_person: dict[str, dict] = {}
+    for r in rows:
+        slot = by_person.setdefault(
+            r["person_id"], {"person_name": r["person_name"], "urls": [], "rows": []}
+        )
+        slot["urls"].append(r["url"])
+        slot["rows"].append(r)
+    persons = list(by_person.items())
+    if args.limit and args.limit < len(persons):
+        rng = random.Random(42)  # fixed seed: reproducible sample
+        persons = rng.sample(persons, args.limit)
+
+    json_dirs = [raw / "assets" / "json", raw / "assets" / "large_json"]
+    diffs = []
+    missing_baseline = 0
+    for person_id, slot in persons:
+        april_texts = []
+        for json_dir in json_dirs:
+            for jf in sorted(json_dir.glob(f"{person_id}_*.json")):
+                april_texts.extend(p.text for p in parse_candidate_json(jf, person_id=person_id))
+        if not april_texts:
+            missing_baseline += 1
+            continue
+        new_text = "\n".join(
+            (recrawl_dir / r["file"]).read_text(encoding="utf-8") for r in slot["rows"]
+        )
+        diffs.append(
+            claimdiff.diff_person(
+                person_id,
+                slot["person_name"],
+                slot["urls"][0],
+                april_texts,
+                new_text,
+                slot["rows"][0]["checked_at"],
+            )
+        )
+
+    stamp = recrawl_dir.name.replace("recrawl_", "")
+    claim_dir = out / f"claimdiff_{stamp}"
+    claim_dir.mkdir(parents=True, exist_ok=True)
+    claimdiff.write_claimdiff_csv(
+        [claimdiff.row_dict(d) for d in diffs], claim_dir / "claimdiff.csv"
+    )
+    frontend_path = (
+        Path(__file__).resolve().parents[2] / "frontend" / "src" / "data" / "claim_diffs.json"
+    )
+    n = claimdiff.publish_frontend_snapshot(diffs, frontend_path)
+
+    walked_back = Counter(t for d in diffs for c in d.deleted for t in c["topics"])
+    new_themes = Counter(t for d in diffs for c in d.added for t in c["topics"])
+    kept = sum(d.kept for d in diffs)
+    print(f"\nClaim diff of {len(diffs)} persons -> {claim_dir / 'claimdiff.csv'}")
+    print(f"  kept sentences: {kept}; no April baseline: {missing_baseline}")
+    print(
+        "  Walked back (deleted topics): "
+        + (", ".join(f"{t}={n}" for t, n in walked_back.most_common(8)) or "—")
+    )
+    print(
+        "  New themes (added topics): "
+        + (", ".join(f"{t}={n}" for t, n in new_themes.most_common(8)) or "—")
+    )
+    print(f"  Frontend snapshot: {frontend_path} ({n} persons)")
+
+
 def cmd_report(args: argparse.Namespace) -> None:
     audit_csv = args.data_dir / "out" / "audit_liveness.csv"
     with open(audit_csv, encoding="utf-8") as f:
@@ -368,6 +519,37 @@ def main(argv: list[str] | None = None) -> int:
         help="GET bodies and check candidate surname appears",
     )
     p.set_defaults(func=cmd_audit)
+
+    p = sub.add_parser(
+        "recrawl",
+        help="Re-crawl roster URLs storing normalized text bodies (second corpus)",
+    )
+    p.add_argument("--limit", type=int, default=0, help="Random sample size (0 = all)")
+    p.add_argument("--concurrency", type=int, default=8)
+    p.add_argument("--timeout", type=float, default=20.0)
+    p.add_argument(
+        "--date",
+        default="",
+        help="Checked-at date YYYY-MM-DD (default: today); names the output dir",
+    )
+    p.add_argument(
+        "--no-resume",
+        action="store_true",
+        help="Re-fetch even when this date's manifest already has the URL",
+    )
+    p.set_defaults(func=cmd_recrawl)
+
+    p = sub.add_parser(
+        "claimdiff",
+        help="Claim-level diff: April baseline sentences vs recrawl bodies + topic tags",
+    )
+    p.add_argument(
+        "--recrawl-dir",
+        default="",
+        help="Recrawl output dir name under data/out (default: latest recrawl_*)",
+    )
+    p.add_argument("--limit", type=int, default=0, help="Random sample size (0 = all)")
+    p.set_defaults(func=cmd_claimdiff)
 
     p = sub.add_parser("report", help="Render markdown audit summary")
     p.set_defaults(func=cmd_report)

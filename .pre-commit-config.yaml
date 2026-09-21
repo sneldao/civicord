@@ -19,11 +19,7 @@ repos:
         exclude: ^frontend/src/data/candidates\.json$
       - id: check-added-large-files
         args: ["--maxkb=512"]
-        exclude: |
-          ^frontend/src/data/candidates\.json$
-          ^frontend/src/data/constituencies\.json$
-          ^frontend/src/data/hexes\.json$
-          ^frontend/src/data/constituency-index\.json$
+        exclude: ^frontend/src/data/(candidates|claim_diffs|constituencies|hexes|constituency-index)\.json$
       - id: check-merge-conflict
       - id: detect-private-key
 

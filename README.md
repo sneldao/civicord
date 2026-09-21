@@ -22,7 +22,8 @@ is now the north star: **roster stewards** get a digest-style `/steward`
 (action-needed groups, worst-first, CSV export, ledger deep links);
 journalists get `/journalists` (change feed as tip line); the homepage
 routes by persona door and the on-chain/agent surfaces stay reachable but
-demoted. Candidate claim flow ("take the pen") = deferred keystone bet.
+demoted. Candidate claim flow ("take the pen") = unblocked keystone bet (ownership: us +
+candidates, per Campaign Lab 2026-09-21; re-scrape and cadence also ours).
 
 **2026-09-13 · Visitor-facing polish for ETHGlobal submission.** Precise
 language throughout: `live` is an HTTP-response class, not content survival;
@@ -76,6 +77,8 @@ pip install -e '.[dev]'
 civicord download --full          # Campaign Lab scrape → data/raw/
 civicord ingest                   # → data/out/{candidacies,websites,pages}.csv
 civicord audit --content-check    # liveness pass → data/out/audit_liveness.csv
+civicord recrawl                   # second corpus: GET bodies → data/out/recrawl_<YYYYMMDD>/ (normalized text + manifest; robots-aware, resumable)
+civicord claimdiff                 # claim-level diff: April sentences vs recrawl bodies → data/out/claimdiff_<YYYYMMDD>/ + claim_diffs.json (deleted/added candidates + topic tags)
 civicord changes                  # change signals → data/out/changes_v0.csv
 civicord wayback-spike --limit 310 # Phase 1 CDX+id_ sample → data/out/wayback_spike/
 civicord diff-spike               # normalize extracts + significance (offline)
@@ -99,6 +102,8 @@ Deployed via Cloudflare Pages (https://civicord.pages.dev); see
 | Doc | Purpose |
 | --- | --- |
 | [docs/personas.md](docs/personas.md) | **North star**: who actually uses this, their cadence and jobs; roadmap re-derived from it |
+| [docs/cadence.md](docs/cadence.md) | Refresh loop: monthly audit, quarterly re-crawl, election overrides |
+| [docs/claim-flow.md](docs/claim-flow.md) | Take-the-pen design: candidate claim flow, abuse model, MVP scope |
 | [docs/plan.md](docs/plan.md) | Delivery plan, current sprint, risks & blockers |
 | [docs/ops.md](docs/ops.md) | Internal runbook: Cloudflare accounts, deploys, data snapshots, gotchas |
 | [docs/architecture.md](docs/architecture.md) | System design, data model, data sources, pipeline, map layer |

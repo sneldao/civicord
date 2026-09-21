@@ -1785,3 +1785,8 @@ tbody tr.is-settling {
 .dg-scroll thead th { position: sticky; top: 0; background: var(--paper); box-shadow: 0 1px 0 var(--rule); }
 .dg-scrollhint { font-size: 0.8rem; margin: 0.4rem 0; }
 @media (max-width: 640px) { .dg-scroll { max-height: none; overflow-y: visible; border: 0; } }
+
+/* Claim-level diffs on candidate pages — capped top-5 lists, full counts */
+.claims-sub { font-family: var(--serif); font-size: 0.95rem; margin: 0.9rem 0 0.3rem; }
+.claims-list .claim-text { color: var(--ink); }
+.claims-list .sig-chip { margin-left: 0.35rem; }

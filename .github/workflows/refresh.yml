@@ -1,0 +1,66 @@
+name: Refresh
+
+# The continuity loop (docs/cadence.md): monthly liveness audit, quarterly
+# body re-crawl + claim diff. Snapshot changes arrive as a pull request for
+# human review — never direct to main. Pages deploy stays manual (docs/ops.md).
+
+on:
+  schedule:
+    - cron: "0 6 1 * *" # monthly audit, 06:00 UTC on the 1st
+  workflow_dispatch:
+    inputs:
+      full:
+        description: "Quarterly pass: recrawl bodies + claim diff (default: audit only)"
+        required: false
+        default: "false"
+        type: boolean
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pipeline
+        run: pip install -e .
+
+      - name: Download + ingest baseline roster
+        run: civicord download --full --large-json && civicord ingest
+
+      - name: Monthly audit + change signals
+        run: civicord audit --content-check && civicord changes && civicord report
+
+      - name: Quarterly re-crawl + claim diff
+        if: inputs.full == 'true'
+        run: civicord recrawl && civicord claimdiff
+
+      - name: Rebuild frontend snapshots
+        run: |
+          node frontend/scripts/build-data.mjs
+          node frontend/scripts/build-map.mjs
+          node frontend/scripts/build-search.mjs
+
+      - name: Open snapshot refresh PR
+        run: |
+          git config user.name "civicord-refresh"
+          git config user.email "civicord-refresh@users.noreply.github.com"
+          git add data/out frontend/src/data
+          if git diff --cached --quiet; then
+            echo "No snapshot changes — nothing to propose."
+            exit 0
+          fi
+          BRANCH="refresh/$(date -u +%Y-%m-%d)"
+          git checkout -b "$BRANCH"
+          git commit -m "Scheduled snapshot refresh ($(date -u +%Y-%m-%d))"
+          git push -u origin "$BRANCH"
+          gh pr create --title "Snapshot refresh $(date -u +%Y-%m-%d)" \
+            --body "Automated refresh (monthly audit$([ "${{ inputs.full }}" = "true" ] && echo " + quarterly recrawl/claimdiff")). Review counts, then merge + deploy per docs/ops.md."
+        env:
+          GH_TOKEN: ${{ github.token }}

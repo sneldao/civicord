@@ -13,6 +13,7 @@ import "../../styles/global.css";
 import constituenciesRaw from "../../data/constituencies.json";
 import hexesRaw from "../../data/hexes.json";
 import contentDiffsRaw from "../../data/content_diffs.json";
+import claimDiffsRaw from "../../data/claim_diffs.json";
 
 export async function getStaticPaths() {
   const all = await getCollection("candidates");
@@ -37,6 +38,8 @@ const significanceLabels: Record<string, string> = {
 };
 const diffsRoot: any = contentDiffsRaw as any;
 const contentDiff: any = (diffsRoot?.byPerson ?? diffsRoot?.default?.byPerson ?? {})[person.id] ?? null;
+const claimsRoot: any = claimDiffsRaw as any;
+const claimDiff: any = (claimsRoot?.byPerson ?? claimsRoot?.default?.byPerson ?? {})[person.id] ?? null;
 const parties = [...new Set(person.websites.flatMap((w) => w.parties))];
 const elections = [...new Set(person.websites.flatMap((w) => w.elections))];
 const firstStatus = person.websites[0]?.audit?.statusClass;
@@ -168,6 +171,7 @@ const personShareText =
     <div class="record-actions" aria-label="Use this record">
       <button type="button" class="btn-primary" id="copy-citation" data-citation={candidateCitation(person)}>Copy citation</button>
       <a class="btn-ghost" href="#evidence">View evidence</a>
+      {claimDiff && (claimDiff.deleted_count > 0 || claimDiff.added_count > 0) && <a class="btn-ghost" href="#claims">What changed</a>}
       {person.onchain && <a class="btn-ghost" href="#verification">Verify this record</a>}
       <a class="btn-ghost" href="#agent-view">Query The Graph</a>
     </div>
@@ -289,6 +293,51 @@ const personShareText =
             <a href="https://github.com/sneldao/civicord/blob/main/docs/wayback-spike.md">docs/wayback-spike.md</a>.
           </li>
         </ul>
+      </section>
+    )}
+
+    {claimDiff && (
+      <section class="content-chrono" id="claims" aria-label="What changed in the words" tabindex="-1">
+        <h2>What changed in the words</h2>
+        <p class="muted">
+          April site-wide text vs the {claimDiff.checked_at} homepage fetch:{" "}
+          <b>{claimDiff.kept}</b> sentences still present,{" "}
+          <b>{claimDiff.deleted_count}</b> no longer found,{" "}
+          <b>{claimDiff.added_count}</b> new. Candidates for review, not proof
+          of removal — {claimDiff.scope_note}.
+        </p>
+        {(claimDiff.deleted?.length > 0 || claimDiff.added?.length > 0) && (
+          <p class="muted" style="font-size:0.8rem">
+            Showing up to 5 of each — full per-person lists in{" "}
+            <a href="https://github.com/sneldao/civicord/blob/main/frontend/src/data/claim_diffs.json">claim_diffs.json</a>.
+          </p>
+        )}
+        {claimDiff.deleted?.length > 0 && (
+          <>
+            <h3 class="claims-sub">No longer found ({claimDiff.deleted_count})</h3>
+            <ul class="facts claims-list">
+              {claimDiff.deleted.map((c: any) => (
+                <li>
+                  <span class="claim-text">{c.text}</span>
+                  {(c.topics ?? []).map((t: string) => <span class="sig-chip">{t.replace("_", " ")}</span>)}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        {claimDiff.added?.length > 0 && (
+          <>
+            <h3 class="claims-sub">New since the scrape ({claimDiff.added_count})</h3>
+            <ul class="facts claims-list">
+              {claimDiff.added.map((c: any) => (
+                <li>
+                  <span class="claim-text">{c.text}</span>
+                  {(c.topics ?? []).map((t: string) => <span class="sig-chip">{t.replace("_", " ")}</span>)}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </section>
     )}
 
@@ -416,7 +465,7 @@ const personShareText =
     <footer>
       <p>
         Civicord record · ENS fields on Sepolia testnet · no account or wallet needed to read ·
-        <a href="/steward">Roster digest</a> ·
+        <a href="/steward">Roster digest</a> · <a href="/themes">Themes</a> ·
         <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
       </p>
     </footer>

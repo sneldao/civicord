@@ -98,3 +98,4 @@ text with credit (CC-BY). Keep attribution on any bulk text/diff release.
 | --- | --- | --- | --- |
 | 2026-09-07 | Campaign Lab | In-person visit | Scrape license + metadata questions raised |
 | 2026-09-12 | Campaign Lab | Message | Agreed: public reuse/redistribute extracted page text with credit (CC-BY) |
+| 2026-09-21 | Campaign Lab | Conversation | **Position clarified:** no re-scrape from their side — this project was commissioned to take that on. Re-scrape ownership *and* cadence are ours to decide (last scrape April 2025). Roster stewardship is up for grabs. Candidate updates are ours + the candidates'. Workflow: open-minded, they want our best attempt at a tool they can leverage. Snapshot comparability protocol is ours to define since we run the crawls. Confirmed potential institutional home and/or distribution channel. |

@@ -1,0 +1,146 @@
+---
+// Theme rollup: which topics get walked back across the corpus.
+// Build-time aggregation over the committed claim_diffs.json snapshot —
+// keyword topic tags (heuristic) on candidate deleted/added claims.
+import { ClientRouter } from "astro:transitions";
+import CommandPalette from "../components/CommandPalette.astro";
+import MobileEssentials from "../components/MobileEssentials.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
+import WebMCP from "../components/WebMCP.astro";
+import claimDiffsRaw from "../data/claim_diffs.json";
+import "../styles/global.css";
+
+const root: any = claimDiffsRaw as any;
+const byPerson: Record<string, any> = root?.byPerson ?? root?.default?.byPerson ?? {};
+
+interface TopicRow {
+  topic: string;
+  walkedBack: number;
+  walkedBackPersons: Set<string>;
+  added: number;
+  addedPersons: Set<string>;
+  examples: Array<{ pid: string; name: string; text: string }>;
+}
+
+const topics = new Map<string, TopicRow>();
+const row = (t: string): TopicRow => {
+  let r = topics.get(t);
+  if (!r) {
+    r = { topic: t, walkedBack: 0, walkedBackPersons: new Set(), added: 0, addedPersons: new Set(), examples: [] };
+    topics.set(t, r);
+  }
+  return r;
+};
+
+for (const [pid, d] of Object.entries(byPerson)) {
+  for (const c of d.deleted ?? []) {
+    for (const t of c.topics ?? []) {
+      const r = row(t);
+      r.walkedBack++;
+      r.walkedBackPersons.add(pid);
+      if (r.examples.length < 3) r.examples.push({ pid, name: d.name, text: c.text });
+    }
+  }
+  for (const c of d.added ?? []) {
+    for (const t of c.topics ?? []) {
+      const r = row(t);
+      r.added++;
+      r.addedPersons.add(pid);
+    }
+  }
+}
+
+const rows = [...topics.values()].sort((a, b) => b.walkedBack - a.walkedBack);
+const personsCovered = Object.keys(byPerson).length;
+---
+
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Which campaign topics get walked back: deleted vs new claims by topic across 799 candidate records with April-to-September text comparison."
+    />
+    <meta property="og:title" content="Theme rollup — Civicord" />
+    <meta
+      property="og:description"
+      content="Deleted vs new campaign claims by topic — the corpus-level view of message shifts."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Theme rollup — Civicord</title>
+    <ClientRouter />
+  </head>
+  <body class="reveal-root">
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <p class="crumb"><a href="/">Civicord</a> · <a href="/uk">United Kingdom</a> / <b>Theme rollup</b></p>
+
+    <header class="masthead">
+      <h1 class="wordmark">Theme rollup<span class="dot">.</span></h1>
+      <p class="lede">Which topics get walked back — deleted vs new claims across {personsCovered} compared records.</p>
+      <p class="muted" style="font-size:0.85rem;max-width:70ch">
+        Keyword topic tags (heuristic, auditable) on sentences present in April site-wide
+        text but absent from the September homepage fetch, and vice versa. Counts are
+        candidates for review — the re-crawl fetches homepages while April spans whole
+        sites. Method in <a href="https://github.com/sneldao/civicord/blob/main/src/civicord/claimdiff.py">claimdiff.py</a>.
+      </p>
+      <p class="tagline">
+        Per-record detail lives on candidate pages (<a href="/candidates/3454#claims">worked example ↗</a>) · <a href="/journalists">For journalists ↗</a> · <a href="/steward">Roster digest ↗</a>
+      </p>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <section aria-labelledby="themes-title" data-reveal>
+        <h2 id="themes-title">Walked back vs new, by topic</h2>
+        <div class="table-wrap">
+          <table aria-label="Deleted and added claims by topic">
+            <thead>
+              <tr><th>Topic</th><th>Walked back</th><th>New</th><th>Example walked-back claim</th></tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr>
+                  <td data-label="Topic"><span class="sig-chip">{r.topic.replace("_", " ")}</span></td>
+                  <td data-label="Walked back">{r.walkedBack.toLocaleString("en-GB")} claims · {r.walkedBackPersons.size.toLocaleString("en-GB")} records</td>
+                  <td class="muted" data-label="New">{r.added.toLocaleString("en-GB")} claims · {r.addedPersons.size.toLocaleString("en-GB")} records</td>
+                  <td data-label="Example">
+                    {r.examples.length > 0 ? (
+                      <><span class="claim-text">{r.examples[0].text.slice(0, 140)}{r.examples[0].text.length > 140 ? "…" : ""}</span>{" "}<a class="rp-link" href={`/candidates/${r.examples[0].pid}#claims`}>{r.examples[0].name} ↗</a></>
+                    ) : (
+                      <span class="muted">—</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <details class="digest-caveats">
+        <summary><b>What this can't tell you</b></summary>
+        <ul>
+          <li>Tags are keyword matches, not readings — a mistag is auditable in <code>taxonomy.py</code>, but it is still a mistag.</li>
+          <li>Homepage-vs-site asymmetry inflates "walked back": deep April pages have no September counterpart yet.</li>
+          <li>Edited sentences surface as one deleted + one added pair; v1 does not pair them.</li>
+          <li>799 of 2,375 records have both April text and a September body — the rest cannot be compared.</li>
+        </ul>
+      </details>
+    </main>
+
+    <footer>
+      <p>
+        <a href="/">Home</a> · <a href="/browse">Ledger</a> · <a href="/steward">Roster digest</a> · <a href="/methodology">Methodology</a> · claimdiff-v1, 799 compared records
+        · <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
+      </p>
+    </footer>
+
+    <CommandPalette />
+    <MobileEssentials />
+    <ScrollReveal />
+    <WebMCP />
+  </body>
+</html>

@@ -24,7 +24,13 @@ is "here's your week's work," not "here's our data model."
 ## 2. Candidates and their agents
 
 **Cadence:** episodic (when something is wrong with their own record).
-**Status: deferred keystone bet.**
+**Status: unblocked keystone bet (2026-09-21).**
+
+The only persona with a personal, selfish reason to return: "that's my
+page, it moved." Campaign Lab confirmed candidate updates are ours and the
+candidates' to design — no external owner to wait for. A claim-and-update
+flow — Google-Business-Profile style, *take the pen*, chain invisible — is
+the mechanism that keeps the whole record fresh for every other persona.
 
 The only persona with a personal, selfish reason to return: "that's my
 page, it moved." A claim-and-update flow — Google-Business-Profile style,
@@ -32,9 +38,9 @@ page, it moved." A claim-and-update flow — Google-Business-Profile style,
 record fresh for every other persona. The on-chain permission layer
 (ENSv2 Permissioned Resolver, delegate writes) exists precisely to hand a
 candidate or their agent write authority over one record without
-controlling the namespace; we sell the outcome, not the mechanism. Deferred
-pending the Campaign Lab conversation about who should own candidate
-updates.
+controlling the namespace; we sell the outcome, not the mechanism. Next step:
+design the flow against the brief's tool, with Campaign Lab as distribution
+to candidates.
 
 ## 3. Journalists
 
@@ -86,8 +92,10 @@ survive on nothing), keep IDs stable forever, and never break a citation.
 ## Governance (open question)
 
 Who operates this in 2029? If the answer is "the authors, forever," it is a
-hobby. The sustainable shape is a custodian org (Campaign Lab / Democracy
-Club, a university, an electoral-reform body) adopting it as infrastructure
-they publish their name to — which is why the steward path leads the
-roadmap and the on-chain layer is presented as verifiability, not
-ideology.
+hobby. Campaign Lab confirmed (2026-09-21) they are a potential institutional
+home and/or distribution channel — the sustainable shape is them (or a body
+like them: Democracy Club, a university, an electoral-reform body) adopting
+it as infrastructure they publish their name to — which is why the steward
+path leads the roadmap and the on-chain layer is presented as verifiability,
+not ideology. Re-scrape ownership and cadence are already ours; custodianship
+is the remaining question.

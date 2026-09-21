@@ -30,6 +30,8 @@ const checks = [
   ["/browse", 200, ["ledger-body", "pagination", "skip-link", "filterbar"]],
   ["/steward", 200, ["dg-died", "dg-parked", "export-btn", "What we can\u2019t tell you"]],
   ["/journalists", 200, ["leads-title", "Stand behind your citation"]],
+  ["/themes", 200, ["themes-title", "Walked back"]],
+  ["/candidates/3454", 200, ["claims", "claim-text"]],
   ["/methodology", 200, ["Permanence", "main"]],
   ["/cohorts/gone", 200, ["masthead", "main"]],
   [`/candidates/${sampleCandidate}`, 200, ["verdict", "main"]],
