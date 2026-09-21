@@ -13,7 +13,8 @@ import "../styles/global.css";
 const { groups, sampleN } = await stewardGroups();
 const checkedLabel = "7 September 2026";
 const worst = groups.filter((g) => g.rows.length > 0);
-const needsAttention = worst.reduce((n, g) => n + new Set(g.rows.map((r) => r.candidateId)).size, 0);
+// Union across groups: a candidate with sites in several groups counts once.
+const needsAttention = new Set(worst.flatMap((g) => g.rows.map((r) => r.candidateId))).size;
 ---
 
 <html lang="en-GB">
@@ -47,9 +48,9 @@ const needsAttention = worst.reduce((n, g) => n + new Set(g.rows.map((r) => r.ca
         since the April 2025 scrape, grouped by the action it asks for.
       </p>
       <p class="muted" style="font-size:0.85rem;max-width:70ch">
-        One audit pass ({checkedLabel}) over {groups.reduce((n, g) => n + g.rows.length, 0).toLocaleString("en-GB")} flagged
+        One audit pass ({checkedLabel}<span id="audit-age"></span>) over {groups.reduce((n, g) => n + g.rows.length, 0).toLocaleString("en-GB")} flagged
         websites across {needsAttention.toLocaleString("en-GB")} candidates. These are HTTP observations, not judgements — each group says
-        what it can and cannot prove.
+        what it can and cannot prove. This digest rebuilds from every audit pass, so its age is the data's age.
       </p>
       <p class="tagline">
         Prefer the whole ledger? <a href="/browse">Browse filtered views ↗</a> · <a href="/methodology">Methodology ↗</a>
@@ -125,6 +126,9 @@ const needsAttention = worst.reduce((n, g) => n + new Set(g.rows.map((r) => r.ca
 
           <p class="dg-foot">
             {g.browseHref && <a class="btn-ghost btn-sm" href={g.browseHref}>{g.browseLabel} →</a>}
+            {(g.browseLinks ?? []).map((l) => (
+              <a class="btn-ghost btn-sm" href={l.href}>{l.label} →</a>
+            ))}
             <button type="button" class="btn-ghost btn-sm export-btn" data-group={g.key} aria-label={`Export ${g.title} as CSV, ${g.rows.length} rows`}>
               Export CSV ({g.rows.length.toLocaleString("en-GB")} rows)
             </button>
@@ -161,6 +165,14 @@ const needsAttention = worst.reduce((n, g) => n + new Set(g.rows.map((r) => r.ca
 
     <script define:vars={{ checkedAt: CHECKED_AT }}>
       document.addEventListener("astro:page-load", () => {
+        // Client-side age: a build-time "N days ago" freezes at deploy and
+        // understates reality whenever redeploys lag — compute it at view time.
+        // No-JS readers still get the audit date, which is always true.
+        const age = document.getElementById("audit-age");
+        if (age) {
+          const days = Math.max(0, Math.floor((Date.now() - Date.parse(`${checkedAt}T00:00:00Z`)) / 86400000));
+          age.textContent = days === 0 ? ", audited today" : days === 1 ? ", 1 day ago" : `, ${days} days ago`;
+        }
         const toast = document.getElementById("export-status");
         const say = (msg) => {
           if (!toast) return;

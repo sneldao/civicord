@@ -78,6 +78,9 @@ export interface StewardGroup {
   changeParam: string;
   browseHref?: string;
   browseLabel?: string;
+  // When a group spans two ledger filters (major + transformed), offer one
+  // button per filter so every deep link matches exactly what it opens.
+  browseLinks?: Array<{ href: string; label: string }>;
 }
 
 // Rolls a group's rows up by any value a row carries (a site can list several
@@ -190,8 +193,10 @@ export async function stewardGroups(): Promise<{
       browseHref: "/browse?change=gone",
       browseLabel: "Open unreachable filter in the ledger",
     }),
+    // Severity earns the rank, size earns the openness: a 2-row parked
+    // finding should not headline the digest expanded.
     group("parked", "Now pointing at a for-sale or parked domain", "These look like lapsed registrations rather than moves.", parked, {
-      open: true,
+      open: parked.length >= 5,
       changeParam: "redirected",
       caveat: "Detected by the destination's domain, not by reading the page.",
       browseHref: "/browse?change=redirected",
@@ -211,8 +216,16 @@ export async function stewardGroups(): Promise<{
     group("material", "Content changed materially", "Wayback before/after with a normalized text diff.", material, {
       changeParam: "",
       caveat: `Sample of ${Object.keys(significanceByPerson).length} candidates with Wayback baselines — not the whole roster.`,
-      browseHref: "/browse?sig=transformed",
-      browseLabel: "See transformed records in the ledger",
+      browseLinks: [
+        {
+          href: "/browse?sig=major",
+          label: `Major rewrites in the ledger (${material.filter((r) => r.significance === "major").length})`,
+        },
+        {
+          href: "/browse?sig=transformed",
+          label: `Transformed records in the ledger (${material.filter((r) => r.significance === "transformed").length})`,
+        },
+      ],
     }),
   ];
 
