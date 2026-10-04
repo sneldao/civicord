@@ -145,7 +145,7 @@ const needsAttention = new Set(worst.flatMap((g) => g.rows.map((r) => r.candidat
           <li>“Surname absent” is a heuristic — it asks for review, it does not establish repurposing.</li>
           <li>Content-change classes cover a Wayback sample ({sampleN} candidates), not the whole roster.</li>
           <li>“Responding” is an HTTP-success class, not proof that campaign content survived.</li>
-          <li>Candidates cannot claim or correct a record yet — the “take the pen” flow is designed but not shipped.</li>
+          <li>A sourced correction can be submitted from a candidate record. It is queued for review and does not overwrite the audit, the scrape, or the on-chain fields.</li>
         </ul>
       </details>
       <p class="copy-toast" id="export-status" role="status" aria-live="polite" hidden></p>

@@ -47,6 +47,8 @@ scripts/publish/.abi-cache/
 
 # Astro build cache
 .astro/
+# Correction requests queued by the local dev/preview server. Not the audit.
+frontend/.data/
 
 # Root npm (graph tooling dev deps — commit package.json, ignore lock)
 node_modules/

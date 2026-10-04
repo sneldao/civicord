@@ -925,10 +925,116 @@ async function handleEnsVerify(request, url) {
   );
 }
 
+// Correction requests stay a queue. They are not written into audit JSON
+// or ENS text records. Keep the acceptance rules aligned with
+// frontend/src/lib/corrections.mjs.
+const correctionQueue = [];
+const CORRECTION_NOTE =
+  "Queued for review. This request does not change the audit, the scrape, the sentence comparison, or the on-chain record.";
+
+function correctionJson(payload, status = 200) {
+  return new Response(JSON.stringify(payload, null, 2), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      ...corsJson,
+    },
+  });
+}
+
+function validateCorrectionInput(body) {
+  const errors = [];
+  const input = body && typeof body === "object" ? body : {};
+  if (String(input.fax_number ?? "").trim()) return { ok: false, errors: ["rejected"] };
+  const personId = String(input.personId ?? "").trim();
+  if (!/^\d{1,12}$/.test(personId)) errors.push("personId");
+  const whatIsWrong = String(input.whatIsWrong ?? "").trim();
+  if (whatIsWrong.length < 20 || whatIsWrong.length > 2000) errors.push("whatIsWrong");
+  const proposedCorrection = String(input.proposedCorrection ?? "").trim();
+  if (proposedCorrection.length < 20 || proposedCorrection.length > 2000) errors.push("proposedCorrection");
+  let parsed = null;
+  try {
+    parsed = new URL(String(input.sourceUrl ?? "").trim());
+  } catch {
+    parsed = null;
+  }
+  const sourceOk =
+    parsed &&
+    (parsed.protocol === "http:" || parsed.protocol === "https:") &&
+    parsed.hostname.includes(".") &&
+    !parsed.username &&
+    !parsed.password;
+  if (!sourceOk) errors.push("sourceUrl");
+  const contact = String(input.contact ?? "").trim();
+  if (contact.length > 200) errors.push("contact");
+  if (errors.length) return { ok: false, errors };
+  return {
+    ok: true,
+    value: {
+      personId,
+      personName: String(input.personName ?? "").trim().slice(0, 200),
+      recordUrl: `/candidates/${personId}`,
+      whatIsWrong,
+      proposedCorrection,
+      sourceUrl: parsed.toString(),
+      contact,
+    },
+  };
+}
+
+function publicCorrection(request) {
+  const { contact, ...rest } = request;
+  return { ...rest, contactProvided: Boolean(contact) };
+}
+
+async function handleCorrections(request, url) {
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsJson });
+  if (request.method === "GET") {
+    const personId = url.searchParams.get("personId") || "";
+    const requests = correctionQueue
+      .filter((row) => !personId || row.personId === personId)
+      .map(publicCorrection);
+    return correctionJson({ requests, stored: "queue", effect: "request", note: CORRECTION_NOTE });
+  }
+  if (request.method !== "POST") {
+    return correctionJson({ error: "method_not_allowed", note: CORRECTION_NOTE }, 405);
+  }
+  const raw = await request.text();
+  if (raw.length > 20000) return correctionJson({ error: "too_large", note: CORRECTION_NOTE }, 400);
+  let input;
+  const contentType = request.headers.get("content-type") || "";
+  try {
+    input = contentType.includes("application/json")
+      ? JSON.parse(raw || "null")
+      : Object.fromEntries(new URLSearchParams(raw).entries());
+  } catch {
+    return correctionJson({ error: "invalid_body", note: CORRECTION_NOTE }, 400);
+  }
+  const validated = validateCorrectionInput(input);
+  if (!validated.ok) {
+    return correctionJson({ error: "invalid", fields: validated.errors, note: CORRECTION_NOTE }, 400);
+  }
+  const requestRow = {
+    id: `cor_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
+    status: "queued",
+    effect: "request",
+    receivedAt: new Date().toISOString(),
+    ...validated.value,
+  };
+  correctionQueue.push(requestRow);
+  if (correctionQueue.length > 500) correctionQueue.splice(0, correctionQueue.length - 500);
+  return correctionJson({ ...publicCorrection(requestRow), note: CORRECTION_NOTE }, 201);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     let pathname = url.pathname;
+
+    if (pathname === "/api/corrections" || pathname === "/api/corrections/") {
+      return handleCorrections(request, url);
+    }
 
     // Live Sepolia resolver text() — free eth_call verify for candidate pages.
     if (pathname === "/api/ens" || pathname === "/api/ens/") {

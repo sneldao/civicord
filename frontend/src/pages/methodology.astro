@@ -126,7 +126,36 @@ const onchain = candidates.filter((c) => c.onchain);
         <li>Civicord tracks campaign websites only, not social media, leaflets, or hustings claims.</li>
       </ul>
 
-      <h2>6. Reproduce it</h2>
+      <h2 id="verified">6. What is verified, and what is not</h2>
+      <p>
+        Verified here means an observation you can trace to a stored source.
+        It does not mean a political sentence is true.
+      </p>
+      <h3>Observed and stored</h3>
+      <ul>
+        <li>The HTTP result of each audited URL on 7 September 2026, including redirects recorded that day.</li>
+        <li>Short excerpts and page filenames from the Campaign Lab April 2025 scrape. An excerpt is the opening of a stored extract, not the whole page and not the later text.</li>
+        <li>
+          Where a sentence comparison exists: sentences from that April site-wide text that were not found in a later homepage fetch, and sentences on that homepage that were not in the April text.
+          The record shows that before and after wording. The two sides are not paired as edits of one sentence.
+          A missing sentence is a candidate for review, not proof it was deliberately withdrawn, and the later fetch does not cover the rest of the site.
+        </li>
+        <li>Where a Wayback comparison exists: a significance class and a coverage score. That snapshot does not include the before and after wording, so the page does not invent it.</li>
+        <li>On Sepolia: the candidate name, original URL, and HTTP audit status. Full page content is not on-chain.</li>
+      </ul>
+      <h3>Not verified</h3>
+      <ul>
+        <li>Whether a campaign sentence is true, or why it is absent from a later homepage.</li>
+        <li>Surname matches. They are a heuristic, not a reading of the page.</li>
+        <li>
+          Correction requests. Anyone can submit one from a candidate record, with a source URL.
+          The submission is stored in the review queue with status “queued”.
+          It does not change the audit, the scrape, the sentence comparison, the citation, or the Sepolia record.
+          A maintainer may later append an accepted correction as a new fact. Submitting the form is not that acceptance, and the queue is not a second copy of the audit.
+        </li>
+      </ul>
+
+      <h2>7. Reproduce it</h2>
       <p>
         Pipeline, audit, frontend, and publishing scripts are open source
         (AGPL-3.0) at <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>.
