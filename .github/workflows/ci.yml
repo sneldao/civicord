@@ -29,8 +29,13 @@ jobs:
       - name: Install
         run: npm ci
         working-directory: frontend
-      # The build resolves data from pipeline CSVs → R2 snapshot → committed
-      # JSON; CI has no CSVs, so the committed snapshot is the source of truth.
+      # The build resolves data from pipeline CSVs → live snapshot → committed
+      # JSON (candidates + map outputs); CI has no CSVs/GeoJSON, so the
+      # committed src/data snapshot is the source of truth. prebuild must run
+      # before `astro check`, which otherwise fails on missing src/data modules.
+      - name: Generate data from committed snapshot
+        run: npm run prebuild
+        working-directory: frontend
       - name: Astro check
         run: npx astro check
         working-directory: frontend

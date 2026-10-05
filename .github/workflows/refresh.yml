@@ -28,8 +28,18 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
       - name: Install pipeline
         run: pip install -e .
+
+      - name: Install frontend deps
+        run: npm ci
+        working-directory: frontend
 
       - name: Download + ingest baseline roster
         run: civicord download --full --large-json && civicord ingest
@@ -43,6 +53,9 @@ jobs:
 
       - name: Rebuild frontend snapshots
         run: |
+          mkdir -p data/boundaries
+          curl -fsSL -o data/boundaries/ak-v5.geojson \
+            https://automaticknowledge.org/wpc-hex/uk-wpc-hex-constitcode-v5-june-2024.geojson
           node frontend/scripts/build-data.mjs
           node frontend/scripts/build-map.mjs
           node frontend/scripts/build-search.mjs
@@ -51,7 +64,9 @@ jobs:
         run: |
           git config user.name "civicord-refresh"
           git config user.email "civicord-refresh@users.noreply.github.com"
-          git add data/out frontend/src/data
+          # data/out + map outputs are gitignored by policy (see .gitignore);
+          # the committable snapshot is frontend/src/data (candidates.json etc.).
+          git add frontend/src/data
           if git diff --cached --quiet; then
             echo "No snapshot changes — nothing to propose."
             exit 0
