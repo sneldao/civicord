@@ -11,6 +11,15 @@
 // Unknown /api/* ids          -> JSON 404 (not the SPA HTML fallback)
 // All other requests fall through to the static Astro assets.
 
+import {
+  QUEUE_NOTE,
+  appendRequest,
+  buildQueuedRequest,
+  parseCorrectionBody,
+  publicCorrection,
+  validateCorrection,
+} from "./corrections-rules.mjs";
+
 const SUBGRAPH_STUDIO =
   "https://api.studio.thegraph.com/query/101650/civicord/v0.0.5";
 
@@ -925,10 +934,84 @@ async function handleEnsVerify(request, url) {
   );
 }
 
+// Correction requests stay a queue — never an edit of audit JSON or ENS text
+// records. Acceptance rules live in ./corrections-rules.mjs, shared with the
+// dev server plugin (src/lib/corrections.mjs) and the browser form.
+const CORRECTION_KV_KEY = "correction-queue-v1";
+const correctionQueue = []; // in-memory fallback while no KV binding exists
+
+function correctionJson(payload, status = 200) {
+  return new Response(JSON.stringify(payload, null, 2), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      ...corsJson,
+    },
+  });
+}
+
+async function readCorrectionQueue(env) {
+  if (env && env.CORRECTIONS_KV) {
+    const raw = await env.CORRECTIONS_KV.get(CORRECTION_KV_KEY);
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return correctionQueue.slice();
+}
+
+async function writeCorrectionQueue(env, queue) {
+  if (env && env.CORRECTIONS_KV) {
+    await env.CORRECTIONS_KV.put(CORRECTION_KV_KEY, JSON.stringify(queue));
+    return;
+  }
+  correctionQueue.length = 0;
+  correctionQueue.push(...queue);
+}
+
+async function handleCorrections(request, url, env) {
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsJson });
+  if (request.method === "GET") {
+    const personId = (url.searchParams.get("personId") || "").trim();
+    if (!/^\d{1,12}$/.test(personId)) {
+      return correctionJson({ error: "personId_required", note: QUEUE_NOTE }, 400);
+    }
+    const queue = await readCorrectionQueue(env);
+    const requests = queue.filter((row) => row.personId === personId).map(publicCorrection);
+    return correctionJson({ requests, stored: "queue", effect: "request", note: QUEUE_NOTE });
+  }
+  if (request.method !== "POST") {
+    return correctionJson({ error: "method_not_allowed", note: QUEUE_NOTE }, 405);
+  }
+  const raw = await request.text();
+  const contentType = request.headers.get("content-type") || "";
+  const parsed = parseCorrectionBody(raw, contentType);
+  if (!parsed.ok) {
+    return correctionJson({ error: parsed.error, note: QUEUE_NOTE }, 400);
+  }
+  const validated = validateCorrection(parsed.value);
+  if (!validated.ok) {
+    return correctionJson({ error: "invalid", fields: validated.errors, note: QUEUE_NOTE }, 400);
+  }
+  const requestRow = buildQueuedRequest(validated.value);
+  const queue = appendRequest(await readCorrectionQueue(env), requestRow);
+  await writeCorrectionQueue(env, queue);
+  return correctionJson({ ...publicCorrection(requestRow), note: QUEUE_NOTE }, 201);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     let pathname = url.pathname;
+
+    if (pathname === "/api/corrections" || pathname === "/api/corrections/") {
+      return handleCorrections(request, url, env);
+    }
 
     // Live Sepolia resolver text() — free eth_call verify for candidate pages.
     if (pathname === "/api/ens" || pathname === "/api/ens/") {

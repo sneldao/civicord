@@ -1,0 +1,222 @@
+---
+interface Props {
+  personId: string;
+  personName: string;
+}
+const { personId, personName } = Astro.props;
+---
+
+<section class="correction-request record-evidence" id="correction" aria-labelledby="correction-title" tabindex="-1">
+  <h2 id="correction-title">Propose a correction</h2>
+  <p class="muted">
+    If a URL, name, or sentence on this record is wrong, send a sourced request.
+    It is queued for a person to review. It does not change the audit, the April
+    scrape, the sentence comparison, or the Sepolia record.
+    <a href="/methodology#verified">What is verified, and what is not</a>.
+  </p>
+  <form id="correction-form" action="/api/corrections" method="post" data-person-id={personId} data-person-name={personName}>
+    <input type="hidden" name="personId" value={personId} />
+    <input type="hidden" name="personName" value={personName} />
+    <p class="correction-honeypot">
+      <label for="fax-number">Fax</label>
+      <input id="fax-number" name="fax_number" type="text" tabindex="-1" autocomplete="off" />
+    </p>
+    <label for="what-is-wrong">What looks wrong</label>
+    <textarea id="what-is-wrong" name="whatIsWrong" required minlength="20" maxlength="2000" rows="3"></textarea>
+    <label for="proposed-correction">What the record should say instead</label>
+    <textarea id="proposed-correction" name="proposedCorrection" required minlength="20" maxlength="2000" rows="3"></textarea>
+    <label for="source-url">Source URL <span class="hint">a page a reviewer can open</span></label>
+    <input id="source-url" name="sourceUrl" type="url" required inputmode="url" placeholder="https://" />
+    <label for="correction-contact">Your name or email <span class="hint">optional, not checked, not proof you are the candidate</span></label>
+    <input id="correction-contact" name="contact" type="text" maxlength="200" autocomplete="email" />
+    <p class="correction-actions">
+      <button type="submit" class="btn-primary">Submit correction request</button>
+    </p>
+    <p id="correction-status" class="muted" role="status" aria-live="polite"></p>
+  </form>
+  <h3 class="claims-sub">Review queue</h3>
+  <p class="muted" id="correction-queue-note">Requests stored for this record. A request is not an edit.</p>
+  <ol id="correction-queue" class="correction-queue" aria-live="polite"></ol>
+</section>
+
+<script>
+  import { QUEUE_NOTE, validateCorrection } from "../lib/corrections.mjs";
+
+  const LOCAL_KEY = "civicord-correction-queue-v1";
+
+  type Stored = {
+    id: string;
+    status: string;
+    effect: string;
+    receivedAt: string;
+    personId: string;
+    personName?: string;
+    recordUrl: string;
+    whatIsWrong: string;
+    proposedCorrection: string;
+    sourceUrl: string;
+    contactProvided?: boolean;
+    note?: string;
+    deviceOnly?: boolean;
+  };
+
+  const fieldCopy: Record<string, string> = {
+    whatIsWrong: "Say what looks wrong, in at least a short sentence.",
+    proposedCorrection: "Say what the record should say instead.",
+    sourceUrl: "Add a source URL beginning with http:// or https://.",
+    personId: "This record has no candidate id to attach the request to.",
+    contact: "The contact line is too long.",
+    rejected: "That request was refused.",
+  };
+
+  function readLocal(personId: string): Stored[] {
+    try {
+      const all = JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]");
+      return Array.isArray(all) ? all.filter((r) => r && r.personId === personId) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function writeLocal(request: Stored) {
+    const all = JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]");
+    const next = Array.isArray(all) ? all : [];
+    next.push(request);
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(next.slice(-200)));
+  }
+
+  function renderQueue(requests: Stored[]) {
+    const list = document.querySelector<HTMLOListElement>("#correction-queue");
+    const note = document.querySelector<HTMLElement>("#correction-queue-note");
+    if (!list) return;
+    list.replaceChildren();
+    if (note) {
+      note.textContent = requests.length
+        ? `${requests.length} queued request${requests.length === 1 ? "" : "s"} for this record. None of them change the published audit.`
+        : "No correction request is stored for this record yet.";
+    }
+    for (const request of requests) {
+      const item = document.createElement("li");
+      const status = document.createElement("p");
+      status.className = "cq-status";
+      status.textContent = request.deviceOnly
+        ? "Queued on this device only — not applied"
+        : "Queued for review — not applied to the record";
+      const wrong = document.createElement("p");
+      const wrongLabel = document.createElement("b");
+      wrongLabel.textContent = "What looks wrong. ";
+      wrong.append(wrongLabel, document.createTextNode(request.whatIsWrong));
+      const proposed = document.createElement("p");
+      const proposedLabel = document.createElement("b");
+      proposedLabel.textContent = "Proposed correction. ";
+      proposed.append(proposedLabel, document.createTextNode(request.proposedCorrection));
+      const source = document.createElement("p");
+      const sourceLabel = document.createTextNode("Source: ");
+      const link = document.createElement("a");
+      link.rel = "noopener noreferrer";
+      link.href = request.sourceUrl;
+      link.textContent = request.sourceUrl;
+      source.append(sourceLabel, link);
+      const when = document.createElement("p");
+      when.className = "muted";
+      const received = request.receivedAt ? `Received ${request.receivedAt}. ` : "";
+      when.textContent = `${received}${request.deviceOnly ? "Saved in this browser because the review queue could not be reached." : "Stored in the review queue."}`;
+      item.append(status, wrong, proposed, source, when);
+      list.append(item);
+    }
+  }
+
+  async function loadQueue(personId: string) {
+    try {
+      const res = await fetch(`/api/corrections?personId=${encodeURIComponent(personId)}`, {
+        headers: { accept: "application/json" },
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const data = await res.json();
+      const remote: Stored[] = Array.isArray(data.requests) ? data.requests : [];
+      const remoteIds = new Set(remote.map((r) => r.id));
+      const localOnly = readLocal(personId).filter((r) => r.deviceOnly && !remoteIds.has(r.id));
+      renderQueue([...remote, ...localOnly]);
+    } catch {
+      renderQueue(readLocal(personId));
+    }
+  }
+
+  function bindCorrectionForm() {
+    const form = document.querySelector<HTMLFormElement>("#correction-form");
+    if (!form || form.dataset.bound === "1") return;
+    form.dataset.bound = "1";
+    const personId = form.dataset.personId || "";
+    loadQueue(personId);
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const status = document.querySelector<HTMLElement>("#correction-status");
+      const data = new FormData(form);
+      const payload = Object.fromEntries(data.entries());
+      const validated = validateCorrection(payload);
+      if (!validated.ok || !validated.value) {
+        if (status) {
+          status.textContent = (validated.errors ?? []).map((name: string) => fieldCopy[name] || name).join(" ");
+        }
+        return;
+      }
+      const value = validated.value;
+      const button = form.querySelector<HTMLButtonElement>("button[type=submit]");
+      if (button) button.disabled = true;
+      if (status) status.textContent = "Sending the request…";
+      try {
+        const res = await fetch("/api/corrections", {
+          method: "POST",
+          headers: { "content-type": "application/json", accept: "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const body = await res.json().catch(() => null);
+        if (res.status === 400) {
+          const fields = Array.isArray(body?.fields) ? body.fields : [];
+          if (status) {
+            status.textContent = fields.length
+              ? fields.map((name: string) => fieldCopy[name] || name).join(" ")
+              : "The review queue refused the request. The published record is unchanged.";
+          }
+          return;
+        }
+        if (!res.ok || !body || body.status !== "queued") {
+          throw new Error("unreachable");
+        }
+        if (status) status.textContent = body.note || QUEUE_NOTE;
+        form.reset();
+        await loadQueue(personId);
+      } catch {
+        const fallback: Stored = {
+          id: `local_${Date.now().toString(36)}`,
+          status: "queued",
+          effect: "request",
+          receivedAt: new Date().toISOString(),
+          personId: value.personId,
+          personName: value.personName,
+          recordUrl: value.recordUrl,
+          whatIsWrong: value.whatIsWrong,
+          proposedCorrection: value.proposedCorrection,
+          sourceUrl: value.sourceUrl,
+          deviceOnly: true,
+        };
+        try {
+          writeLocal(fallback);
+          renderQueue(readLocal(personId));
+          if (status) {
+            status.textContent =
+              "Queued on this device only. The review queue could not be reached, and the published record is unchanged.";
+          }
+        } catch {
+          if (status) status.textContent = "The request was not stored. The published record is unchanged.";
+        }
+      } finally {
+        if (button) button.disabled = false;
+      }
+    });
+  }
+
+  document.addEventListener("astro:page-load", bindCorrectionForm);
+  bindCorrectionForm();
+</script>

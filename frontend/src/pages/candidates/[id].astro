@@ -6,18 +6,18 @@ import MobileEssentials from "../../components/MobileEssentials.astro";
 import ScrollReveal from "../../components/ScrollReveal.astro";
 import AgentView from "../../components/AgentView.astro";
 import WebMCP from "../../components/WebMCP.astro";
+import CorrectionRequest from "../../components/CorrectionRequest.astro";
 import ClaimPairs from "../../components/ClaimPairs.astro";
 import ClientRecordScript from "../../components/ClientRecordScript.astro";
 import { ClientRouter } from "astro:transitions";
 import { partyLiveShare } from "../../lib/cohorts";
 import { AUDIT_DATE, candidateCitation, recordVerdictCopy, statusLabels } from "../../lib/record-copy";
+import { scopeExplanation } from "../../lib/walkback";
 import {
   beforeAfterPairs,
   candidateFollowRecord,
   listGap,
   unmatchedAdditions,
-  type ClaimDiffRow,
-  type ContentDiffInput,
 } from "../../lib/change-feed";
 import "../../styles/global.css";
 import constituenciesRaw from "../../data/constituencies.json";
@@ -47,9 +47,9 @@ const significanceLabels: Record<string, string> = {
   transformed: "Low text overlap with the compared archived page — inspect both sources",
 };
 const diffsRoot: any = contentDiffsRaw as any;
-const contentDiff: ContentDiffInput | null = (diffsRoot?.byPerson ?? diffsRoot?.default?.byPerson ?? {})[person.id] ?? null;
+const contentDiff: any = (diffsRoot?.byPerson ?? diffsRoot?.default?.byPerson ?? {})[person.id] ?? null;
 const claimsRoot: any = claimDiffsRaw as any;
-const claimDiff: ClaimDiffRow | null = (claimsRoot?.byPerson ?? claimsRoot?.default?.byPerson ?? {})[person.id] ?? null;
+const claimDiff: any = (claimsRoot?.byPerson ?? claimsRoot?.default?.byPerson ?? {})[person.id] ?? null;
 const claimPairs = beforeAfterPairs(person.id, person.name, claimDiff);
 const claimAdditions = unmatchedAdditions(claimDiff);
 const claimListGap = listGap(claimDiff);
@@ -185,7 +185,8 @@ const personShareText =
     <div class="record-actions" aria-label="Use this record">
       <button type="button" class="btn-primary" id="copy-citation" data-citation={candidateCitation(person)}>Copy citation</button>
       <a class="btn-ghost" href="#evidence">View evidence</a>
-      {claimDiff && ((claimDiff.deleted_count ?? 0) > 0 || (claimDiff.added_count ?? 0) > 0) && <a class="btn-ghost" href="#claims">Before and after</a>}
+      {claimDiff && (claimDiff.deleted?.length > 0 || claimDiff.added?.length > 0) && <a class="btn-ghost" href="#claims">Before and after</a>}
+      <a class="btn-ghost" href="#correction">Propose a correction</a>
       <a class="btn-ghost" href={`/candidates/${person.id}/reply`}>Reply if this is wrong</a>
       <button
         type="button"
@@ -285,14 +286,33 @@ const personShareText =
       </li>
     </ol>
 
+    {claimDiff && (claimDiff.deleted?.length > 0 || claimDiff.added?.length > 0) && (
+      <section class="content-chrono" id="claims" aria-label="Before and after" tabindex="-1">
+        <h2>Before and after</h2>
+        <p class="muted">
+          April site-wide text vs the {claimDiff.checked_at} homepage fetch of{" "}
+          <a href={claimDiff.url} rel="noopener noreferrer">{claimDiff.url}</a>:{" "}
+          <b>{claimDiff.kept ?? 0}</b> sentences still present,{" "}
+          <b>{claimDiff.deleted_count ?? 0}</b> no longer found,{" "}
+          <b>{claimDiff.added_count ?? 0}</b> new.
+          These are candidates for review, not proof a sentence was withdrawn.
+          {scopeExplanation(claimDiff.scope_note || "")} A missing sentence is not matched to a replacement.
+        </p>
+        <ClaimPairs pairs={claimPairs} additions={claimAdditions} listGap={claimListGap} />
+        {claimPairs.length === 0 && claimAdditions.length === 0 && (
+          <p class="muted">No stored sentence was missing, and no new sentence is listed. {claimDiff.kept ?? 0} compared sentences were still present.</p>
+        )}
+      </section>
+    )}
+
+    <CorrectionRequest personId={person.id} personName={person.name} />
+
     {contentDiff && (
       <section class="content-chrono" aria-label="Content chronology">
         <h2>Content chronology</h2>
         <p class={`change-line sig-${contentDiff.significance}`}>
           <span class="change-kicker">{String(contentDiff.significance).replace("_", " ")}</span>
-          {contentDiff.significance
-            ? (significanceLabels[contentDiff.significance] ?? contentDiff.significance)
-            : "Text comparison stored"}
+          {significanceLabels[contentDiff.significance] ?? contentDiff.significance}
           {typeof contentDiff.coverage === "number" && (
             <> · {(contentDiff.coverage * 100).toFixed(0)}% of April tokens still found</>
           )}
@@ -317,31 +337,11 @@ const personShareText =
             </li>
           )}
           <li class="fact-muted">
-            Sentence text for this comparison is absent from the snapshot. The score and the archive URL are what was kept.
-          </li>
-          <li class="fact-muted">
-            Spike sample — not yet run for the full register. Method in{" "}
+            This score compares a Wayback capture with the April text. The before and after wording of that comparison is not stored in the snapshot.
+            Method in{" "}
             <a href="https://github.com/sneldao/civicord/blob/main/docs/wayback-spike.md">docs/wayback-spike.md</a>.
           </li>
         </ul>
-      </section>
-    )}
-
-    {claimDiff && (
-      <section class="content-chrono" id="claims" aria-label="Before and after" tabindex="-1">
-        <h2>Before and after</h2>
-        <p class="muted">
-          April site-wide text vs the {claimDiff.checked_at} homepage fetch of{" "}
-          <a href={claimDiff.url} rel="noopener noreferrer">{claimDiff.url}</a>:{" "}
-          <b>{claimDiff.kept ?? 0}</b> sentences still present,{" "}
-          <b>{claimDiff.deleted_count ?? 0}</b> not found,{" "}
-          <b>{claimDiff.added_count ?? 0}</b> new. Evidence for review, not proof
-          of removal — {claimDiff.scope_note}. A missing sentence is not matched to a replacement.
-        </p>
-        <ClaimPairs pairs={claimPairs} additions={claimAdditions} listGap={claimListGap} />
-        {claimPairs.length === 0 && claimAdditions.length === 0 && (
-          <p class="muted">No stored sentence was missing, and no new sentence is listed. {claimDiff.kept ?? 0} compared sentences were still present.</p>
-        )}
       </section>
     )}
 
@@ -388,8 +388,8 @@ const personShareText =
     <section id="evidence" class="record-evidence" aria-labelledby="evidence-title" tabindex="-1">
       <h2 id="evidence-title">Source evidence and excerpts</h2>
       <p class="muted">
-        These are short excerpts from the April 2025 scrape, not complete archived
-        pages. Original filenames identify the stored extracts.{" "}
+        These are short excerpts from the April 2025 scrape, not the later wording
+        and not complete archived pages. Original filenames identify the stored extracts.{" "}
         <a href="https://github.com/CampaignLab/candidate-website-scrape" rel="noopener noreferrer">Browse the Campaign Lab source dataset ↗</a>
       </p>
       {contentDiff?.waybackUrl && (

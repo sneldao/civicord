@@ -2,12 +2,13 @@
 import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import CommandPalette from "../components/CommandPalette.astro";
-import DoorField from "../components/DoorField.astro";
 import MobileEssentials from "../components/MobileEssentials.astro";
 import ScrollReveal from "../components/ScrollReveal.astro";
 import WebMCP from "../components/WebMCP.astro";
+import { pickLeadWalkback, scopeExplanation } from "../lib/walkback";
 import "../styles/global.css";
 import constituenciesRaw from "../data/constituencies.json";
+import claimDiffsRaw from "../data/claim_diffs.json";
 
 let constituencies: any[] = [];
 try {
@@ -27,11 +28,10 @@ const seatMeta = !constituencies.length
 
 const all = await getCollection("candidates");
 const candidates = all.map((e) => e.data);
-const websites = candidates.flatMap((c) => c.websites);
-const audited = websites.filter((w) => w.audit);
-const live = audited.filter((w) => w.audit?.statusClass === "live");
-const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
-const livePct = audited.length ? pct(live.length, audited.length) : 0;
+const lead = pickLeadWalkback(claimDiffsRaw as { byPerson?: Record<string, any> }, candidates);
+const leadChecked = lead?.checkedAt && /^\d{4}-\d{2}-\d{2}$/.test(lead.checkedAt)
+  ? new Date(`${lead.checkedAt}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
+  : lead?.checkedAt ?? "";
 ---
 
 <html lang="en-GB">
@@ -40,12 +40,12 @@ const livePct = audited.length ? pct(live.length, audited.length) : 0;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Inspect political website audit results and source excerpts. Public ENS fields on Sepolia testnet; UK first."
+      content="A sentence a UK campaign published in April 2025 that was not on the later homepage, with its source. Civicord keeps the public record of what campaigns published, and what changed."
     />
     <meta property="og:title" content="Civicord — the public record for political websites" />
     <meta
       property="og:description"
-      content="Inspect political website audit results and source excerpts. Public ENS fields on Sepolia testnet; UK first."
+      content="A sentence a UK campaign published in April 2025 that was not on the later homepage, with its source."
     />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
@@ -56,51 +56,43 @@ const livePct = audited.length ? pct(live.length, audited.length) : 0;
   <body class="reveal-root door-page">
     <a class="skip-link" href="#main">Skip to content</a>
 
-    <div class="door-hero">
-      <header class="masthead door-masthead">
-        <h1 class="wordmark">Civicord<span class="dot">.</span></h1>
-        <p class="lede door-lede">
-          Political websites can disappear after an election. Civicord helps you
-          inspect what was captured, what the audit found, and the public record behind it.
-        </p>
-        <p class="tagline door-support">No account, no wallet. UK first.</p>
-        <p class="tagline door-support muted">
-          Sepolia prototype · URL, status and name recorded on-chain ·{" "}
-          <a href="/methodology#permanence">permanent content storage planned</a>.
-        </p>
-        <div class="door-cta" role="group" aria-label="Get started">
-          <a class="btn-primary" href="/browse">Find a candidate or constituency →</a>
-          <a class="btn-ghost" href="/candidates/5693">See a worked example</a>
-        </div>
-      </header>
-
-      <a class="door-visual" href="/uk" aria-label={`United Kingdom genesis dataset — ${livePct}% of audited URLs responding`}>
-        <DoorField livePct={livePct} candidates={candidates.length} />
-        <span class="door-visual-cta">Open the UK record ↗</span>
-      </a>
-    </div>
+    <header class="masthead door-masthead">
+      <h1 class="wordmark">Civicord<span class="dot">.</span></h1>
+      <p class="lede door-lede">What a UK campaign published, and what the later homepage no longer contained.</p>
+    </header>
 
     <main id="main" tabindex="-1">
-      <section class="persona-doors" aria-labelledby="doors-title">
-        <h2 id="doors-title">Choose how you work with the record</h2>
-        <p class="muted">Same audit facts, shaped around the question you actually arrive with.</p>
-        <div class="feature-grid">
-          <a class="feature-card feature-card--wide" href="/steward">
-            <span>
-              <span class="f-label">For roster stewards</span>
-              <h3>I look after a roster of campaign sites</h3>
-              <span class="f-meta">What died, what now points at a parked domain, what changed — grouped by action needed, with CSV export. Follow records in this browser and see which changed between the snapshots.</span>
-              <span class="f-cta">Open the roster digest →</span>
-            </span>
-            <span class="wide-cta" aria-hidden="true">{livePct}% responding<br />last audit · Sept 2026</span>
-          </a>
-          <a class="feature-card" href="/journalists"><span class="f-label">For journalists</span><h3>The story is in the change</h3><span class="f-meta">Leads from the change feed, plus citable lines: the April sentence, and that the later homepage did not contain it.</span><span class="f-cta">See the leads →</span></a>
-          <a class="feature-card" href="/browse?change=repurposed_suspect"><span class="f-label">For researchers</span><h3>Longitudinal, stable, citable</h3><span class="f-meta">2,375 candidate records keyed on Democracy Club IDs, filterable by outcome, party and place. Copy citation on every record.</span><span class="f-cta">Enter the ledger →</span></a>
-        </div>
-        <p class="also-links">
-          Also: <a href="/candidates/5693#verification">verify a record on-chain</a> · <a href="/candidates/5693#agent-view">agent view</a> · <a href="https://civicord-aieyq.bazgateway.com/mcp">MCP endpoint</a>
-        </p>
-      </section>
+      {lead ? (
+        <article class="walkback-lead" id="walkback-lead" aria-labelledby="walkback-kicker">
+          <p class="walkback-kicker" id="walkback-kicker">No longer found · April 2025 → {leadChecked}</p>
+          <blockquote class="walkback-quote">{lead.text}</blockquote>
+          <p class="walkback-source">
+            Source: {lead.name}{lead.party ? `, ${lead.party}` : ""}{lead.seat ? `, ${lead.seat}` : ""}.
+            This sentence is in the April 2025 Campaign Lab scrape of{" "}
+            <a href={lead.url} rel="noopener noreferrer">{lead.url}</a>
+            {" "}and was not in the homepage fetched {leadChecked}.{" "}
+            <a href={`/candidates/${lead.personId}#claims`}>Read the before and after</a>.
+          </p>
+          <p class="walkback-scope muted">{scopeExplanation(lead.scopeNote)}</p>
+          <div class="door-cta" role="group" aria-label="Continue from this sentence">
+            <a class="btn-primary" href={`/candidates/${lead.personId}#claims`}>Open this record</a>
+            <a class="btn-ghost" href={`/candidates/${lead.personId}#correction`}>Propose a correction</a>
+          </div>
+          <p class="walkback-next">
+            <a href="/steward">Roster digest</a>
+            {" · "}
+            <a href="/journalists">Journalist leads</a>
+            {" · "}
+            <a href="/browse">Ledger</a>
+            {" · "}
+            <a href="/uk">United Kingdom</a>
+            {" · "}
+            <a href="/methodology#verified">What is verified, and what is not</a>
+          </p>
+        </article>
+      ) : (
+        <p id="walkback-lead">No deleted sentence is stored in this snapshot.</p>
+      )}
 
       <section class="future door-regions" id="regions" aria-label="Regions" data-reveal>
         <h2>Built for one election. Designed for any.</h2>

@@ -161,10 +161,16 @@ function writeDerivedMap(constituencies) {
 }
 
 // --- guard ---
+const committedConstituencies = path.join(outDir, "constituencies.json");
+const committedHexes = path.join(outDir, "hexes.json");
 if (!existsSync(akPath)) {
+  if (existsSync(committedConstituencies) && existsSync(committedHexes)) {
+    console.log("No boundaries GeoJSON — keeping committed src/data map outputs");
+    process.exit(0);
+  }
   const candidates = loadCommittedCandidates();
   if (!candidates.length) {
-    console.error(`Missing ${akPath} and candidates.json — writing empty map outputs`);
+    console.error(`Missing ${akPath} — run from repo root: mkdir -p data/boundaries && curl -L -o data/boundaries/ak-v5.geojson https://automaticknowledge.org/wpc-hex/uk-wpc-hex-constitcode-v5-june-2024.geojson`);
     mkdirSync(outDir, { recursive: true });
     writeFileSync(path.join(outDir, "constituencies.json"), JSON.stringify([], null, 2));
     writeFileSync(path.join(outDir, "hexes.json"), JSON.stringify({ viewBox: "0 0 700 1000", hexes: [] }, null, 2));
@@ -172,8 +178,7 @@ if (!existsSync(akPath)) {
   }
   const seats = seatsFromPosts(candidates);
   writeDerivedMap(seats);
-  console.log(`build-map: no hex file — derived ${seats.length} seat pages from candidates.json posts`);
-  process.exit(0);
+  console.log(`build-map: no hex file — derived ${seats.length} seat pages from candidates.json posts`);  process.exit(0);
 }
 
 // --- load AK ---
@@ -203,8 +208,6 @@ function transformCoord([x, y]) {
 // --- guard: pipeline CSVs (fresh clones have none — data/ is gitignored) ---
 // Same philosophy as build-data.mjs: prefer pipeline outputs, fall back to
 // the committed src/data snapshots, and never fail the build for missing input.
-const committedConstituencies = path.join(outDir, "constituencies.json");
-const committedHexes = path.join(outDir, "hexes.json");
 if (!existsSync(path.join(dataDir, "candidacies.csv"))) {
   if (existsSync(committedConstituencies) && existsSync(committedHexes)) {
     console.log("No pipeline CSVs (data/out absent) — keeping committed src/data map outputs");
