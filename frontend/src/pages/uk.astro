@@ -17,7 +17,7 @@ try {
   const arr = Array.isArray(raw) ? raw : Array.isArray(raw?.default) ? raw.default : [];
   if (arr.length) constituencies = arr;
 } catch {}
-const constituenciesForSearch = constituencies.slice(0, 650).map((c) => ({ slug: c.slug, name: c.name }));
+const constituenciesForSearch = constituencies.map((c) => ({ slug: c.slug, name: c.name }));
 
 const all = await getCollection("candidates");
 const candidates = all.map((e) => e.data).sort((a, b) => a.name.localeCompare(b.name));
@@ -34,6 +34,8 @@ const sampleOnchain =
   onchain.find((c) => c.id === "5693") ??
   (onchain.length ? onchain[Math.floor(onchain.length / 2)] : null);
 const seatsTotal = constituencies.length || 650;
+const officialSeats = constituencies.some((c) => c.gssCode);
+const seatCountLabel = officialSeats || !constituencies.length ? `${seatsTotal} seats` : `${seatsTotal.toLocaleString("en-GB")} places in the snapshot`;
 const livePctNow = audited.length ? pct(live.length, audited.length) : 0;
 
 const stats = await cohortStats();
@@ -82,7 +84,7 @@ const randomIds = candidates.map((c) => c.id);
             <li class="rp-is-live">
               <span class="rp-status">Live</span>
               <b>United Kingdom</b>
-              <span class="rp-meta">{seatsTotal} seats</span>
+              <span class="rp-meta">{seatCountLabel}</span>
             </li>
             <li>
               <span class="rp-status rp-soon">Propose</span>

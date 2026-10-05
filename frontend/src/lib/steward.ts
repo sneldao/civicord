@@ -4,6 +4,15 @@
 // group counts on /steward always agree with the filtered ledger.
 import { getCollection } from "astro:content";
 import contentDiffsRaw from "../data/content_diffs.json";
+import claimDiffsRaw from "../data/claim_diffs.json";
+import {
+  candidateFollowRecord,
+  formatIsoDate,
+  parkedHostCount,
+  type ClaimDiffRow,
+  type ContentDiffInput,
+  type PersonInput,
+} from "./change-feed";
 
 export const CHECKED_AT = "2026-09-07";
 
@@ -62,6 +71,9 @@ export interface StewardRow {
   finalUrl: string;
   changeSignal: string;
   significance?: string;
+  note?: string;
+  followFingerprint: string;
+  followSummary: string;
 }
 
 export interface StewardGroup {
@@ -109,27 +121,52 @@ export async function stewardGroups(): Promise<{
   groups: StewardGroup[];
   sampleN: number;
   totalSites: number;
+  claims: {
+    people: number;
+    sentences: number;
+    compared: number;
+    checkedAt: string;
+    parkedByHost: number;
+  };
 }> {
   const entries = await getCollection("candidates");
   const candidates = entries.map((e) => e.data).sort((a, b) => a.name.localeCompare(b.name));
 
   const diffsRoot: any = contentDiffsRaw as any;
   const significanceByPerson: Record<string, string> = {};
+  const contentByPerson: Record<string, ContentDiffInput> = {};
   for (const [pid, row] of Object.entries(diffsRoot?.byPerson ?? {})) {
     const sig = (row as any)?.significance;
     if (sig) significanceByPerson[pid] = String(sig);
+    contentByPerson[pid] = row as ContentDiffInput;
   }
+  const claimByPerson: Record<string, ClaimDiffRow> =
+    ((claimDiffsRaw as { byPerson?: Record<string, ClaimDiffRow> }).byPerson ?? {});
+  const followCache = new Map<string, { fingerprint: string; summary: string }>();
+  const followFor = (c: (typeof candidates)[number]) => {
+    const hit = followCache.get(c.id);
+    if (hit) return hit;
+    const follow = candidateFollowRecord(c as PersonInput, claimByPerson[c.id], contentByPerson[c.id]);
+    const next = { fingerprint: follow.fingerprint, summary: follow.summary };
+    followCache.set(c.id, next);
+    return next;
+  };
 
-  const rowsFor = (c: (typeof candidates)[number], w: (typeof candidates)[number]["websites"][number]): StewardRow => ({
-    candidateId: c.id,
-    candidateName: c.name,
-    party: w.parties.join(", "),
-    seat: w.posts[0] ?? "",
-    url: w.url,
-    statusClass: w.audit?.statusClass ?? "not_audited",
-    finalUrl: w.audit?.finalUrl ?? "",
-    changeSignal: siteSignal(w),
-  });
+  const rowsFor = (c: (typeof candidates)[number], w: (typeof candidates)[number]["websites"][number]): StewardRow => {
+    const follow = followFor(c);
+    return {
+      candidateId: c.id,
+      candidateName: c.name,
+      party: w.parties.join(", "),
+      seat: w.posts[0] ?? "",
+      url: w.url,
+      statusClass: w.audit?.statusClass ?? "not_audited",
+      finalUrl: w.audit?.finalUrl ?? "",
+      changeSignal: siteSignal(w),
+      followFingerprint: follow.fingerprint,
+      followSummary: follow.summary,
+    };
+  };
 
   const died: StewardRow[] = [];
   const parked: StewardRow[] = [];
@@ -215,7 +252,7 @@ export async function stewardGroups(): Promise<{
     }),
     group("material", "Content changed materially", "Wayback before/after with a normalized text diff.", material, {
       changeParam: "",
-      caveat: `Sample of ${Object.keys(significanceByPerson).length} candidates with Wayback baselines — not the whole roster.`,
+      caveat: `Sample of ${Object.keys(significanceByPerson).length} candidates with Wayback baselines — not the whole roster. Sentence text for these scores is not in the snapshot.`,
       browseLinks: [
         {
           href: "/browse?sig=major",
@@ -229,5 +266,61 @@ export async function stewardGroups(): Promise<{
     }),
   ];
 
-  return { groups, sampleN: Object.keys(significanceByPerson).length, totalSites: candidates.reduce((n, c) => n + c.websites.length, 0) };
+  const disappeared: StewardRow[] = [];
+  let disappearedSentences = 0;
+  const checkedDates = new Set<string>();
+  for (const [pid, diff] of Object.entries(claimByPerson)) {
+    const deleted = diff.deleted_count ?? 0;
+    if (deleted <= 0) continue;
+    disappearedSentences += deleted;
+    if (diff.checked_at) checkedDates.add(diff.checked_at);
+    const person = candidates.find((c) => c.id === pid);
+    const website = person?.websites[0];
+    const follow = person
+      ? followFor(person)
+      : { fingerprint: `missing|${pid}`, summary: `Sentences no longer found (${deleted})` };
+    const sample = diff.deleted?.find((sentence) => sentence?.text)?.text ?? "";
+    disappeared.push({
+      candidateId: pid,
+      candidateName: diff.name || person?.name || pid,
+      party: website?.parties.join(", ") ?? "",
+      seat: website?.posts[0] ?? "",
+      url: diff.url || website?.url || "",
+      statusClass: website?.audit?.statusClass ?? "not_audited",
+      finalUrl: website?.audit?.finalUrl ?? "",
+      changeSignal: "claims_disappeared",
+      note: sample.length > 180 ? `${sample.slice(0, 177)}…` : sample,
+      followFingerprint: follow.fingerprint,
+      followSummary: follow.summary,
+    });
+  }
+  disappeared.sort((a, b) => a.candidateName.localeCompare(b.candidateName));
+  const checkedAt = checkedDates.size === 1 ? [...checkedDates][0] : CHECKED_AT;
+  const checkedLabel = checkedDates.size === 1 ? formatIsoDate(checkedAt) : "the homepage fetches";
+  groups.push(
+    group(
+      "disappeared",
+      "Claims that disappeared",
+      "Read the sentence that was published, and that the later homepage did not contain it. No replacement is matched.",
+      disappeared,
+      {
+        caveat: `Present in the April 2025 site text, absent from the ${checkedLabel} homepage fetch. Evidence for review, not proof of removal. Homepage versus whole site. ${Object.keys(claimByPerson).length} records were compared.`,
+        browseHref: "/themes",
+        browseLabel: "Open the theme rollup",
+      },
+    ),
+  );
+
+  return {
+    groups,
+    sampleN: Object.keys(significanceByPerson).length,
+    totalSites: candidates.reduce((n, c) => n + c.websites.length, 0),
+    claims: {
+      people: disappeared.length,
+      sentences: disappearedSentences,
+      compared: Object.keys(claimByPerson).length,
+      checkedAt,
+      parkedByHost: parkedHostCount(candidates as PersonInput[]),
+    },
+  };
 }

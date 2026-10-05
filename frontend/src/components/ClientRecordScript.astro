@@ -1,0 +1,194 @@
+<script>
+  const KEY = "civicord-follows-v1";
+
+  type Saved = {
+    kind: string;
+    id: string;
+    name: string;
+    href: string;
+    fingerprint: string;
+    summary: string;
+    followedAt: string;
+  };
+
+  function load(): Saved[] {
+    try {
+      const raw = JSON.parse(localStorage.getItem(KEY) || "[]");
+      return Array.isArray(raw) ? raw : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function save(rows: Saved[]) {
+    localStorage.setItem(KEY, JSON.stringify(rows));
+  }
+
+  function keyOf(kind: string, id: string) {
+    return `${kind}:${id}`;
+  }
+
+  function applyButtons(rows: Saved[]) {
+    const ids = new Set(rows.map((row) => keyOf(row.kind, row.id)));
+    document.querySelectorAll<HTMLButtonElement>(".follow-btn").forEach((btn) => {
+      const on = ids.has(keyOf(btn.dataset.followKind || "", btn.dataset.followId || ""));
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      if (!btn.dataset.followLabel || btn.dataset.followLabel === "follow") {
+        btn.textContent = on ? "Following" : "Follow";
+      }
+    });
+  }
+
+  function item(row: Saved, summary: string, drift: string) {
+    const li = document.createElement("li");
+    const link = document.createElement("a");
+    link.href = row.href;
+    link.textContent = row.name;
+    li.append(link);
+    const detail = document.createElement("span");
+    detail.textContent = ` — ${summary}`;
+    li.append(detail);
+    if (drift) {
+      const note = document.createElement("span");
+      note.className = "pair-gap";
+      note.textContent = ` ${drift}`;
+      li.append(note);
+    }
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn-ghost btn-sm follow-btn";
+    btn.dataset.followKind = row.kind;
+    btn.dataset.followId = row.id;
+    btn.dataset.followName = row.name;
+    btn.dataset.followHref = row.href;
+    btn.dataset.followFingerprint = row.fingerprint;
+    btn.dataset.followSummary = row.summary;
+    btn.dataset.followLabel = "remove";
+    btn.textContent = "Unfollow";
+    li.append(document.createTextNode(" "));
+    li.append(btn);
+    return li;
+  }
+
+  async function renderPanel(rows: Saved[]) {
+    const panel = document.getElementById("following-list");
+    const clear = document.getElementById("following-clear");
+    const root = document.getElementById("following");
+    if (clear) clear.hidden = rows.length === 0;
+    if (!panel || !root) return;
+    panel.replaceChildren();
+    if (!rows.length) {
+      const p = document.createElement("p");
+      p.className = "muted";
+      p.textContent = "Nothing followed in this browser yet. Use Follow on a candidate or a seat.";
+      panel.append(p);
+      return;
+    }
+    const noChange = root.dataset.noChange || "";
+    let index: { candidates?: Record<string, { fingerprint?: string; summary?: string; href?: string; name?: string }>; seats?: Record<string, { fingerprint?: string; summary?: string; href?: string; name?: string }> } | null = null;
+    try {
+      const res = await fetch(root.dataset.index || "/follow-index.json");
+      if (res.ok) index = await res.json();
+    } catch {
+      index = null;
+    }
+    const changed = document.createElement("div");
+    const quiet = document.createElement("div");
+    const changedList = document.createElement("ul");
+    const quietList = document.createElement("ul");
+    changedList.className = "following-list";
+    quietList.className = "following-list";
+    for (const row of rows) {
+      const bucket = row.kind === "seat" ? index?.seats : index?.candidates;
+      const live = bucket?.[row.id];
+      const summary = live?.summary || row.summary;
+      const drift =
+        live?.fingerprint && live.fingerprint !== row.fingerprint
+          ? "This build differs from the snapshot saved in this browser."
+          : "";
+      const node = item({ ...row, href: live?.href || row.href, name: live?.name || row.name }, summary, drift);
+      if (summary === noChange) quietList.append(node);
+      else changedList.append(node);
+    }
+    if (changedList.childElementCount) {
+      const h = document.createElement("h3");
+      h.textContent = "Changed between the April 2025 scrape and the later checks";
+      changed.append(h, changedList);
+      panel.append(changed);
+    }
+    if (quietList.childElementCount) {
+      const h = document.createElement("h3");
+      h.textContent = "No change recorded in these snapshots";
+      quiet.append(h, quietList);
+      panel.append(quiet);
+    }
+    if (!index) {
+      const p = document.createElement("p");
+      p.className = "pair-gap";
+      p.textContent = "Showing the summary saved when you followed each record. This page could not refresh it from the current build.";
+      panel.append(p);
+    }
+  }
+
+  function refresh() {
+    const rows = load();
+    applyButtons(rows);
+    void renderPanel(rows);
+  }
+
+  function onClick(event: Event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.id === "following-clear" || target.closest("#following-clear")) {
+      localStorage.removeItem(KEY);
+      refresh();
+      return;
+    }
+    const btn = target.closest<HTMLButtonElement>(".follow-btn");
+    if (!btn) return;
+    const kind = btn.dataset.followKind || "";
+    const id = btn.dataset.followId || "";
+    if (!kind || !id) return;
+    const token = keyOf(kind, id);
+    const rows = load();
+    const exists = rows.some((row) => keyOf(row.kind, row.id) === token);
+    const next = exists
+      ? rows.filter((row) => keyOf(row.kind, row.id) !== token)
+      : rows.concat({
+          kind,
+          id,
+          name: btn.dataset.followName || id,
+          href: btn.dataset.followHref || "#",
+          fingerprint: btn.dataset.followFingerprint || "",
+          summary: btn.dataset.followSummary || "",
+          followedAt: new Date().toISOString(),
+        });
+    save(next);
+    refresh();
+  }
+
+  function bind() {
+    refresh();
+    const root = document.documentElement;
+    if (root.dataset.civicordRecordBound === "1") return;
+    root.dataset.civicordRecordBound = "1";
+    document.addEventListener("click", onClick);
+    document.addEventListener("click", async (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const btn = target.closest<HTMLButtonElement>("[data-claim-citation]");
+      if (!btn) return;
+      const status = btn.parentElement?.querySelector<HTMLElement>(".pair-copy-status");
+      const text = btn.dataset.claimCitation || "";
+      try {
+        await navigator.clipboard.writeText(text);
+        if (status) status.textContent = "Citation copied.";
+      } catch {
+        if (status) status.textContent = "Clipboard unavailable. Select the line from the record.";
+      }
+    });
+  }
+
+  document.addEventListener("astro:page-load", bind);
+  bind();
+</script>

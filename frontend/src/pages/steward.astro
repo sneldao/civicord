@@ -6,11 +6,17 @@ import CommandPalette from "../components/CommandPalette.astro";
 import MobileEssentials from "../components/MobileEssentials.astro";
 import ScrollReveal from "../components/ScrollReveal.astro";
 import WebMCP from "../components/WebMCP.astro";
+import FollowingPanel from "../components/FollowingPanel.astro";
+import ClientRecordScript from "../components/ClientRecordScript.astro";
 import { stewardGroups, CHECKED_AT, STATUS_LABELS, REDIRECT_HOST } from "../lib/steward";
+import { formatIsoDate } from "../lib/change-feed";
 import { slugify } from "../lib/slug";
 import "../styles/global.css";
 
-const { groups, sampleN } = await stewardGroups();
+const { groups, sampleN, claims } = await stewardGroups();
+const claimWhen = formatIsoDate(claims.checkedAt);
+const parkedLedger = groups.find((g) => g.key === "parked")?.rows.length ?? 0;
+const parkedElsewhere = Math.max(0, claims.parkedByHost - parkedLedger);
 const checkedLabel = "7 September 2026";
 const worst = groups.filter((g) => g.rows.length > 0);
 // Union across groups: a candidate with sites in several groups counts once.
@@ -58,6 +64,26 @@ const needsAttention = new Set(worst.flatMap((g) => g.rows.map((r) => r.candidat
     </header>
 
     <main id="main" tabindex="-1">
+      <section class="content-chrono" aria-labelledby="since-title" data-reveal>
+        <h2 id="since-title">Since the last snapshots</h2>
+        <p>
+          This digest is the difference between the snapshots on the site: the April 2025 scrape,
+          the {checkedLabel} HTTP audit, and the {claimWhen} homepage comparison
+          ({claims.compared.toLocaleString("en-GB")} records). There is no audit between those dates in this build.
+        </p>
+        <ul class="facts">
+          <li><a href="#dg-died">{groups.find((g) => g.key === "died")?.rows.length.toLocaleString("en-GB")} sites no longer resolved</a></li>
+          <li>
+            <a href="#dg-parked">{claims.parkedByHost.toLocaleString("en-GB")} URLs ended on a for-sale or parked domain</a>
+            {parkedElsewhere > 0 && <> — {parkedLedger.toLocaleString("en-GB")} are in the redirected filter; {parkedElsewhere.toLocaleString("en-GB")} {parkedElsewhere === 1 ? "is" : "are"} filed under surname-absent because that ledger check wins when the surname is missing.</>}
+          </li>
+          <li><a href="#dg-redirected">{groups.find((g) => g.key === "redirected")?.rows.length.toLocaleString("en-GB")} redirected elsewhere</a></li>
+          <li><a href="#dg-material">{groups.find((g) => g.key === "material")?.rows.length.toLocaleString("en-GB")} material text-overlap scores</a> in a Wayback sample of {sampleN.toLocaleString("en-GB")}. Sentence text for those scores is not in the snapshot.</li>
+          <li><a href="#dg-disappeared">{claims.people.toLocaleString("en-GB")} records had a sentence that disappeared</a> — {claims.sentences.toLocaleString("en-GB")} sentences present in the April text and absent from the {claimWhen} homepage. Replacements are not matched.</li>
+        </ul>
+      </section>
+
+      <FollowingPanel />
       {worst.map((g) => (
         <details class="digest-group" id={`dg-${g.key}`} open={g.open}>
           <summary>
@@ -106,13 +132,28 @@ const needsAttention = new Set(worst.flatMap((g) => g.rows.map((r) => r.candidat
                     data-status={STATUS_LABELS[r.statusClass] ?? r.statusClass}
                     data-final={r.finalUrl}
                     data-signal={r.changeSignal}
+                    data-note={r.note ?? ""}
                   >
-                    <td class="who"><a class="who-name" href={`/candidates/${r.candidateId}`}>{r.candidateName}</a></td>
+                    <td class="who">
+                      <a class="who-name" href={`/candidates/${r.candidateId}`}>{r.candidateName}</a>
+                      <button
+                        type="button"
+                        class="btn-ghost btn-sm follow-btn"
+                        data-follow-kind="candidate"
+                        data-follow-id={r.candidateId}
+                        data-follow-name={r.candidateName}
+                        data-follow-href={`/candidates/${r.candidateId}`}
+                        data-follow-fingerprint={r.followFingerprint}
+                        data-follow-summary={r.followSummary}
+                        aria-pressed="false"
+                      >Follow</button>
+                    </td>
                     <td class="muted" data-label="Party">{r.party}</td>
                     <td class="muted" data-label="Seat">{r.seat}</td>
                     <td class="url" data-label="Website">
                       <a class="url" href={r.url} rel="noopener noreferrer">{r.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}</a>
                       {r.finalUrl && <div class="dg-dest">↳ {REDIRECT_HOST(r.finalUrl)}</div>}
+                      {r.note && <div class="dg-note">{r.note}</div>}
                     </td>
                     <td data-label="At audit">
                       <span class={`badge ${r.statusClass}`}>{STATUS_LABELS[r.statusClass] ?? r.statusClass}</span>
@@ -139,13 +180,13 @@ const needsAttention = new Set(worst.flatMap((g) => g.rows.map((r) => r.candidat
       <details class="digest-caveats">
         <summary><b>What we can’t tell you</b></summary>
         <ul>
-          <li>One audit pass ({checkedLabel}), so nothing here says “new since last check” — repeated audits are planned.</li>
+          <li>The comparison is between the April 2025 scrape, the {checkedLabel} HTTP audit, and the {claimWhen} homepage fetch. Nothing here is a weekly delta.</li>
           <li>“Died” means DNS or connection failure on the day. Temporary outages look identical to removals.</li>
           <li>Redirect intent is unread: a redirect may be a legitimate move, a lapse, or a change of use. Parked detection reads the destination's domain, not the page.</li>
           <li>“Surname absent” is a heuristic — it asks for review, it does not establish repurposing.</li>
           <li>Content-change classes cover a Wayback sample ({sampleN} candidates), not the whole roster.</li>
           <li>“Responding” is an HTTP-success class, not proof that campaign content survived.</li>
-          <li>A sourced correction can be submitted from a candidate record. It is queued for review and does not overwrite the audit, the scrape, or the on-chain fields.</li>
+          <li>A sourced correction can be submitted from a candidate record. It is queued for review and does not overwrite the audit, the scrape, or the on-chain fields. A static reply page can also draft a GitHub issue; there is no login on this site.</li>
         </ul>
       </details>
       <p class="copy-toast" id="export-status" role="status" aria-live="polite" hidden></p>
@@ -158,6 +199,7 @@ const needsAttention = new Set(worst.flatMap((g) => g.rows.map((r) => r.candidat
       </p>
     </footer>
 
+    <ClientRecordScript />
     <CommandPalette />
     <MobileEssentials />
     <ScrollReveal />
@@ -186,11 +228,11 @@ const needsAttention = new Set(worst.flatMap((g) => g.rows.map((r) => r.candidat
             const group = btn.getAttribute("data-group");
             const table = document.querySelector(`#dg-${group} table`);
             if (!table) return;
-            const headers = ["Candidate", "Civicord ID", "Party", "Seat", "Original URL", "Status at audit", "Final URL", "Change signal"];
+            const headers = ["Candidate", "Civicord ID", "Party", "Seat", "Original URL", "Status at audit", "Final URL", "Change signal", "Note"];
             const lines = [headers.map(cell).join(",")];
             table.querySelectorAll("tbody tr").forEach((tr) => {
               const d = tr.dataset;
-              lines.push([d.candidate, d.id, d.party, d.seat, d.url, d.status, d.final, d.signal].map(cell).join(","));
+              lines.push([d.candidate, d.id, d.party, d.seat, d.url, d.status, d.final, d.signal, d.note].map(cell).join(","));
             });
             const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
             const a = document.createElement("a");

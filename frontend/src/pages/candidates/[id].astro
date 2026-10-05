@@ -7,10 +7,18 @@ import ScrollReveal from "../../components/ScrollReveal.astro";
 import AgentView from "../../components/AgentView.astro";
 import WebMCP from "../../components/WebMCP.astro";
 import CorrectionRequest from "../../components/CorrectionRequest.astro";
+import ClaimPairs from "../../components/ClaimPairs.astro";
+import ClientRecordScript from "../../components/ClientRecordScript.astro";
 import { ClientRouter } from "astro:transitions";
 import { partyLiveShare } from "../../lib/cohorts";
 import { AUDIT_DATE, candidateCitation, recordVerdictCopy, statusLabels } from "../../lib/record-copy";
 import { scopeExplanation } from "../../lib/walkback";
+import {
+  beforeAfterPairs,
+  candidateFollowRecord,
+  listGap,
+  unmatchedAdditions,
+} from "../../lib/change-feed";
 import "../../styles/global.css";
 import constituenciesRaw from "../../data/constituencies.json";
 import hexesRaw from "../../data/hexes.json";
@@ -42,6 +50,10 @@ const diffsRoot: any = contentDiffsRaw as any;
 const contentDiff: any = (diffsRoot?.byPerson ?? diffsRoot?.default?.byPerson ?? {})[person.id] ?? null;
 const claimsRoot: any = claimDiffsRaw as any;
 const claimDiff: any = (claimsRoot?.byPerson ?? claimsRoot?.default?.byPerson ?? {})[person.id] ?? null;
+const claimPairs = beforeAfterPairs(person.id, person.name, claimDiff);
+const claimAdditions = unmatchedAdditions(claimDiff);
+const claimListGap = listGap(claimDiff);
+const follow = candidateFollowRecord(person, claimDiff, contentDiff);
 const parties = [...new Set(person.websites.flatMap((w) => w.parties))];
 const elections = [...new Set(person.websites.flatMap((w) => w.elections))];
 const firstStatus = person.websites[0]?.audit?.statusClass;
@@ -175,6 +187,18 @@ const personShareText =
       <a class="btn-ghost" href="#evidence">View evidence</a>
       {claimDiff && (claimDiff.deleted?.length > 0 || claimDiff.added?.length > 0) && <a class="btn-ghost" href="#claims">Before and after</a>}
       <a class="btn-ghost" href="#correction">Propose a correction</a>
+      <a class="btn-ghost" href={`/candidates/${person.id}/reply`}>Reply if this is wrong</a>
+      <button
+        type="button"
+        class="btn-ghost follow-btn"
+        data-follow-kind="candidate"
+        data-follow-id={person.id}
+        data-follow-name={person.name}
+        data-follow-href={`/candidates/${person.id}`}
+        data-follow-fingerprint={follow.fingerprint}
+        data-follow-summary={follow.summary}
+        aria-pressed="false"
+      >Follow</button>
       {person.onchain && <a class="btn-ghost" href="#verification">Verify this record</a>}
       <a class="btn-ghost" href="#agent-view">Query The Graph</a>
     </div>
@@ -266,52 +290,18 @@ const personShareText =
       <section class="content-chrono" id="claims" aria-label="Before and after" tabindex="-1">
         <h2>Before and after</h2>
         <p class="muted">
-          April site-wide text against the {claimDiff.checked_at} homepage fetch:{" "}
-          <b>{claimDiff.kept}</b> sentences still present,{" "}
-          <b>{claimDiff.deleted_count}</b> no longer found,{" "}
-          <b>{claimDiff.added_count}</b> new.
+          April site-wide text vs the {claimDiff.checked_at} homepage fetch of{" "}
+          <a href={claimDiff.url} rel="noopener noreferrer">{claimDiff.url}</a>:{" "}
+          <b>{claimDiff.kept ?? 0}</b> sentences still present,{" "}
+          <b>{claimDiff.deleted_count ?? 0}</b> no longer found,{" "}
+          <b>{claimDiff.added_count ?? 0}</b> new.
           These are candidates for review, not proof a sentence was withdrawn.
-          {scopeExplanation(claimDiff.scope_note || "")}
+          {scopeExplanation(claimDiff.scope_note || "")} A missing sentence is not matched to a replacement.
         </p>
-        <p class="muted">
-          The two sides are not paired as edits of one sentence. The snapshot stores the longest{" "}
-          {claimDiff.deleted?.length || 0} sentences no longer found
-          {claimDiff.deleted_count > (claimDiff.deleted?.length ?? 0) ? ` (of ${claimDiff.deleted_count.toLocaleString("en-GB")})` : ""}
-          {" "}and the longest {claimDiff.added?.length || 0} new sentences
-          {claimDiff.added_count > (claimDiff.added?.length ?? 0) ? ` (of ${claimDiff.added_count.toLocaleString("en-GB")})` : ""}.
-        </p>
-        <div class="ba-grid">
-          <div class="ba-col ba-before">
-            <h3>Before <span class="ba-when">April 2025 site text</span></h3>
-            {claimDiff.deleted?.length > 0 ? (
-              claimDiff.deleted.map((c: any) => (
-                <blockquote class="ba-quote">
-                  <p class="claim-text">{c.text}</p>
-                  {(c.topics ?? []).length > 0 && (
-                    <p class="ba-topics">{(c.topics ?? []).map((t: string) => <span class="sig-chip">{t.split("_").join(" ")}</span>)}</p>
-                  )}
-                </blockquote>
-              ))
-            ) : (
-              <p class="ba-empty">No April sentence in this snapshot was marked absent from the later homepage.</p>
-            )}
-          </div>
-          <div class="ba-col ba-after">
-            <h3>After <span class="ba-when">{claimDiff.checked_at} homepage</span></h3>
-            {claimDiff.added?.length > 0 ? (
-              claimDiff.added.map((c: any) => (
-                <blockquote class="ba-quote">
-                  <p class="claim-text">{c.text}</p>
-                  {(c.topics ?? []).length > 0 && (
-                    <p class="ba-topics">{(c.topics ?? []).map((t: string) => <span class="sig-chip">{t.split("_").join(" ")}</span>)}</p>
-                  )}
-                </blockquote>
-              ))
-            ) : (
-              <p class="ba-empty">No new sentence from that homepage fetch is stored for this record.</p>
-            )}
-          </div>
-        </div>
+        <ClaimPairs pairs={claimPairs} additions={claimAdditions} listGap={claimListGap} />
+        {claimPairs.length === 0 && claimAdditions.length === 0 && (
+          <p class="muted">No stored sentence was missing, and no new sentence is listed. {claimDiff.kept ?? 0} compared sentences were still present.</p>
+        )}
       </section>
     )}
 
@@ -484,6 +474,7 @@ const personShareText =
       </p>
     </footer>
 
+    <ClientRecordScript />
     <PeekSheet />
     <CommandPalette />
     <MobileEssentials />

@@ -1,22 +1,47 @@
 ---
+import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import AgentView from "../../components/AgentView.astro";
 import WebMCP from "../../components/WebMCP.astro";
 import CommandPalette from "../../components/CommandPalette.astro";
+import ClientRecordScript from "../../components/ClientRecordScript.astro";
 import MobileEssentials from "../../components/MobileEssentials.astro";
 import ScrollReveal from "../../components/ScrollReveal.astro";
 import { statusLabels } from "../../lib/record-copy";
+import {
+  seatFollowRecord,
+  seatTimeline,
+  type ClaimDiffRow,
+  type ContentDiffInput,
+  type PersonInput,
+} from "../../lib/change-feed";
 import "../../styles/global.css";
 import constituenciesRaw from "../../data/constituencies.json";
 import hexesRaw from "../../data/hexes.json";
+import claimDiffsRaw from "../../data/claim_diffs.json";
+import contentDiffsRaw from "../../data/content_diffs.json";
 
 export async function getStaticPaths() {
   const raw: any = constituenciesRaw as any;
   const list: any[] = Array.isArray(raw) ? raw : Array.isArray(raw?.default) ? raw.default : [];
-  return list.map((c) => ({ params: { slug: c.slug }, props: { c } }));
+  const people = (await getCollection("candidates")).map((entry) => entry.data as PersonInput);
+  const claims = ((claimDiffsRaw as { byPerson?: Record<string, ClaimDiffRow> }).byPerson ?? {}) as Record<string, ClaimDiffRow>;
+  const content = ((contentDiffsRaw as { byPerson?: Record<string, ContentDiffInput> }).byPerson ?? {}) as Record<string, ContentDiffInput>;
+  return list.map((c) => ({
+    params: { slug: c.slug },
+    props: {
+      c,
+      timeline: seatTimeline({ name: c.name, slug: c.slug }, people, claims, content),
+      seatFollow: seatFollowRecord(c.slug, c.name, people, claims, content),
+    },
+  }));
 }
 
-const { c } = Astro.props as { c: any };
+const { c, timeline, seatFollow } = Astro.props as {
+  c: any;
+  timeline: ReturnType<typeof seatTimeline>;
+  seatFollow: ReturnType<typeof seatFollowRecord>;
+};
 const verdict = c.stats.sites === 0 ? "empty" : c.stats.livePct >= 66 ? "live" : c.stats.livePct >= 40 ? "mixed" : "gone";
 const verdictCopy: Record<string, [string,string]> = {
   empty: ["No scraped site", "No candidate website from this seat is included in the April 2025 scrape, so there is no URL to audit here."],
@@ -40,6 +65,8 @@ try {
   const hexes = obj?.hexes ?? [];
   hex = hexes.find((h: any) => h.slug === c.slug) || null;
 } catch {}
+
+const placeBits = [c.gssCode, c.region, c.country, c.electorate ? `${c.electorate.toLocaleString("en-GB")} electorate` : ""].filter(Boolean);
 
 const siteUrl = "https://civicord.pages.dev";
 const ogImage = `${siteUrl}/og/constituencies/${c.slug}.svg`;
@@ -69,7 +96,7 @@ const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
   <body class="reveal-root">
     <a class="skip-link" href="#main">Skip to content</a>
     <p class="crumb"><a href="/">Civicord</a> · <a href="/uk">UK</a> · <a href="/browse">Browse</a> / <b>{c.name}</b></p>
-    <p class="context-line">{c.name} · {c.gssCode} · {c.region}{c.country ? ` · ${c.country}` : ""} · {c.electorate ? `${c.electorate.toLocaleString("en-GB")} electorate` : ""}</p>
+    <p class="context-line">{c.name}{placeBits.length ? ` · ${placeBits.join(" · ")}` : ""}</p>
 
     <main id="main" tabindex="-1">
     <header class="record-head">
@@ -85,6 +112,31 @@ const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
     <p class={`verdict v-${verdict === 'empty' ? 'unknown' : verdict === 'gone' ? 'gone' : verdict === 'live' ? 'live' : 'mixed'}`} role="status">
       <b>{verdictCopy[verdict][0]}</b> — {verdictCopy[verdict][1]} <span class="muted">{shareLine}</span>
     </p>
+
+    <section class="seat-story-wrap" aria-labelledby="seat-story-title">
+      <h2 id="seat-story-title">What happened here</h2>
+      <ol class="seat-story">
+        {timeline.beats.map((beat) => (
+          <li>
+            <time datetime={beat.datetime}>{beat.when}</time>
+            <h3>{beat.heading}</h3>
+            <p>{beat.body}</p>
+            {beat.items.length > 0 && (
+              <ul>
+                {beat.items.map((item) => (
+                  <li class={`story-${item.tone}`}>
+                    <a href={item.href}>{item.name}</a>
+                    <span> — {item.detail}</span>
+                    {item.externalHref && <> · <a href={item.externalHref} rel="noopener noreferrer">{item.externalLabel ?? "Open the archive"}</a></>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ol>
+      {timeline.footnote && <p class="muted pair-gap">{timeline.footnote}</p>}
+    </section>
 
     {hex && (
       <div class="const-thumb" aria-label={`Halftone hex for ${c.name}`}>
@@ -145,6 +197,17 @@ const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
 
     <div class="browse-actions" style="margin-top:1.2rem">
       <a class="btn-primary" href={`/browse?constituency=${c.slug}`}>Open filtered ledger — {c.stats.sites} sites ↗</a>
+      <button
+        type="button"
+        class="btn-ghost follow-btn"
+        data-follow-kind="seat"
+        data-follow-id={c.slug}
+        data-follow-name={c.name}
+        data-follow-href={`/constituencies/${c.slug}`}
+        data-follow-fingerprint={seatFollow.fingerprint}
+        data-follow-summary={seatFollow.summary}
+        aria-pressed="false"
+      >Follow</button>
       <a class="btn-ghost" href="/browse">Browse all 2,375 ↗</a>
       <a class="btn-ghost" href="/uk">UK overview ←</a>
     </div>
@@ -159,6 +222,7 @@ const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
       <p>Civicord record · {c.name} · <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a></p>
     </footer>
 
+    <ClientRecordScript />
     <CommandPalette />
     <MobileEssentials />
     <ScrollReveal />

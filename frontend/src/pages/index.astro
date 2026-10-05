@@ -17,8 +17,14 @@ try {
   if (arr.length) constituencies = arr;
 } catch {}
 const withSites = constituencies.filter((c) => c.stats.sites > 0).length;
+const officialSeats = constituencies.some((c) => c.gssCode);
 const seatsTotal = constituencies.length || 650;
-const seatsWithSites = withSites || seatsTotal - 17;
+const seatsWithSites = withSites || (officialSeats ? seatsTotal - 17 : 0);
+const seatMeta = !constituencies.length
+  ? `${seatsWithSites} of ${seatsTotal} seats`
+  : officialSeats
+    ? `${seatsWithSites} of ${seatsTotal} seats`
+    : `${withSites.toLocaleString("en-GB")} places named on candidate websites`;
 
 const all = await getCollection("candidates");
 const candidates = all.map((e) => e.data);
@@ -97,7 +103,7 @@ const leadChecked = lead?.checkedAt && /^\d{4}-\d{2}-\d{2}$/.test(lead.checkedAt
           <a class="future-card is-live" href="/uk">
             <span class="fc-status">Live now</span>
             <b class="vt-uk-title">United Kingdom</b>
-            <span class="fc-meta">{candidates.length.toLocaleString("en-GB")} candidates · {seatsWithSites} of {seatsTotal} seats · Sept 2026</span>
+            <span class="fc-meta">{candidates.length.toLocaleString("en-GB")} candidates · {seatMeta} · Sept 2026</span>
             <span class="fc-cta">Explore the dataset ↗</span>
           </a>
           <a class="future-card" href="https://github.com/sneldao/civicord/issues">

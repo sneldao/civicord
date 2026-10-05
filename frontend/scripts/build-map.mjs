@@ -52,6 +52,114 @@ function readCsv(name, { required = true } = {}) {
   return parse(readFileSync(file, "utf8"), { columns: true, skip_empty_lines: true });
 }
 
+function loadCommittedCandidates() {
+  const candidatesPath = path.join(outDir, "candidates.json");
+  if (!existsSync(candidatesPath)) return [];
+  try {
+    const raw = JSON.parse(readFileSync(candidatesPath, "utf8"));
+    return Array.isArray(raw) ? raw : [];
+  } catch {
+    return [];
+  }
+}
+
+// One page per post name on the committed candidate snapshot. Used when the
+// Westminster hex file is absent, so seat timelines still render from
+// candidates.json. Local and parliamentary posts are both included; GSS codes
+// stay blank until the hex build can name the official 650 seats.
+function seatsFromPosts(candidates) {
+  const bySlug = new Map();
+  for (const person of candidates) {
+    for (const w of person.websites || []) {
+      const seen = new Set();
+      for (const post of w.posts || []) {
+        if (!post || seen.has(post)) continue;
+        seen.add(post);
+        const slug = slugify(post);
+        if (!slug) continue;
+        if (!bySlug.has(slug)) {
+          bySlug.set(slug, {
+            slug,
+            name: post,
+            gssCode: "",
+            region: "",
+            country: "",
+            type: "",
+            electorate: null,
+            altName: null,
+            stats: {
+              sites: 0,
+              candidates: 0,
+              live: 0,
+              gone: 0,
+              http_error: 0,
+              timeout: 0,
+              other: 0,
+              redirected: 0,
+              onchain: 0,
+              liveShare: 0,
+              livePct: 0,
+              gonePct: 0,
+            },
+            candidates: [],
+            href: `/constituencies/${slug}`,
+            _ids: new Set(),
+          });
+        }
+        const seat = bySlug.get(slug);
+        const audit = w.audit || null;
+        const status = audit?.statusClass || "not_audited";
+        const redirected = Boolean(audit?.redirected);
+        seat.stats.sites++;
+        seat._ids.add(person.id);
+        if (status === "live") seat.stats.live++;
+        else if (status === "dns_error" || status === "connection_error") seat.stats.gone++;
+        else if (status === "http_error") seat.stats.http_error++;
+        else if (status === "timeout") seat.stats.timeout++;
+        else if (status === "ssl_error" || status === "other_error") seat.stats.other++;
+        if (redirected) seat.stats.redirected++;
+        if (person.onchain) seat.stats.onchain++;
+        seat.candidates.push({
+          id: person.id,
+          name: person.name,
+          party: (w.parties && w.parties[0]) || "",
+          url: w.url,
+          statusClass: status,
+          statusCode: audit?.statusCode || null,
+          redirected,
+          finalUrl: audit?.finalUrl || null,
+          nameFound: audit?.nameFound === true ? true : audit?.nameFound === false ? false : null,
+          onchain: person.onchain || null,
+        });
+      }
+    }
+  }
+  const list = [...bySlug.values()];
+  for (const c of list) {
+    c.stats.candidates = c._ids.size;
+    c.stats.liveShare = c.stats.sites ? c.stats.live / c.stats.sites : 0;
+    c.stats.livePct = c.stats.sites ? Math.round((c.stats.live / c.stats.sites) * 100) : 0;
+    c.stats.gonePct = c.stats.sites ? Math.round((c.stats.gone / c.stats.sites) * 100) : 0;
+    c.candidates.sort((a, b) => a.name.localeCompare(b.name));
+    delete c._ids;
+  }
+  list.sort((a, b) => a.name.localeCompare(b.name));
+  return list;
+}
+
+function writeDerivedMap(constituencies) {
+  mkdirSync(outDir, { recursive: true });
+  writeFileSync(path.join(outDir, "constituencies.json"), JSON.stringify(constituencies));
+  writeFileSync(
+    path.join(outDir, "hexes.json"),
+    JSON.stringify({ viewBox: "0 0 700 1000", width: 700, height: 1000, hexes: [] }),
+  );
+  writeFileSync(
+    path.join(outDir, "constituency-index.json"),
+    JSON.stringify(Object.fromEntries(constituencies.map((c) => [c.slug, c.name]))),
+  );
+}
+
 // --- guard ---
 const committedConstituencies = path.join(outDir, "constituencies.json");
 const committedHexes = path.join(outDir, "hexes.json");
@@ -60,12 +168,17 @@ if (!existsSync(akPath)) {
     console.log("No boundaries GeoJSON — keeping committed src/data map outputs");
     process.exit(0);
   }
-  console.error(`Missing ${akPath} — run from repo root: mkdir -p data/boundaries && curl -L -o data/boundaries/ak-v5.geojson https://automaticknowledge.org/wpc-hex/uk-wpc-hex-constitcode-v5-june-2024.geojson`);
-  // don't fail build on CI without boundaries — create empty outputs so astro still builds (map will be empty)
-  mkdirSync(outDir, { recursive: true });
-  writeFileSync(path.join(outDir, "constituencies.json"), JSON.stringify([], null, 2));
-  writeFileSync(path.join(outDir, "hexes.json"), JSON.stringify({ viewBox: "0 0 700 1000", hexes: [] }, null, 2));
-  process.exit(0);
+  const candidates = loadCommittedCandidates();
+  if (!candidates.length) {
+    console.error(`Missing ${akPath} — run from repo root: mkdir -p data/boundaries && curl -L -o data/boundaries/ak-v5.geojson https://automaticknowledge.org/wpc-hex/uk-wpc-hex-constitcode-v5-june-2024.geojson`);
+    mkdirSync(outDir, { recursive: true });
+    writeFileSync(path.join(outDir, "constituencies.json"), JSON.stringify([], null, 2));
+    writeFileSync(path.join(outDir, "hexes.json"), JSON.stringify({ viewBox: "0 0 700 1000", hexes: [] }, null, 2));
+    process.exit(0);
+  }
+  const seats = seatsFromPosts(candidates);
+  writeDerivedMap(seats);
+  console.log(`build-map: no hex file — derived ${seats.length} seat pages from candidates.json posts`);  process.exit(0);
 }
 
 // --- load AK ---
