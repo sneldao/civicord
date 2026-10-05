@@ -95,8 +95,6 @@ function transformCoord([x, y]) {
 // --- guard: pipeline CSVs (fresh clones have none — data/ is gitignored) ---
 // Same philosophy as build-data.mjs: prefer pipeline outputs, fall back to
 // the committed src/data snapshots, and never fail the build for missing input.
-const committedConstituencies = path.join(outDir, "constituencies.json");
-const committedHexes = path.join(outDir, "hexes.json");
 if (!existsSync(path.join(dataDir, "candidacies.csv"))) {
   if (existsSync(committedConstituencies) && existsSync(committedHexes)) {
     console.log("No pipeline CSVs (data/out absent) — keeping committed src/data map outputs");
