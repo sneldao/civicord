@@ -6,9 +6,11 @@ import MobileEssentials from "../../components/MobileEssentials.astro";
 import ScrollReveal from "../../components/ScrollReveal.astro";
 import AgentView from "../../components/AgentView.astro";
 import WebMCP from "../../components/WebMCP.astro";
+import CorrectionRequest from "../../components/CorrectionRequest.astro";
 import { ClientRouter } from "astro:transitions";
 import { partyLiveShare } from "../../lib/cohorts";
 import { AUDIT_DATE, candidateCitation, recordVerdictCopy, statusLabels } from "../../lib/record-copy";
+import { scopeExplanation } from "../../lib/walkback";
 import "../../styles/global.css";
 import constituenciesRaw from "../../data/constituencies.json";
 import hexesRaw from "../../data/hexes.json";
@@ -171,7 +173,8 @@ const personShareText =
     <div class="record-actions" aria-label="Use this record">
       <button type="button" class="btn-primary" id="copy-citation" data-citation={candidateCitation(person)}>Copy citation</button>
       <a class="btn-ghost" href="#evidence">View evidence</a>
-      {claimDiff && (claimDiff.deleted_count > 0 || claimDiff.added_count > 0) && <a class="btn-ghost" href="#claims">What changed</a>}
+      {claimDiff && (claimDiff.deleted?.length > 0 || claimDiff.added?.length > 0) && <a class="btn-ghost" href="#claims">Before and after</a>}
+      <a class="btn-ghost" href="#correction">Propose a correction</a>
       {person.onchain && <a class="btn-ghost" href="#verification">Verify this record</a>}
       <a class="btn-ghost" href="#agent-view">Query The Graph</a>
     </div>
@@ -259,6 +262,61 @@ const personShareText =
       </li>
     </ol>
 
+    {claimDiff && (claimDiff.deleted?.length > 0 || claimDiff.added?.length > 0) && (
+      <section class="content-chrono" id="claims" aria-label="Before and after" tabindex="-1">
+        <h2>Before and after</h2>
+        <p class="muted">
+          April site-wide text against the {claimDiff.checked_at} homepage fetch:{" "}
+          <b>{claimDiff.kept}</b> sentences still present,{" "}
+          <b>{claimDiff.deleted_count}</b> no longer found,{" "}
+          <b>{claimDiff.added_count}</b> new.
+          These are candidates for review, not proof a sentence was withdrawn.
+          {scopeExplanation(claimDiff.scope_note || "")}
+        </p>
+        <p class="muted">
+          The two sides are not paired as edits of one sentence. The snapshot stores the longest{" "}
+          {claimDiff.deleted?.length || 0} sentences no longer found
+          {claimDiff.deleted_count > (claimDiff.deleted?.length ?? 0) ? ` (of ${claimDiff.deleted_count.toLocaleString("en-GB")})` : ""}
+          {" "}and the longest {claimDiff.added?.length || 0} new sentences
+          {claimDiff.added_count > (claimDiff.added?.length ?? 0) ? ` (of ${claimDiff.added_count.toLocaleString("en-GB")})` : ""}.
+        </p>
+        <div class="ba-grid">
+          <div class="ba-col ba-before">
+            <h3>Before <span class="ba-when">April 2025 site text</span></h3>
+            {claimDiff.deleted?.length > 0 ? (
+              claimDiff.deleted.map((c: any) => (
+                <blockquote class="ba-quote">
+                  <p class="claim-text">{c.text}</p>
+                  {(c.topics ?? []).length > 0 && (
+                    <p class="ba-topics">{(c.topics ?? []).map((t: string) => <span class="sig-chip">{t.split("_").join(" ")}</span>)}</p>
+                  )}
+                </blockquote>
+              ))
+            ) : (
+              <p class="ba-empty">No April sentence in this snapshot was marked absent from the later homepage.</p>
+            )}
+          </div>
+          <div class="ba-col ba-after">
+            <h3>After <span class="ba-when">{claimDiff.checked_at} homepage</span></h3>
+            {claimDiff.added?.length > 0 ? (
+              claimDiff.added.map((c: any) => (
+                <blockquote class="ba-quote">
+                  <p class="claim-text">{c.text}</p>
+                  {(c.topics ?? []).length > 0 && (
+                    <p class="ba-topics">{(c.topics ?? []).map((t: string) => <span class="sig-chip">{t.split("_").join(" ")}</span>)}</p>
+                  )}
+                </blockquote>
+              ))
+            ) : (
+              <p class="ba-empty">No new sentence from that homepage fetch is stored for this record.</p>
+            )}
+          </div>
+        </div>
+      </section>
+    )}
+
+    <CorrectionRequest personId={person.id} personName={person.name} />
+
     {contentDiff && (
       <section class="content-chrono" aria-label="Content chronology">
         <h2>Content chronology</h2>
@@ -289,55 +347,11 @@ const personShareText =
             </li>
           )}
           <li class="fact-muted">
-            Spike sample — not yet run for the full register. Method in{" "}
+            This score compares a Wayback capture with the April text. The before and after wording of that comparison is not stored in the snapshot.
+            Method in{" "}
             <a href="https://github.com/sneldao/civicord/blob/main/docs/wayback-spike.md">docs/wayback-spike.md</a>.
           </li>
         </ul>
-      </section>
-    )}
-
-    {claimDiff && (
-      <section class="content-chrono" id="claims" aria-label="What changed in the words" tabindex="-1">
-        <h2>What changed in the words</h2>
-        <p class="muted">
-          April site-wide text vs the {claimDiff.checked_at} homepage fetch:{" "}
-          <b>{claimDiff.kept}</b> sentences still present,{" "}
-          <b>{claimDiff.deleted_count}</b> no longer found,{" "}
-          <b>{claimDiff.added_count}</b> new. Candidates for review, not proof
-          of removal — {claimDiff.scope_note}.
-        </p>
-        {(claimDiff.deleted?.length > 0 || claimDiff.added?.length > 0) && (
-          <p class="muted" style="font-size:0.8rem">
-            Showing up to 5 of each — full per-person lists in{" "}
-            <a href="https://github.com/sneldao/civicord/blob/main/frontend/src/data/claim_diffs.json">claim_diffs.json</a>.
-          </p>
-        )}
-        {claimDiff.deleted?.length > 0 && (
-          <>
-            <h3 class="claims-sub">No longer found ({claimDiff.deleted_count})</h3>
-            <ul class="facts claims-list">
-              {claimDiff.deleted.map((c: any) => (
-                <li>
-                  <span class="claim-text">{c.text}</span>
-                  {(c.topics ?? []).map((t: string) => <span class="sig-chip">{t.replace("_", " ")}</span>)}
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-        {claimDiff.added?.length > 0 && (
-          <>
-            <h3 class="claims-sub">New since the scrape ({claimDiff.added_count})</h3>
-            <ul class="facts claims-list">
-              {claimDiff.added.map((c: any) => (
-                <li>
-                  <span class="claim-text">{c.text}</span>
-                  {(c.topics ?? []).map((t: string) => <span class="sig-chip">{t.replace("_", " ")}</span>)}
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
       </section>
     )}
 
@@ -384,8 +398,8 @@ const personShareText =
     <section id="evidence" class="record-evidence" aria-labelledby="evidence-title" tabindex="-1">
       <h2 id="evidence-title">Source evidence and excerpts</h2>
       <p class="muted">
-        These are short excerpts from the April 2025 scrape, not complete archived
-        pages. Original filenames identify the stored extracts.{" "}
+        These are short excerpts from the April 2025 scrape, not the later wording
+        and not complete archived pages. Original filenames identify the stored extracts.{" "}
         <a href="https://github.com/CampaignLab/candidate-website-scrape" rel="noopener noreferrer">Browse the Campaign Lab source dataset ↗</a>
       </p>
       {contentDiff?.waybackUrl && (

@@ -14,7 +14,9 @@ candidate → website → jurisdiction.
 
 Every page is static, fast, and readable without JS. The quickest surfaces:
 
-- `/` — mission front door (any democracy) + region picker.
+- `/` — one sentence from the UK record that the later homepage no longer contained, with its source, then the region picker.
+- `/candidates/{id}#claims` — before and after wording where a sentence comparison exists.
+- `/candidates/{id}#correction` — submit a sourced correction request. A request is queued; it does not overwrite the audit.
 - `/uk` — United Kingdom genesis dataset: stats, cohorts, hex map, party board.
 - `/api/summary.json` — totals: candidates, live/gone/redirected, audit date.
 - `/api/constituencies.json` — all 650 jurisdictions. Query params:

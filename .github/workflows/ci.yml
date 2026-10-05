@@ -36,6 +36,9 @@ jobs:
       - name: Generate data from committed snapshot
         run: npm run prebuild
         working-directory: frontend
+      - name: Unit tests (corrections + walkback)
+        run: node --experimental-strip-types --test src/lib/corrections.test.mjs src/lib/walkback.test.ts
+        working-directory: frontend
       - name: Astro check
         run: npx astro check
         working-directory: frontend
