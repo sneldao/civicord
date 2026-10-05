@@ -11,6 +11,15 @@
 // Unknown /api/* ids          -> JSON 404 (not the SPA HTML fallback)
 // All other requests fall through to the static Astro assets.
 
+import {
+  QUEUE_NOTE,
+  appendRequest,
+  buildQueuedRequest,
+  parseCorrectionBody,
+  publicCorrection,
+  validateCorrection,
+} from "./corrections-rules.mjs";
+
 const SUBGRAPH_STUDIO =
   "https://api.studio.thegraph.com/query/101650/civicord/v0.0.5";
 
@@ -925,12 +934,11 @@ async function handleEnsVerify(request, url) {
   );
 }
 
-// Correction requests stay a queue. They are not written into audit JSON
-// or ENS text records. Keep the acceptance rules aligned with
-// frontend/src/lib/corrections.mjs.
-const correctionQueue = [];
-const CORRECTION_NOTE =
-  "Queued for review. This request does not change the audit, the scrape, the sentence comparison, or the on-chain record.";
+// Correction requests stay a queue — never an edit of audit JSON or ENS text
+// records. Acceptance rules live in ./corrections-rules.mjs, shared with the
+// dev server plugin (src/lib/corrections.mjs) and the browser form.
+const CORRECTION_KV_KEY = "correction-queue-v1";
+const correctionQueue = []; // in-memory fallback while no KV binding exists
 
 function correctionJson(payload, status = 200) {
   return new Response(JSON.stringify(payload, null, 2), {
@@ -943,88 +951,57 @@ function correctionJson(payload, status = 200) {
   });
 }
 
-function validateCorrectionInput(body) {
-  const errors = [];
-  const input = body && typeof body === "object" ? body : {};
-  if (String(input.fax_number ?? "").trim()) return { ok: false, errors: ["rejected"] };
-  const personId = String(input.personId ?? "").trim();
-  if (!/^\d{1,12}$/.test(personId)) errors.push("personId");
-  const whatIsWrong = String(input.whatIsWrong ?? "").trim();
-  if (whatIsWrong.length < 20 || whatIsWrong.length > 2000) errors.push("whatIsWrong");
-  const proposedCorrection = String(input.proposedCorrection ?? "").trim();
-  if (proposedCorrection.length < 20 || proposedCorrection.length > 2000) errors.push("proposedCorrection");
-  let parsed = null;
-  try {
-    parsed = new URL(String(input.sourceUrl ?? "").trim());
-  } catch {
-    parsed = null;
+async function readCorrectionQueue(env) {
+  if (env && env.CORRECTIONS_KV) {
+    const raw = await env.CORRECTIONS_KV.get(CORRECTION_KV_KEY);
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   }
-  const sourceOk =
-    parsed &&
-    (parsed.protocol === "http:" || parsed.protocol === "https:") &&
-    parsed.hostname.includes(".") &&
-    !parsed.username &&
-    !parsed.password;
-  if (!sourceOk) errors.push("sourceUrl");
-  const contact = String(input.contact ?? "").trim();
-  if (contact.length > 200) errors.push("contact");
-  if (errors.length) return { ok: false, errors };
-  return {
-    ok: true,
-    value: {
-      personId,
-      personName: String(input.personName ?? "").trim().slice(0, 200),
-      recordUrl: `/candidates/${personId}`,
-      whatIsWrong,
-      proposedCorrection,
-      sourceUrl: parsed.toString(),
-      contact,
-    },
-  };
+  return correctionQueue.slice();
 }
 
-function publicCorrection(request) {
-  const { contact, ...rest } = request;
-  return { ...rest, contactProvided: Boolean(contact) };
+async function writeCorrectionQueue(env, queue) {
+  if (env && env.CORRECTIONS_KV) {
+    await env.CORRECTIONS_KV.put(CORRECTION_KV_KEY, JSON.stringify(queue));
+    return;
+  }
+  correctionQueue.length = 0;
+  correctionQueue.push(...queue);
 }
 
-async function handleCorrections(request, url) {
+async function handleCorrections(request, url, env) {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsJson });
   if (request.method === "GET") {
-    const personId = url.searchParams.get("personId") || "";
-    const requests = correctionQueue
-      .filter((row) => !personId || row.personId === personId)
-      .map(publicCorrection);
-    return correctionJson({ requests, stored: "queue", effect: "request", note: CORRECTION_NOTE });
+    const personId = (url.searchParams.get("personId") || "").trim();
+    if (!/^\d{1,12}$/.test(personId)) {
+      return correctionJson({ error: "personId_required", note: QUEUE_NOTE }, 400);
+    }
+    const queue = await readCorrectionQueue(env);
+    const requests = queue.filter((row) => row.personId === personId).map(publicCorrection);
+    return correctionJson({ requests, stored: "queue", effect: "request", note: QUEUE_NOTE });
   }
   if (request.method !== "POST") {
-    return correctionJson({ error: "method_not_allowed", note: CORRECTION_NOTE }, 405);
+    return correctionJson({ error: "method_not_allowed", note: QUEUE_NOTE }, 405);
   }
   const raw = await request.text();
-  if (raw.length > 20000) return correctionJson({ error: "too_large", note: CORRECTION_NOTE }, 400);
-  let input;
   const contentType = request.headers.get("content-type") || "";
-  try {
-    input = contentType.includes("application/json")
-      ? JSON.parse(raw || "null")
-      : Object.fromEntries(new URLSearchParams(raw).entries());
-  } catch {
-    return correctionJson({ error: "invalid_body", note: CORRECTION_NOTE }, 400);
+  const parsed = parseCorrectionBody(raw, contentType);
+  if (!parsed.ok) {
+    return correctionJson({ error: parsed.error, note: QUEUE_NOTE }, 400);
   }
-  const validated = validateCorrectionInput(input);
+  const validated = validateCorrection(parsed.value);
   if (!validated.ok) {
-    return correctionJson({ error: "invalid", fields: validated.errors, note: CORRECTION_NOTE }, 400);
+    return correctionJson({ error: "invalid", fields: validated.errors, note: QUEUE_NOTE }, 400);
   }
-  const requestRow = {
-    id: `cor_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
-    status: "queued",
-    effect: "request",
-    receivedAt: new Date().toISOString(),
-    ...validated.value,
-  };
-  correctionQueue.push(requestRow);
-  if (correctionQueue.length > 500) correctionQueue.splice(0, correctionQueue.length - 500);
-  return correctionJson({ ...publicCorrection(requestRow), note: CORRECTION_NOTE }, 201);
+  const requestRow = buildQueuedRequest(validated.value);
+  const queue = appendRequest(await readCorrectionQueue(env), requestRow);
+  await writeCorrectionQueue(env, queue);
+  return correctionJson({ ...publicCorrection(requestRow), note: QUEUE_NOTE }, 201);
 }
 
 export default {
@@ -1033,7 +1010,7 @@ export default {
     let pathname = url.pathname;
 
     if (pathname === "/api/corrections" || pathname === "/api/corrections/") {
-      return handleCorrections(request, url);
+      return handleCorrections(request, url, env);
     }
 
     // Live Sepolia resolver text() — free eth_call verify for candidate pages.

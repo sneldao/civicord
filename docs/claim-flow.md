@@ -2,10 +2,15 @@
 
 Status: correction requests are queued from the candidate record (2026-10-04).
 A submission is a request in the review queue — it does not overwrite the
-audit, the scrape, or the on-chain fields. Identity checks, maintainer
-acceptance, and on-chain delegate writes are still not built. Ownership
-settled 2026-09-21: candidate updates are ours and the candidates' to design;
-Campaign Lab is distribution, not owner.
+audit, the scrape, or the on-chain fields. Storage: local dev/preview writes
+`frontend/.data/correction-queue.json`; on Pages the queue persists to a
+`CORRECTIONS_KV` KV binding when one is configured (create with
+`npx wrangler kv namespace create CORRECTIONS_KV`, bind in Pages dashboard),
+otherwise it is in-memory per instance and dies with the isolate — bind the
+KV namespace before soliciting real candidate corrections. Identity checks,
+maintainer acceptance, and on-chain delegate writes are still not built.
+Ownership settled 2026-09-21: candidate updates are ours and the candidates'
+to design; Campaign Lab is distribution, not owner.
 
 ## Problem
 

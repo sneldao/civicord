@@ -73,11 +73,15 @@ const leadChecked = lead?.checkedAt && /^\d{4}-\d{2}-\d{2}$/.test(lead.checkedAt
             <a class="btn-ghost" href={`/candidates/${lead.personId}#correction`}>Propose a correction</a>
           </div>
           <p class="walkback-next">
-            <a href="/methodology#verified">What is verified, and what is not</a>
+            <a href="/steward">Roster digest</a>
+            {" · "}
+            <a href="/journalists">Journalist leads</a>
             {" · "}
             <a href="/browse">Ledger</a>
             {" · "}
             <a href="/uk">United Kingdom</a>
+            {" · "}
+            <a href="/methodology#verified">What is verified, and what is not</a>
           </p>
         </article>
       ) : (

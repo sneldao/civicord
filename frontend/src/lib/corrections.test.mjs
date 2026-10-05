@@ -79,6 +79,9 @@ test("POST /api/corrections persists and GET returns the same request", async ()
     assert.equal(body.effect, "request");
     assert.equal(body.note, QUEUE_NOTE);
     assert.equal(body.contact, undefined);
+    const unscoped = await fetch(`http://127.0.0.1:${port}/api/corrections`);
+    assert.equal(unscoped.status, 400);
+    assert.equal((await unscoped.json()).error, "personId_required");
     const listed = await fetch(`http://127.0.0.1:${port}/api/corrections?personId=38841`);
     const queue = await listed.json();
     assert.equal(queue.requests.length, 1);

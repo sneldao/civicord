@@ -54,7 +54,14 @@ export async function handleCorrectionRequest(req, res, file) {
 
   if (req.method === "GET") {
     const url = new URL(req.url || "/", "http://127.0.0.1");
-    const requests = await listCorrections(file, url.searchParams.get("personId"));
+    const personId = (url.searchParams.get("personId") || "").trim();
+    if (!/^\d{1,12}$/.test(personId)) {
+      res.statusCode = 400;
+      res.setHeader("content-type", "application/json; charset=utf-8");
+      res.end(JSON.stringify({ error: "personId_required", note: QUEUE_NOTE }));
+      return true;
+    }
+    const requests = await listCorrections(file, personId);
     const body = JSON.stringify({ requests, stored: "queue", effect: "request", note: QUEUE_NOTE });
     res.statusCode = 200;
     res.setHeader("content-type", "application/json; charset=utf-8");
