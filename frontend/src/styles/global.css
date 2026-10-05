@@ -1790,3 +1790,84 @@ tbody tr.is-settling {
 .claims-sub { font-family: var(--serif); font-size: 0.95rem; margin: 0.9rem 0 0.3rem; }
 .claims-list .claim-text { color: var(--ink); }
 .claims-list .sig-chip { margin-left: 0.35rem; }
+
+.pair-card {
+  margin: 0.9rem 0;
+  padding: 0.85rem 0 0.2rem;
+  border-top: 1px solid var(--rule);
+}
+.pair-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.45rem;
+}
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.pair-side {
+  background: var(--paper-deep);
+  border-radius: 4px;
+  padding: 0.7rem 0.8rem;
+}
+.pair-side--after { border-left: 3px solid var(--warn); }
+.pair-side .change-kicker { margin-top: 0; }
+h3.change-kicker {
+  font-family: var(--sans, inherit);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 0.35rem;
+}
+.pair-url { word-break: break-all; font-size: 0.82rem; margin: 0.35rem 0 0; }
+.pair-gap { color: var(--muted); font-size: 0.82rem; margin: 0.45rem 0 0; max-width: 78ch; }
+.pair-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0.55rem 0 0.2rem; }
+.pair-topics { margin: 0.4rem 0 0; }
+.pair-topics .sig-chip { margin-right: 0.3rem; }
+.follow-btn[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--paper-deep);
+}
+.following { margin: 1.4rem 0 0.4rem; }
+.following-lede { max-width: 70ch; }
+.following-list { margin: 0.4rem 0 0.8rem; padding-left: 1.15rem; }
+.following-list li { margin: 0.35rem 0; }
+.following-actions { margin: 0.4rem 0 0; }
+.seat-story-wrap { margin: 1.2rem 0 0.4rem; }
+.seat-story-wrap h2 {
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  margin: 0 0 0.6rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 2px solid var(--ink);
+}
+.seat-story { list-style: none; margin: 0; padding: 0; }
+.seat-story > li {
+  border-left: 3px solid var(--ink);
+  margin: 0;
+  padding: 0.15rem 0 1rem 0.9rem;
+}
+.seat-story time { font-weight: 700; font-size: 0.85rem; }
+.seat-story h3 { font-family: var(--serif); font-size: 1.02rem; margin: 0.15rem 0 0.3rem; }
+.seat-story ul { margin: 0.35rem 0 0; padding-left: 1.1rem; }
+.seat-story li li { margin: 0.28rem 0; }
+.dg-note { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; max-width: 46ch; }
+.who .follow-btn { margin-left: 0.45rem; }
+#reply-draft {
+  width: min(100%, 72ch);
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--paper-deep);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 0.7rem 0.8rem;
+}
+@media (max-width: 720px) {
+  .pair { grid-template-columns: 1fr; }
+}

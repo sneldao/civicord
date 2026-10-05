@@ -1,0 +1,17 @@
+---
+import { NO_CHANGE_SUMMARY } from "../lib/change-feed";
+---
+
+<section id="following" class="following" aria-labelledby="following-title" data-no-change={NO_CHANGE_SUMMARY} data-index="/follow-index.json">
+  <h2 id="following-title">Records you follow</h2>
+  <p class="muted following-lede">
+    Saved in this browser only. Come back to this page to see which followed candidates and seats
+    changed between the April 2025 scrape and the later checks in this build. No account, no email, no notification.
+  </p>
+  <div id="following-list">
+    <p class="muted">JavaScript is required to store follows on this device. The record pages themselves stay readable without it.</p>
+  </div>
+  <p class="following-actions">
+    <button type="button" id="following-clear" class="btn-ghost btn-sm" hidden>Clear follows in this browser</button>
+  </p>
+</section>

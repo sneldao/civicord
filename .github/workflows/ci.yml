@@ -31,6 +31,11 @@ jobs:
         working-directory: frontend
       # The build resolves data from pipeline CSVs → R2 snapshot → committed
       # JSON; CI has no CSVs, so the committed snapshot is the source of truth.
+      # astro check imports generated map JSON. Materialise it from
+      # candidates.json before the check (hex file is optional).
+      - name: Materialise seat pages
+        run: node scripts/build-map.mjs
+        working-directory: frontend
       - name: Astro check
         run: npx astro check
         working-directory: frontend

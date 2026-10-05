@@ -16,8 +16,14 @@ try {
   if (arr.length) constituencies = arr;
 } catch {}
 const withSites = constituencies.filter((c) => c.stats.sites > 0).length;
+const officialSeats = constituencies.some((c) => c.gssCode);
 const seatsTotal = constituencies.length || 650;
-const seatsWithSites = withSites || seatsTotal - 17;
+const seatsWithSites = withSites || (officialSeats ? seatsTotal - 17 : 0);
+const seatMeta = !constituencies.length
+  ? `${seatsWithSites} of ${seatsTotal} seats`
+  : officialSeats
+    ? `${seatsWithSites} of ${seatsTotal} seats`
+    : `${withSites.toLocaleString("en-GB")} places named on candidate websites`;
 
 const all = await getCollection("candidates");
 const candidates = all.map((e) => e.data);
@@ -83,12 +89,12 @@ const livePct = audited.length ? pct(live.length, audited.length) : 0;
             <span>
               <span class="f-label">For roster stewards</span>
               <h3>I look after a roster of campaign sites</h3>
-              <span class="f-meta">What died, what now points at a parked domain, what changed — grouped by action needed, with CSV export per group.</span>
+              <span class="f-meta">What died, what now points at a parked domain, what changed — grouped by action needed, with CSV export. Follow records in this browser and see which changed between the snapshots.</span>
               <span class="f-cta">Open the roster digest →</span>
             </span>
             <span class="wide-cta" aria-hidden="true">{livePct}% responding<br />last audit · Sept 2026</span>
           </a>
-          <a class="feature-card" href="/journalists"><span class="f-label">For journalists</span><h3>The story is in the change</h3><span class="f-meta">Three pre-filtered leads from the change feed — dead domains, surname-absent pages, transformed content — each one citable.</span><span class="f-cta">See the leads →</span></a>
+          <a class="feature-card" href="/journalists"><span class="f-label">For journalists</span><h3>The story is in the change</h3><span class="f-meta">Leads from the change feed, plus citable lines: the April sentence, and that the later homepage did not contain it.</span><span class="f-cta">See the leads →</span></a>
           <a class="feature-card" href="/browse?change=repurposed_suspect"><span class="f-label">For researchers</span><h3>Longitudinal, stable, citable</h3><span class="f-meta">2,375 candidate records keyed on Democracy Club IDs, filterable by outcome, party and place. Copy citation on every record.</span><span class="f-cta">Enter the ledger →</span></a>
         </div>
         <p class="also-links">
@@ -105,7 +111,7 @@ const livePct = audited.length ? pct(live.length, audited.length) : 0;
           <a class="future-card is-live" href="/uk">
             <span class="fc-status">Live now</span>
             <b class="vt-uk-title">United Kingdom</b>
-            <span class="fc-meta">{candidates.length.toLocaleString("en-GB")} candidates · {seatsWithSites} of {seatsTotal} seats · Sept 2026</span>
+            <span class="fc-meta">{candidates.length.toLocaleString("en-GB")} candidates · {seatMeta} · Sept 2026</span>
             <span class="fc-cta">Explore the dataset ↗</span>
           </a>
           <a class="future-card" href="https://github.com/sneldao/civicord/issues">

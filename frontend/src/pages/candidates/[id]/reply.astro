@@ -1,0 +1,142 @@
+---
+import { getCollection } from "astro:content";
+import { ClientRouter } from "astro:transitions";
+import ClaimPairs from "../../../components/ClaimPairs.astro";
+import ClientRecordScript from "../../../components/ClientRecordScript.astro";
+import {
+  AUDIT_LABEL,
+  beforeAfterPairs,
+  candidateFollowRecord,
+  correctionIssueDraft,
+  listGap,
+  siteStory,
+  unmatchedAdditions,
+  type ClaimDiffRow,
+  type ContentDiffInput,
+} from "../../../lib/change-feed";
+import "../../../styles/global.css";
+import claimDiffsRaw from "../../../data/claim_diffs.json";
+import contentDiffsRaw from "../../../data/content_diffs.json";
+
+export async function getStaticPaths() {
+  const all = await getCollection("candidates");
+  return all.map((entry) => ({ params: { id: entry.data.id }, props: { person: entry.data } }));
+}
+
+const { person } = Astro.props;
+const claimsRoot = claimDiffsRaw as { byPerson?: Record<string, ClaimDiffRow> };
+const contentRoot = contentDiffsRaw as { byPerson?: Record<string, ContentDiffInput> };
+const claimDiff = claimsRoot.byPerson?.[person.id] ?? null;
+const contentDiff = contentRoot.byPerson?.[person.id] ?? null;
+const pairs = beforeAfterPairs(person.id, person.name, claimDiff);
+const additions = unmatchedAdditions(claimDiff);
+const gap = listGap(claimDiff);
+const follow = candidateFollowRecord(person, claimDiff, contentDiff);
+const draft = correctionIssueDraft(person, claimDiff);
+const parties = [...new Set(person.websites.flatMap((site) => site.parties))];
+---
+
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={`Reply to the Civicord public record for ${person.name}. A reply is a suggestion. It does not edit the record.`} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Reply — {person.name} — Civicord</title>
+    <ClientRouter />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <p class="crumb">
+      <a href="/">Civicord</a> · <a href={`/candidates/${person.id}`}>{person.name}</a> / <b>Reply</b>
+    </p>
+
+    <main id="main" tabindex="-1">
+      <header class="record-head">
+        <h1>Reply — {person.name}</h1>
+        <ul class="chips">
+          {parties.map((party) => <li>{party}</li>)}
+          <li>Democracy Club person ID {person.id}</li>
+        </ul>
+      </header>
+
+      <p class="lede" style="max-width:68ch">
+        This is the public record of what was published, and of what the later checks observed.
+        It is not an endorsement of {person.name} or of the text. If something here is wrong, send a correction.
+        A reply is a suggestion. It does not edit this page, the April 2025 scrape, or the audit.
+      </p>
+
+      <section class="content-chrono" aria-labelledby="record-title">
+        <h2 id="record-title">The record</h2>
+        <p class="muted">
+          URLs from the April 2025 scrape, checked again on {AUDIT_LABEL}.
+          {person.onchain?.ens && <> Public name <code>{person.onchain.ens}</code> on Sepolia testnet. A reply does not write to it.</>}
+        </p>
+        <ul class="facts">
+          {person.websites.map((site) => <li>{siteStory(site).detail}</li>)}
+        </ul>
+        <p><a href={`/candidates/${person.id}`}>Open the full record</a></p>
+      </section>
+
+      <section class="content-chrono" id="claims" aria-labelledby="changed-title">
+        <h2 id="changed-title">What changed</h2>
+        {claimDiff ? (
+          <>
+            <p class="muted">
+              April site text compared with the {pairs[0]?.afterLabel ?? additions[0]?.afterLabel ?? claimDiff.checked_at} homepage fetch
+              of <a href={claimDiff.url} rel="noopener noreferrer">{claimDiff.url}</a>.
+              {claimDiff.kept ?? 0} sentences still present, {claimDiff.deleted_count ?? 0} not found, {claimDiff.added_count ?? 0} new.
+              Scope: {claimDiff.scope_note}.
+            </p>
+            <ClaimPairs pairs={pairs} additions={additions} listGap={gap} />
+            {pairs.length === 0 && additions.length === 0 && (
+              <p>This comparison recorded no missing sentence and no new sentence in the stored lists.</p>
+            )}
+          </>
+        ) : (
+          <p>
+            No sentence-level before/after is stored for this record. The change on file is the HTTP result above.
+            {contentDiff?.significance && (
+              <> A Wayback score of <b>{contentDiff.significance}</b> is stored{contentDiff.waybackUrl && <> · <a href={contentDiff.waybackUrl} rel="noopener noreferrer">archive</a></>}. Sentence text for that score is absent from the snapshot.</>
+            )}
+          </p>
+        )}
+      </section>
+
+      <section class="content-chrono" aria-labelledby="reply-title">
+        <h2 id="reply-title">Reply if this is wrong</h2>
+        <p>
+          Corrections today go to the project tracker. The link opens a GitHub issue with this record filled in.
+          There is no login on Civicord, no review queue on this site, and no email is sent.
+        </p>
+        <p class="pair-actions">
+          <a class="btn-primary" href={draft.href} rel="noopener noreferrer">File this reply on GitHub</a>
+          <button
+            type="button"
+            class="btn-ghost follow-btn"
+            data-follow-kind="candidate"
+            data-follow-id={person.id}
+            data-follow-name={person.name}
+            data-follow-href={`/candidates/${person.id}`}
+            data-follow-fingerprint={follow.fingerprint}
+            data-follow-summary={follow.summary}
+            aria-pressed="false"
+          >Follow</button>
+        </p>
+        <label for="reply-draft">Text of the suggestion</label>
+        <textarea id="reply-draft" readonly rows="14">{draft.body}</textarea>
+        <p class="muted pair-gap">
+          History stays appended. A maintainer can publish an accepted correction later. The scrape and the audit remain citable either way.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        <a href={`/candidates/${person.id}`}>Back to the record</a> ·
+        <a href="https://github.com/sneldao/civicord">github.com/sneldao/civicord</a>
+      </p>
+    </footer>
+    <ClientRecordScript />
+  </body>
+</html>

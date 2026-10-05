@@ -2,14 +2,26 @@
 // Journalist orientation: the change feed as a tip line. Counts are computed
 // at build time from the same derivations as /steward and /browse, so a lead
 // quoted from this page matches the ledger it links to.
+import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import CommandPalette from "../components/CommandPalette.astro";
+import FollowingPanel from "../components/FollowingPanel.astro";
+import ClientRecordScript from "../components/ClientRecordScript.astro";
 import MobileEssentials from "../components/MobileEssentials.astro";
 import ScrollReveal from "../components/ScrollReveal.astro";
 import WebMCP from "../components/WebMCP.astro";
 import { stewardGroups } from "../lib/steward";
 import { statusCohorts } from "../lib/cohorts";
+import {
+  candidateFollowRecord,
+  formatIsoDate,
+  journalistTips,
+  type ClaimDiffRow,
+  type ContentDiffInput,
+  type PersonInput,
+} from "../lib/change-feed";
 import contentDiffsRaw from "../data/content_diffs.json";
+import claimDiffsRaw from "../data/claim_diffs.json";
 import "../styles/global.css";
 
 const { groups, sampleN } = await stewardGroups();
@@ -41,9 +53,23 @@ const leads: Array<{ href: string; n: number; title: string; meta: string }> = [
     href: "/browse?sig=transformed",
     n: transformed,
     title: `Content transformed since the scrape (one of ${sampleN} Wayback-scored candidates)`,
-    meta: "Normalized before/after text diffs classified by significance.",
+    meta: "Significance scores from a Wayback sample. Sentence text for those diffs is not in this snapshot.",
   },
 ];
+
+const claimByPerson = ((claimDiffsRaw as { byPerson?: Record<string, ClaimDiffRow> }).byPerson ?? {}) as Record<string, ClaimDiffRow>;
+const contentByPerson = ((contentDiffsRaw as { byPerson?: Record<string, ContentDiffInput> }).byPerson ?? {}) as Record<string, ContentDiffInput>;
+const tips = journalistTips(claimByPerson, 12);
+const disappearedPeople = Object.values(claimByPerson).filter((row) => (row.deleted_count ?? 0) > 0).length;
+const claimWhen = formatIsoDate(Object.values(claimByPerson)[0]?.checked_at || "2026-09-21");
+const people = (await getCollection("candidates")).map((entry) => entry.data as PersonInput);
+const peopleById = new Map(people.map((person) => [person.id, person]));
+const followFor = (id: string) => {
+  const person = peopleById.get(id);
+  if (!person) return { fingerprint: "", summary: "", href: `/candidates/${id}` };
+  return candidateFollowRecord(person, claimByPerson[id], contentByPerson[id]);
+};
+const tipViews = tips.map((tip) => ({ ...tip, follow: followFor(tip.personId) }));
 ---
 
 <html lang="en-GB">
@@ -97,6 +123,52 @@ const leads: Array<{ href: string; n: number; title: string; meta: string }> = [
         </p>
       </section>
 
+      <section aria-labelledby="lines-title" data-reveal>
+        <h2 id="lines-title">Lines you can cite</h2>
+        <p class="muted" style="max-width:70ch">
+          {tips.length} sentences chosen from {disappearedPeople.toLocaleString("en-GB")} records where April text was absent from the {claimWhen} homepage.
+          The choice prefers keyword-tagged sentences and ranks link dumps and hashtag strings down.
+          Each line is quoted from the snapshot. None is paired with a replacement — claimdiff-v1 does not match an edit to the sentence that followed it.
+        </p>
+        {tipViews.map((tip) => (
+            <article class="pair-card">
+              <header class="pair-head">
+                <a href={`/candidates/${tip.personId}#claims`}>{tip.personName}</a>
+                <button
+                  type="button"
+                  class="btn-ghost btn-sm follow-btn"
+                  data-follow-kind="candidate"
+                  data-follow-id={tip.personId}
+                  data-follow-name={tip.personName}
+                  data-follow-href={`/candidates/${tip.personId}`}
+                  data-follow-fingerprint={tip.follow.fingerprint}
+                  data-follow-summary={tip.follow.summary}
+                  aria-pressed="false"
+                >Follow</button>
+              </header>
+              <div class="pair">
+                <div class="pair-side">
+                  <h3 class="change-kicker">Before · April 2025</h3>
+                  <p class="claim-text">{tip.beforeText}</p>
+                  <p class="pair-topics">{tip.topics.map((topic) => <span class="sig-chip">{topic.replaceAll("_", " ")}</span>)}</p>
+                </div>
+                <div class="pair-side pair-side--after">
+                  <h3 class="change-kicker">After · {tip.afterLabel}</h3>
+                  <p>Not found on the homepage fetch.</p>
+                  <p class="muted pair-url"><a href={tip.url} rel="noopener noreferrer">{tip.url}</a></p>
+                </div>
+              </div>
+              <p class="pair-gap">Gap: no replacement sentence is matched. Scope: {tip.scopeNote}. {tip.deletedCount.toLocaleString("en-GB")} sentences not found on this record; this is one of the stored examples.</p>
+              <p class="pair-actions">
+                <button type="button" class="btn-ghost btn-sm" data-claim-citation={tip.citation}>Copy this line</button>
+                <span class="pair-copy-status visually-hidden" role="status"></span>
+              </p>
+            </article>
+        ))}
+      </section>
+
+      <FollowingPanel />
+
       <section class="record-evidence" aria-labelledby="worked-title" data-reveal>
         <h2 id="worked-title">Worked examples</h2>
         <ul class="facts">
@@ -133,6 +205,7 @@ const leads: Array<{ href: string; n: number; title: string; meta: string }> = [
       </p>
     </footer>
 
+    <ClientRecordScript />
     <CommandPalette />
     <MobileEssentials />
     <ScrollReveal />
