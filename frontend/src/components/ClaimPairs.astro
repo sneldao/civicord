@@ -33,7 +33,7 @@ const { pairs, additions, listGap = null } = Astro.props;
     <p class="pair-gap">Gap: no replacement sentence is matched. Scope: {pair.scopeNote}.</p>
     <p class="pair-actions">
       <button type="button" class="btn-ghost btn-sm" data-claim-citation={pair.citation}>Copy this line</button>
-      <span class="pair-copy-status visually-hidden" role="status"></span>
+      <span class="pair-copy-status" role="status"></span>
     </p>
   </article>
 ))}

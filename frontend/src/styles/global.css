@@ -1826,6 +1826,8 @@ h3.change-kicker {
 .pair-url { word-break: break-all; font-size: 0.82rem; margin: 0.35rem 0 0; }
 .pair-gap { color: var(--muted); font-size: 0.82rem; margin: 0.45rem 0 0; max-width: 78ch; }
 .pair-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0.55rem 0 0.2rem; }
+.pair-copy-status:empty { display: none; }
+.pair-copy-status { color: var(--live); font-size: 0.82rem; font-weight: 700; }
 .pair-topics { margin: 0.4rem 0 0; }
 .pair-topics .sig-chip { margin-right: 0.3rem; }
 .follow-btn[aria-pressed="true"] {
