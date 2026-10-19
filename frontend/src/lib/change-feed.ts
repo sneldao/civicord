@@ -7,6 +7,7 @@
 // "not found on the later homepage". New homepage sentences are listed apart.
 
 import { AUDIT_DATE, RECORD_ORIGIN, describeWebsite, statusLabels } from "./record-copy.ts";
+import { scopeExplanation } from "./walkback.ts";
 import { slugify } from "./slug.ts";
 
 export const SCRAPE_LABEL = "April 2025";
@@ -265,7 +266,8 @@ export function claimCitation(input: {
     `Civicord — ${input.personName} (Democracy Club person ID ${input.personId}).`,
     `Before (${SCRAPE_LABEL} scrape): ${input.beforeText}`,
     `After (${input.afterLabel} homepage fetch of ${input.url}): not found.`,
-    `Gap: ${PAIRING_GAP} Scope: ${input.scopeNote}.`,
+    `Gap: ${PAIRING_GAP}`,
+    scopeExplanation(input.scopeNote),
     "A missing sentence is evidence for review, not proof it was removed.",
     `Record: ${RECORD_ORIGIN}/candidates/${encodeURIComponent(input.personId)}#claims`,
   ].join("\n");

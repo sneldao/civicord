@@ -11,6 +11,7 @@ import MobileEssentials from "../components/MobileEssentials.astro";
 import ScrollReveal from "../components/ScrollReveal.astro";
 import WebMCP from "../components/WebMCP.astro";
 import { stewardGroups } from "../lib/steward";
+import { scopeExplanation } from "../lib/walkback";
 import { statusCohorts } from "../lib/cohorts";
 import {
   candidateFollowRecord,
@@ -158,7 +159,7 @@ const tipViews = tips.map((tip) => ({ ...tip, follow: followFor(tip.personId) })
                   <p class="muted pair-url"><a href={tip.url} rel="noopener noreferrer">{tip.url}</a></p>
                 </div>
               </div>
-              <p class="pair-gap">Gap: no replacement sentence is matched. Scope: {tip.scopeNote}. {tip.deletedCount.toLocaleString("en-GB")} sentences not found on this record; this is one of the stored examples.</p>
+              <p class="pair-gap">Gap: no replacement sentence is matched. {scopeExplanation(tip.scopeNote)} {tip.deletedCount.toLocaleString("en-GB")} sentences not found on this record; this is one of the stored examples.</p>
               <p class="pair-actions">
                 <button type="button" class="btn-ghost btn-sm" data-claim-citation={tip.citation}>Copy this line</button>
                 <span class="pair-copy-status" role="status"></span>

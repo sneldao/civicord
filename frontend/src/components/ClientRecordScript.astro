@@ -187,6 +187,26 @@
         if (status) status.textContent = "Clipboard unavailable. Select the line from the record.";
       }
     });
+    // Generic copy-anywhere button, for surfaces that show a fact but no citation.
+    document.addEventListener("click", async (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const btn = target.closest<HTMLButtonElement>("[data-copy-text]");
+      if (!btn) return;
+      const status = btn.parentElement?.querySelector<HTMLElement>(".pair-copy-status");
+      const done = (msg: string) => {
+        if (status) status.textContent = msg;
+      };
+      const text = btn.dataset.copyText || "";
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        done(btn.dataset.copyDone || "Copied.");
+      } catch {
+        done("Clipboard unavailable — select and copy manually.");
+      }
+      if (status) window.setTimeout(() => (status.textContent = ""), 4000);
+    });
   }
 
   document.addEventListener("astro:page-load", bind);

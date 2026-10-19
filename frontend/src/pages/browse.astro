@@ -8,6 +8,7 @@ import MobileEssentials from "../components/MobileEssentials.astro";
 import ScrollReveal from "../components/ScrollReveal.astro";
 import WebMCP from "../components/WebMCP.astro";
 import "../styles/global.css";
+import { CHANGE_LABELS } from "../lib/steward";
 import constituenciesRaw from "../data/constituencies.json";
 import contentDiffsRaw from "../data/content_diffs.json";
 
@@ -47,15 +48,7 @@ const statusLabels: Record<string, string> = {
   not_audited: "Not audited",
 };
 
-const changeFilterLabels: Record<string, string> = {
-  gone: "DNS / connection failure",
-  repurposed_suspect: "Surname absent (review needed)",
-  redirected: "Redirected",
-  still_attested: "Responding, no redirect recorded",
-  other: "Other / residual",
-  unaudited: "Unaudited",
-};
-const VALID_CHANGES = new Set(Object.keys(changeFilterLabels));
+const VALID_CHANGES = new Set(Object.keys(CHANGE_LABELS));
 
 const significanceFilterLabels: Record<string, string> = {
   unchanged: "Unchanged (high overlap)",
@@ -168,7 +161,7 @@ function slugify(name: string): string {
       <label class="visually-hidden" for="change">Filter by change</label>
       <select id="change" aria-label="Filter by what changed">
         <option value="all">All changes</option>
-        {Object.entries(changeFilterLabels).map(([value, label]) => (
+        {Object.entries(CHANGE_LABELS).map(([value, label]) => (
           <option value={value}>{label}</option>
         ))}
       </select>
@@ -350,7 +343,12 @@ function slugify(name: string): string {
 
         const getParams = () => new URLSearchParams(location.search);
 
-        const syncUrl = () => {
+        let commitTimer = null;
+
+        // commit=true makes the view a history entry so Back rewinds a filter
+        // change instead of leaving the ledger. Typing only replaces the current
+        // entry, so a search does not push one entry per keystroke.
+        const syncUrl = (commit) => {
           const out = new URLSearchParams();
           if (q.value.trim()) out.set("q", q.value.trim().slice(0, 120));
           if (status.value !== "all") out.set("status", status.value);
@@ -360,7 +358,16 @@ function slugify(name: string): string {
           if (activeConstituency) out.set("constituency", activeConstituency);
           if (currentPage > 1) out.set("page", String(currentPage));
           const next = out.toString();
-          history.replaceState(null, "", next ? `${location.pathname}?${next}` : location.pathname);
+          const url = next ? `${location.pathname}?${next}` : location.pathname;
+          clearTimeout(commitTimer);
+          if (commit === true) {
+            commitTimer = setTimeout(() => {
+              if ((location.search || "") === (next ? `?${next}` : "")) return;
+              history.pushState({ civicordView: next }, "", url);
+            }, 150);
+          } else {
+            history.replaceState(null, "", url);
+          }
         };
 
         const updateBanner = () => {
@@ -406,7 +413,7 @@ function slugify(name: string): string {
             if (active) b.setAttribute("aria-current", "page");
             b.addEventListener("click", () => {
               currentPage = p;
-              syncUrl();
+              syncUrl(true);
               apply();
               window.scrollTo({ top: 0, behavior: "smooth" });
             });
@@ -561,7 +568,7 @@ function slugify(name: string): string {
                 noresultsSuggest.innerHTML = `Did you mean <button type="button" class="link-inline" data-suggest-party="${best}">${best}</button>?`;
                 noresultsSuggest.querySelector("[data-suggest-party]")?.addEventListener("click", (e) => {
                   const v = e.currentTarget.dataset.suggestParty;
-                  if (party && window.__COHORT_PARTIES.includes(v)) { party.value = v; q.value = ""; legendClasses=null; legend.forEach((b)=>b.setAttribute("aria-pressed","false")); currentPage=1; syncUrl(); apply(); }
+                  if (party && window.__COHORT_PARTIES.includes(v)) { party.value = v; q.value = ""; legendClasses=null; legend.forEach((b)=>b.setAttribute("aria-pressed","false")); currentPage=1; syncUrl(true); apply(); }
                 });
               } else {
                 noresultsSuggest.hidden = true;
@@ -582,10 +589,10 @@ function slugify(name: string): string {
         };
 
         q.addEventListener("input", () => { currentPage = 1; syncUrl(); apply(); });
-        status.addEventListener("change", () => { currentPage = 1; syncUrl(); apply(); });
-        change?.addEventListener("change", () => { currentPage = 1; syncUrl(); apply(); });
-        sig?.addEventListener("change", () => { currentPage = 1; syncUrl(); apply(); });
-        party?.addEventListener("change", () => { currentPage = 1; syncUrl(); apply(); });
+        status.addEventListener("change", () => { currentPage = 1; syncUrl(true); apply(); });
+        change?.addEventListener("change", () => { currentPage = 1; syncUrl(true); apply(); });
+        sig?.addEventListener("change", () => { currentPage = 1; syncUrl(true); apply(); });
+        party?.addEventListener("change", () => { currentPage = 1; syncUrl(true); apply(); });
         legend.forEach((btn) =>
           btn.addEventListener("click", () => {
             const classes = btn.dataset.classes.split(",");
@@ -599,7 +606,7 @@ function slugify(name: string): string {
               status.value = "all";
             }
             currentPage = 1;
-            syncUrl();
+            syncUrl(true);
             apply();
           })
         );
@@ -613,14 +620,14 @@ function slugify(name: string): string {
           legend.forEach((b) => b.setAttribute("aria-pressed", "false"));
           activeConstituency = null;
           currentPage = 1;
-          syncUrl();
+          syncUrl(true);
           apply();
           q.focus();
         });
         clearConstituencyBtn?.addEventListener("click", () => {
           activeConstituency = null;
           currentPage = 1;
-          syncUrl();
+          syncUrl(true);
           apply();
         });
 
@@ -665,12 +672,12 @@ function slugify(name: string): string {
             if (q.value) {
               q.value = "";
               currentPage = 1;
-              syncUrl();
+              syncUrl(true);
               apply();
             } else if (activeConstituency) {
               activeConstituency = null;
               currentPage = 1;
-              syncUrl();
+              syncUrl(true);
               apply();
             } else {
               q.blur();
@@ -685,46 +692,65 @@ function slugify(name: string): string {
           if ((window.__COHORT_CONSTITUENCIES ?? []).includes(slug)) {
             activeConstituency = slug;
             currentPage = 1;
-            syncUrl();
+            syncUrl(true);
             apply();
             banner?.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
           }
         });
 
-        // boot from URL
-        const params = getParams();
-        const bootStatuses = window.__COHORT_STATUSES;
-        const bootParties = window.__COHORT_PARTIES;
-        const bootConstituencies = window.__COHORT_CONSTITUENCIES ?? [];
-        const qp = (params.get("party") ?? "").toLowerCase();
-        const qs = params.get("status") ?? "";
-        const qchange = params.get("change") ?? "";
-        const qsig = params.get("sig") ?? "";
-        const qq = params.get("q") ?? "";
-        const qc = (params.get("constituency") ?? "").toLowerCase();
-        const qpage = parseInt(params.get("page") ?? "1", 10);
-        if (party && qp && bootParties.includes(qp)) party.value = qp;
-        if (qs && bootStatuses.includes(qs)) status.value = qs;
-        if (change && qchange && VALID_CHANGES.has(qchange)) change.value = qchange;
-        if (sig && qsig && VALID_SIGS.has(qsig)) sig.value = qsig;
-        if (qc && bootConstituencies.includes(qc)) activeConstituency = qc;
-        if (qq) q.value = qq.slice(0, 120);
-        if (Number.isFinite(qpage) && qpage > 1) currentPage = Math.min(qpage, 500);
+        // Read the URL into the controls. Runs at boot and on every popstate, so
+        // it resets first — a Back step can remove a filter, not only add one.
+        const restoreFromUrl = () => {
+          const params = getParams();
+          const bootStatuses = window.__COHORT_STATUSES ?? [];
+          const bootParties = window.__COHORT_PARTIES ?? [];
+          const bootConstituencies = window.__COHORT_CONSTITUENCIES ?? [];
+          const qp = (params.get("party") ?? "").toLowerCase();
+          const qs = params.get("status") ?? "";
+          const qchange = params.get("change") ?? "";
+          const qsig = params.get("sig") ?? "";
+          const qq = params.get("q") ?? "";
+          const qc = (params.get("constituency") ?? "").toLowerCase();
+          const qpage = parseInt(params.get("page") ?? "1", 10);
 
-        // virtual statuses that map to filtered views (cohort deeplinks)
-        if (qs === "gone" || qs === "redirected") {
-          const hasOption = [...status.options].some((o) => o.value === qs);
-          if (hasOption) status.value = qs;
-          else status.value = qs;
-          if (qs === "gone") {
-            legend.forEach((b) => {
-              if (b.dataset.classes === "dns_error,connection_error") b.setAttribute("aria-pressed", "true");
-            });
-            legendClasses = null;
+          q.value = "";
+          status.value = "all";
+          if (change) change.value = "all";
+          if (sig) sig.value = "all";
+          if (party) party.value = "all";
+          legendClasses = null;
+          activeConstituency = null;
+          currentPage = 1;
+          legend.forEach((b) => b.setAttribute("aria-pressed", "false"));
+
+          if (party && qp && bootParties.includes(qp)) party.value = qp;
+          if (qs && bootStatuses.includes(qs)) status.value = qs;
+          if (change && qchange && VALID_CHANGES.has(qchange)) change.value = qchange;
+          if (sig && qsig && VALID_SIGS.has(qsig)) sig.value = qsig;
+          if (qc && bootConstituencies.includes(qc)) activeConstituency = qc;
+          if (qq) q.value = qq.slice(0, 120);
+          if (Number.isFinite(qpage) && qpage > 1) currentPage = Math.min(qpage, 500);
+
+          // virtual statuses that map to filtered views (cohort deeplinks)
+          if (qs === "gone" || qs === "redirected") {
+            status.value = qs;
+            if (qs === "gone") {
+              legend.forEach((b) => {
+                if (b.dataset.classes === "dns_error,connection_error") b.setAttribute("aria-pressed", "true");
+              });
+              legendClasses = null;
+            }
           }
-        }
+        };
 
+        restoreFromUrl();
         apply();
+
+        window.addEventListener("popstate", () => {
+          clearTimeout(commitTimer);
+          restoreFromUrl();
+          apply();
+        });
 
         // scroll progress
         const bar = document.getElementById("progress-bar");

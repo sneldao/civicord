@@ -7,7 +7,7 @@ import CommandPalette from "../../components/CommandPalette.astro";
 import ClientRecordScript from "../../components/ClientRecordScript.astro";
 import MobileEssentials from "../../components/MobileEssentials.astro";
 import ScrollReveal from "../../components/ScrollReveal.astro";
-import { statusLabels } from "../../lib/record-copy";
+import { RECORD_ORIGIN, statusLabels } from "../../lib/record-copy";
 import {
   seatFollowRecord,
   seatTimeline,
@@ -208,11 +208,19 @@ const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
         data-follow-summary={seatFollow.summary}
         aria-pressed="false"
       >Follow</button>
+      <button
+        type="button"
+        class="btn-ghost"
+        data-copy-text={`${RECORD_ORIGIN}/constituencies/${c.slug}`}
+        data-copy-done="Seat link copied."
+      >Copy seat link</button>
+      <span class="pair-copy-status" role="status"></span>
+      <a class="btn-ghost" href="/steward#following">See what you follow</a>
       <a class="btn-ghost" href="/browse">Browse all 2,375 ↗</a>
       <a class="btn-ghost" href="/uk">UK overview ←</a>
     </div>
 
-    <p class="muted browse-hint">Share: copy the URL — it encodes your view · Press <kbd>⌘K</kbd> to jump anywhere. This seat's hex is equal-weight (Automatic Knowledge v5, OGL) · <a href="/methodology">How we checked →</a></p>
+    <p class="muted browse-hint">This link encodes the seat view · Press <kbd>⌘K</kbd> to jump anywhere. This seat's hex is equal-weight (Automatic Knowledge v5, OGL) · <a href="/methodology">How we checked →</a></p>
     </main>
 
     <AgentView mode="seat" slug={c.slug} name={c.name} samplePersonId={samplePersonId} />

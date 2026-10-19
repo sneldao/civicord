@@ -84,7 +84,13 @@ const blurb: Record<StatusCohort["slug"], string> = {
           <tbody>
             {cohort.destinations.map((d) => (
               <tr>
-                <td class="url">{d.url}</td>
+                <td class="url">
+                  {d.url ? (
+                    <a href={/^https?:/i.test(d.url) ? d.url : `https://${d.url}`} rel="noopener noreferrer">{d.url}</a>
+                  ) : (
+                    d.url
+                  )}
+                </td>
                 <td>{d.count.toLocaleString("en-GB")}</td>
               </tr>
             ))}
