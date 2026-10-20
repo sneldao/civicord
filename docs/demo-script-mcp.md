@@ -1,13 +1,15 @@
-# MCP demo script — Amazon "Build, Ship, Shape" entry (~2:20)
+# MCP demo script — Amazon "Build, Ship, Shape" entry (2:16)
 
 The track entry's video, separate from the site tour in
-[`demo-script.md`](demo-script.md). Target 2:20, under the 3-minute cap,
+[`demo-script.md`](demo-script.md). 2:16 as cut, under the 3-minute cap,
 English, publicly visible on YouTube or Vimeo. Recorded with Playwright at
 1440×900, so every frame is the real surface — no mockups, no staged answers.
 
-Footage so far: `data/out/mcp-demo/take.mp4` (66 s, silent) covers shots 2 and
-3; `data/out/mcp-demo/code-ci.mp4` (63 s) covers shots 4 and 5. Only the title
-and close cards (1 and 6) remain, and they are stills, not captures.
+Footage: `data/out/mcp-demo/rough-cut.mp4` (2:16, silent) is all six shots in
+order — `take.mp4` (66 s) for the human page and the client, `code-ci.mp4`
+(63 s) for the code and CI, and the two stills rendered from
+[`demo-cards.html`](demo-cards.html). What is left is the narration track and a
+public upload; nothing needs re-recording.
 
 The rule being satisfied, verbatim from the organiser's page:
 
@@ -30,12 +32,12 @@ the in-window work.
 
 | # | Time | Shot | Source |
 |---|---|---|---|
-| 1 | 0:00–0:12 | Title card: what the ledger is, one sentence, plus "before / after" | still |
-| 2 | 0:12–0:28 | `civicord.pages.dev/candidates/1688` — Adam Holloway's record, scrolled to the verdict line | `take.mp4` 0:00–0:16 |
-| 3 | 0:28–1:26 | `http://127.0.0.1:8787` — the same question, then three more, then the frames panel open on raw JSON-RPC | `take.mp4` 0:16–1:06 |
-| 4 | 1:26–1:50 | `mcp/server.mjs` on GitHub: the SDK import and the seven `registerTool` calls with `readOnlyHint` | `code-ci.mp4` 0:00–0:14 |
-| 5 | 1:50–2:10 | CI: run #39 on `main`, python / mcp / frontend all green | `code-ci.mp4` 0:24–0:58 |
-| 6 | 2:10–2:20 | Close on the caveat sentence, then the repo URL | still |
+| 1 | 0:00–0:12 | Title card: what the ledger is, one sentence, plus "before / after" | `demo-cards.html#title` |
+| 2 | 0:12–0:30 | `civicord.pages.dev/candidates/1688` — Adam Holloway's record, scrolled to the verdict line | `take.mp4` 0:00–0:18 |
+| 3 | 0:30–1:18 | `http://127.0.0.1:8787` — the same question, then three more, then the frames panel open on raw JSON-RPC | `take.mp4` 0:18–1:06 |
+| 4 | 1:18–1:32 | `mcp/server.mjs` on GitHub: the SDK import and the seven `registerTool` calls with `readOnlyHint` | `code-ci.mp4` 0:00–0:14 |
+| 5 | 1:32–2:06 | CI: run #39 on `main`, python / mcp / frontend all green | `code-ci.mp4` 0:24–0:58 |
+| 6 | 2:06–2:16 | Close on the caveat sentence, then the repo URL | `demo-cards.html#close` |
 
 Shot 3 carries the entry. Open the frames panel last and hold it:
 `initialize → 2025-11-25` and `tools/call → explain_seat` on screen are the
@@ -99,6 +101,24 @@ capture it signed-out from the commit status check tooltip instead.
 
 - Capture with Playwright `recordVideo`, then
   `ffmpeg -c:v libx264 -pix_fmt yuv420p -crf 21 -preset slow -movflags +faststart`.
+- The cut is `split` → `trim` → `concat` at 30 fps, stills held with
+  `-loop 1 -t`, so the edit points above are reproducible:
+
+  ```
+  ffmpeg -loop 1 -t 12 -i card-title.png -i take.mp4 -i code-ci.mp4 \
+         -loop 1 -t 10 -i card-close.png -filter_complex \
+    "[0:v]fps=30,scale=1440:900,setsar=1,format=yuv420p[a0];
+     [1:v]split=2[t1][t2];
+     [t1]trim=0:18,setpts=PTS-STARTPTS,fps=30,format=yuv420p,setsar=1[a1];
+     [t2]trim=18:66,setpts=PTS-STARTPTS,fps=30,format=yuv420p,setsar=1[a2];
+     [2:v]split=2[c1][c2];
+     [c1]trim=0:14,setpts=PTS-STARTPTS,fps=30,format=yuv420p,setsar=1[a3];
+     [c2]trim=24:58,setpts=PTS-STARTPTS,fps=30,format=yuv420p,setsar=1[a4];
+     [3:v]fps=30,scale=1440:900,setsar=1,format=yuv420p[a5];
+     [a0][a1][a2][a3][a4][a5]concat=n=6:v=1:a=0[v]" \
+    -map "[v]" -c:v libx264 -pix_fmt yuv420p -crf 21 -movflags +faststart rough-cut.mp4
+  ```
+
 - The take is silent by design: narration goes underneath, so pacing can be
   trimmed without re-recording the demo.
 - If the narration is machine-generated, say so in the friction log. The entry

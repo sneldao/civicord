@@ -136,13 +136,13 @@ claiming whether or not we spend it.
 
 Still open before we submit:
 
-1. **The video — footage done, edit left.** `mcp/web/index.html` is recorded: a
-   66-second silent take at `data/out/mcp-demo/take.mp4` covering the human page
-   and the same question asked of the server, plus a 63-second take at
-   `data/out/mcp-demo/code-ci.mp4` covering `mcp/server.mjs` on GitHub and CI run
-   #39 with the `mcp` job green. Script, shot list and narration are in
-   [demo-script-mcp.md](demo-script-mcp.md). What remains is the edit: narration
-   audio, the title and close stills, and uploading the result publicly.
+1. **The video — cut, not voiced.** `data/out/mcp-demo/rough-cut.mp4` (2:16) is
+   the whole shot list assembled: the human page, the browser MCP client with the
+   JSON-RPC frames open, `mcp/server.mjs` on GitHub, and CI run #39 with the
+   `mcp` job green, bookended by the title and close cards. Silent by design.
+   Script and narration are in [demo-script-mcp.md](demo-script-mcp.md); the
+   cards re-render from [demo-cards.html](demo-cards.html). Left to do: record
+   the narration under it and upload the result publicly.
 2. **The two account loose ends** at the end of the next section — the Devpost /
    GitHub / repo-owner identity, and restating the AI assistance in the entry.
 3. **The Open Source mini-challenge contribution URL**, if we want the second

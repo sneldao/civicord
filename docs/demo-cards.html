@@ -1,0 +1,59 @@
+<!doctype html>
+<!--
+  Title and close cards for the Amazon entry video (shots 1 and 6 in
+  docs/demo-script-mcp.md). Not part of the served site — screenshot each
+  section at 1440x900 and drop the PNGs into the edit.
+
+    node -e "…" with Playwright, or: open this file and capture #title / #close.
+
+  The card text is the wording the surfaces already print; if a sentence
+  changes there, change it here too.
+-->
+<meta charset="utf-8">
+<style>
+  :root { --ink: #14100c; --red: #b3261e; --paper: #fbf9f5; --muted: #6b645c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; width: 1440px; height: 900px; background: var(--paper);
+         color: var(--ink); font-family: Georgia, "Times New Roman", serif; }
+  .card { padding: 92px 108px; height: 100%; display: flex; flex-direction: column; }
+  .kicker { font-family: -apple-system, "Helvetica Neue", sans-serif; font-size: 15px;
+            letter-spacing: .16em; text-transform: uppercase; color: var(--red); }
+  h1 { font-size: 62px; line-height: 1.08; font-weight: 400; margin: 26px 0 0; max-width: 21ch; }
+  .rule { border: 0; border-top: 2px solid var(--ink); margin: 40px 0 34px; }
+  p { font-size: 27px; line-height: 1.5; margin: 0 0 20px; max-width: 62ch; }
+  .meta { font-family: -apple-system, "Helvetica Neue", sans-serif; font-size: 19px;
+          letter-spacing: .04em; color: var(--muted); margin-top: auto; }
+  .small { font-size: 22px; }
+  .foot { font-family: -apple-system, "Helvetica Neue", sans-serif; font-size: 26px;
+          letter-spacing: .02em; margin-top: 18px; }
+  blockquote { margin: 0; padding: 26px 0 26px 30px; border-left: 4px solid var(--red);
+               font-size: 29px; line-height: 1.45; max-width: 58ch; }
+</style>
+
+<!-- shot 1 -->
+<section class="card" id="title">
+  <div class="kicker">Civicord &nbsp;·&nbsp; Build, Ship, Shape &nbsp;·&nbsp; MCP server</div>
+  <h1>What happened to the websites candidates published to?</h1>
+  <hr class="rule">
+  <p>A public record of 2,375 UK election campaign websites — scraped in
+     April&nbsp;2025, fetched again in September&nbsp;2026, every difference
+     kept with the limits of the check that found it.</p>
+  <p>This entry is the same record on a second surface: a self-hosted MCP
+     server an assistant can ask, answering with the sentences the human page
+     already prints.</p>
+  <div class="meta">civicord.pages.dev &nbsp;·&nbsp; github.com/sneldao/civicord &nbsp;·&nbsp; AGPL-3.0</div>
+</section>
+
+<!-- shot 6 -->
+<section class="card" id="close">
+  <div class="kicker">What the record does not say</div>
+  <blockquote>All HTTP results are from one audit day, 7&nbsp;September&nbsp;2026.
+    HTTP responses and surname matches do not establish that campaign content
+    survived.</blockquote>
+  <hr class="rule">
+  <p>The server is read-only. There is no write path, no key, and no second
+     answer for anyone who asks politely — a party cannot get a softer reply
+     than the public one.</p>
+  <div class="foot">github.com/sneldao/civicord</div>
+  <div class="meta small">Seven tools &nbsp;·&nbsp; protocol 2025-11-25 &nbsp;·&nbsp; 922 lines, contract-checked in CI</div>
+</section>
