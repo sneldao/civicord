@@ -181,8 +181,18 @@ Required by the rules, so stated rather than waved at:
 
 ## Video
 
-`⟨TBD⟩` — under 3 minutes, public, English, YouTube or Vimeo. Script and shot
-list: [demo-script-mcp.md](demo-script-mcp.md).
+`⟨YouTube link — paste after upload⟩` — 2:21, public, English, inside the
+3-minute cap.
+
+The cut is a HyperFrames composition rather than an edited sequence: two
+designed cards, five footage segments captured by Playwright, 57 caption lines
+and eight on-screen chips, all timed from the narration's own character
+alignment so the text arrives with the word rather than near it. The
+composition is generated from `tools/build-index.py` inside
+`data/film/mcp-entry/`, so the wording on screen is diffable against the wording
+on the surfaces. **The narration and the music bed are machine-generated
+(ElevenLabs)** and the video description says so. Script, shot list and the
+reproducible build: [demo-script-mcp.md](demo-script-mcp.md).
 
 ## Optional: feature requests
 
@@ -242,6 +252,39 @@ Each entry: task → steps → expected vs actual → severity → workaround �
    `npx playwright install ffmpeg`, and the failure names the missing binary
    clearly. *Severity:* low. *Workaround:* installed it. *Suggestion:* none —
    good error message.
+7. **Make the captions fit the voice that says them.** Generated the narration
+   with `with-timestamps` and parsed the alignment to place each line.
+   *Expected:* word-level timings, or a documented route to them. *Actual:* the
+   API returns *character* offsets, so every word boundary is a lookup — and a
+   voice that reads `get_candidate` as "get candidate" splits one identifier
+   into two words that then have to be rejoined by hand or the caption prints
+   the tool name wrong. *Severity:* medium, ours to solve. *Workaround:*
+   `tools/build-timeline.py` carries a rejoin table and derives all 57 caption
+   windows from the alignment. *Suggestion:* offer word-level alignment; it is
+   the shape every captioning consumer actually wants.
+8. **Generate a music bed of a stated length.** One `POST /v1/music` call with a
+   prompt. *Expected:* `duration_seconds` honoured, and the ceiling documented
+   where you are looking. *Actual:* `seed` and `prompt` are mutually exclusive
+   (a 422 that does say so), and no length limit is stated on the page that
+   describes the parameters. *Severity:* low. *Workaround:* generated 180s,
+   trimmed to 150s. *Suggestion:* publish the per-request ceiling and what a
+   music request costs in characters, next to the endpoint.
+9. **Trust a clean-looking validation report.** `npx hyperframes check` on a
+   composition with a lint error. *Expected:* the error plus the audit results.
+   *Actual:* the error switches the layout and contrast audits off, and the run
+   then reports `0 sample(s)` and `0/0 text checks` — indistinguishable from a
+   file that passed everything. *Severity:* high, for anyone using it as a gate.
+   *Workaround:* read the error count before the sample count. *Suggestion:*
+   print "audits skipped: N lint errors" rather than a zero.
+10. **Ship an audio mix that is 3 seconds short.** Ducking the bed under the
+    narration with ffmpeg `sidechaincompress`. *Expected:* the bed runs to the
+    end of the film. *Actual:* the filter ends its output when the *sidechain*
+    ends, so the music stopped at 138.1s of a 141.04s composition — inaudible in
+    a spot check, visible only as a silent hole under the closing card.
+    *Severity:* medium, and our bug rather than a track problem. *Workaround:*
+    `apad` + `atrim`, plus a build assertion that every audio file matches the
+    composition length. *Suggestion:* none for Amazon — filed because a
+    self-hosted build will hit exactly this class of silent truncation.
 
 ## Per-tool product feedback
 

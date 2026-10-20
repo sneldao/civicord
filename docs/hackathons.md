@@ -136,13 +136,16 @@ claiming whether or not we spend it.
 
 Still open before we submit:
 
-1. **The video — cut, not voiced.** `data/out/mcp-demo/rough-cut.mp4` (2:16) is
-   the whole shot list assembled: the human page, the browser MCP client with the
-   JSON-RPC frames open, `mcp/server.mjs` on GitHub, and CI run #39 with the
-   `mcp` job green, bookended by the title and close cards. Silent by design.
-   Script and narration are in [demo-script-mcp.md](demo-script-mcp.md); the
-   cards re-render from [demo-cards.html](demo-cards.html). Left to do: record
-   the narration under it and upload the result publicly.
+1. **The video — done, awaiting upload.** `data/film/mcp-entry/renders/mcp-entry.mp4`
+   (2:21, 1440×900) is the entry cut: the same shot list, now voiced, with 57
+   caption lines and eight protocol chips timed from the narration's own
+   character alignment, a ducked music bed, and the title and close cards built
+   as part of the composition. Narration and music are machine-generated
+   (ElevenLabs) and disclosed in the submission and the feedback. Script, shot
+   list and the rebuild commands: [demo-script-mcp.md](demo-script-mcp.md).
+   Left to do: upload it publicly and paste the link into
+   [amazon-submission.md](amazon-submission.md) — and say in the video
+   description that the voice is synthetic.
 2. **The two account loose ends** at the end of the next section — the Devpost /
    GitHub / repo-owner identity, and restating the AI assistance in the entry.
 3. **The Open Source mini-challenge contribution URL**, if we want the second

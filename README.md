@@ -123,7 +123,7 @@ Deployed via Cloudflare Pages (https://civicord.pages.dev); see
 | [docs/significance-labelling.md](docs/significance-labelling.md) | The "politically relevant vs arbitrary" calibration: ten-record instrument + why our signals are a precision problem |
 | [docs/outreach.md](docs/outreach.md) | Partner strategy and draft outreach emails |
 | [docs/hackathons.md](docs/hackathons.md) | Open entries we're eligible for, with quoted rule text and what each one still needs |
-| [docs/demo-script-mcp.md](docs/demo-script-mcp.md) | Shot list, cut recipe and narration for the MCP entry video, with the rule text it is answering; the two cards are [demo-cards.html](docs/demo-cards.html) |
+| [docs/demo-script-mcp.md](docs/demo-script-mcp.md) | Shot list, narration and rebuild recipe for the MCP entry video (a HyperFrames composition under `data/film/mcp-entry/`), with the rule text it is answering; the cards it replaced are [demo-cards.html](docs/demo-cards.html) |
 | [docs/amazon-submission.md](docs/amazon-submission.md) | Paste-ready Amazon Devpost answers, incl. the before/after-window split and data-authorisation statement |
 | [docs/amazon-feedback.md](docs/amazon-feedback.md) | Per-tool product feedback required by that form |
 | [docs/hackernoon-decentralize-ai.md](docs/hackernoon-decentralize-ai.md) | Draft technical write-up of the precision measurements, for the Decentralize AI entry |
