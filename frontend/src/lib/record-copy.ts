@@ -48,6 +48,13 @@ export function describeWebsite(website: Website): string {
   return `${website.url} — HTTP result: ${result}${code}.${redirect} Candidate-name signal: ${name} (heuristic only).`;
 }
 
+// Named because the MCP server answers in these words too. One sentence, two
+// surfaces: an agent must never be handed a limit the human pages do not show.
+export const NOT_PROOF_COPY =
+  "HTTP responses and surname matches do not establish that campaign content survived.";
+export const ONCHAIN_COPY =
+  "ENS records are on the Sepolia testnet; full content is not stored on-chain.";
+
 export function candidateCitation(person: { id: string; name: string; websites: Website[] }): string {
   const audited = person.websites.some((website) => website.audit);
   return [
@@ -55,7 +62,7 @@ export function candidateCitation(person: { id: string; name: string; websites: 
     audited ? `Audit date: ${AUDIT_DATE}.` : "No audit available for this record.",
     ...person.websites.map(describeWebsite),
     "Source: Campaign Lab April 2025 scrape; Democracy Club person IDs; Civicord HTTP audit.",
-    "HTTP responses and surname matches do not establish that campaign content survived. ENS records are on the Sepolia testnet; full content is not stored on-chain.",
+    `${NOT_PROOF_COPY} ${ONCHAIN_COPY}`,
     `Record: ${RECORD_ORIGIN}/candidates/${encodeURIComponent(person.id)}`,
   ].join("\n");
 }

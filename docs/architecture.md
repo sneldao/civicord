@@ -98,9 +98,9 @@ alongside `?constituency=` — not a new schema, and not a URL break. The landin
 page (`frontend/src/pages/index.astro`) states the abstraction explicitly via a
 region picker and an *“Add your region”* section.
 
-### Agent interface (2026-09-12)
+### Agent interfaces (2026-09-12, self-hosted server added 2026-10-20)
 
-Agents get the same data through three coaxial surfaces — a judge can enter at
+Agents get the same data through four coaxial surfaces — a judge can enter at
 any layer and find the others:
 
 - **No-JS discovery:** `/robots.txt` + `/llms.txt` (agent site guide) +
@@ -115,6 +115,15 @@ any layer and find the others:
   paying.
 - **Metered MCP/x402:** the Bazantic gateway (`civicord-aieyq.bazgateway.com`,
   MCP at `/mcp`) — the priced, after-hours version of the same resources.
+- **Self-hosted MCP server:** `mcp/` — Streamable HTTP, protocol `2025-11-25`,
+  seven read-only tools (`get_summary`, `search_civicord`, `get_candidate`,
+  `get_constituency`, `explain_seat`, `filter_ledger`, `get_claim_diff`), our own
+  origin, no key, no third-party gateway. It imports the site's own copy modules
+  (`record-copy.ts`, `change-feed.ts`, `walkback.ts`, `change-labels.ts`) rather
+  than restating any wording, so an agent cannot be told something the human page
+  does not say; `explain_seat` returns speech and limits as separate content
+  blocks. `GET /` serves a browser page that is an actual MCP client. Not
+  deployed — see [hackathons.md](hackathons.md).
 
 Design rule: agent affordances are progressive enhancements over the same
 endpoints humans use — there is no separate agent backend, no key, no mock.

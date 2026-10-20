@@ -17,6 +17,32 @@ jobs:
       - run: ruff check .
       - run: pytest
 
+  # The MCP server reads the committed src/data snapshot directly, so it needs
+  # no Astro build. No lockfile (mcp/package-lock.json is gitignored per the
+  # repo's npm policy), hence `install` rather than `ci`.
+  mcp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install
+        # npm install, not npm ci: this repo commits no lockfile for mcp/, and
+        # package.json pins exact versions, so the resolution is already fixed.
+        run: npm install --no-audit --no-fund
+        working-directory: mcp
+      - name: Contract checks over Streamable HTTP
+        run: |
+          node --experimental-strip-types server.mjs &> /tmp/mcp.log &
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null http://127.0.0.1:8787/; then break; fi
+            sleep 1
+          done
+          node client-check.mjs
+          echo "--- server ---" && cat /tmp/mcp.log
+        working-directory: mcp
+
   frontend:
     runs-on: ubuntu-latest
     steps:

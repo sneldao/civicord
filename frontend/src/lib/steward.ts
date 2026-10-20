@@ -61,22 +61,8 @@ export const STATUS_LABELS: Record<string, string> = {
   not_audited: "Not audited",
 };
 
-// The change-signal axis, not the HTTP axis: what the audit *implies*.
-// Exported so anything leaving the site as text carries the label, never the slug.
-export const CHANGE_LABELS: Record<string, string> = {
-  gone: "DNS / connection failure",
-  repurposed_suspect: "Surname absent (review needed)",
-  redirected: "Redirected",
-  still_attested: "Responding, no redirect recorded",
-  other: "Other / residual",
-  unaudited: "Unaudited",
-};
-
-// claims_disappeared is the claim-diff axis, not a site signal: it belongs in
-// exported text but not in the browse filter vocabulary.
-export const changeLabel = (signal: string): string =>
-  CHANGE_LABELS[signal] ??
-  (signal === "claims_disappeared" ? "Sentences not found on the homepage fetch" : signal);
+// The change-signal axis lives in ./change-labels so the MCP server can carry
+// the same words without importing this module's Astro binding.
 
 export interface StewardRow {
   candidateId: string;

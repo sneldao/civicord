@@ -1,0 +1,439 @@
+<!doctype html>
+<!--
+  Ask the ledger — a real MCP client in a browser tab.
+
+  It does what an Alexa+ integration would do and nothing more: initialize over
+  Streamable HTTP, list the tools, call one, render the answer. No model picks
+  the tool; the keyword router below does, and says so on the page. That is the
+  point of the demo — the contract being exercised is the server's, not a
+  model's fluency.
+
+  Served by mcp/server.mjs from the same origin as /mcp, so there is no CORS
+  story to tell. Civicord palette, no build step, no dependency.
+-->
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ask the ledger — Civicord MCP client</title>
+    <link rel="icon" href="data:," />
+    <style>
+      :root {
+        --paper: #faf7f0;
+        --paper-deep: #f2eddf;
+        --ink: #1c2434;
+        --ink-soft: #5a6478;
+        --rule: #e2dccd;
+        --accent: #c73a1d;
+        --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+        --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--sans);
+        line-height: 1.5;
+      }
+      .wrap { max-width: 60rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+      header { border-top: 3px solid var(--ink); padding-top: 1rem; }
+      .wordmark { font-family: var(--serif); font-size: 1.6rem; margin: 0; }
+      .wordmark .dot { color: var(--accent); }
+      .status {
+        display: flex; flex-wrap: wrap; gap: .4rem 1rem;
+        font-size: .82rem; color: var(--ink-soft); margin-top: .4rem;
+      }
+      .status b { color: var(--ink); font-weight: 600; }
+      .dotstate { display: inline-block; width: .55rem; height: .55rem; border-radius: 50%; background: var(--rule); }
+      .dotstate.on { background: #2f7d46; }
+      .dotstate.err { background: var(--accent); }
+      p.lede { font-family: var(--serif); font-size: 1.08rem; margin: 1.2rem 0 0; }
+      form { display: flex; gap: .5rem; margin-top: 1.2rem; }
+      input[type="search"] {
+        flex: 1; font: inherit; color: var(--ink);
+        background: #fff; border: 1px solid var(--rule); border-radius: 0; padding: .7rem .8rem;
+      }
+      input[type="search"]:focus-visible, button:focus-visible, .chip:focus-visible {
+        outline: 2px solid var(--accent); outline-offset: 2px;
+      }
+      button {
+        font: inherit; cursor: pointer; border: 1px solid var(--ink);
+        background: var(--ink); color: #fff; padding: .7rem 1rem; border-radius: 0;
+      }
+      .chips { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .8rem; }
+      .chip {
+        font-size: .84rem; border: 1px solid var(--rule); background: var(--paper-deep);
+        color: var(--ink); padding: .35rem .6rem; border-radius: 0;
+      }
+      .chip:hover { border-color: var(--accent); color: var(--accent); }
+      .how { margin-top: 1rem; font-size: .82rem; color: var(--ink-soft); }
+      #log { margin-top: 1.6rem; display: grid; gap: 1.2rem; }
+      /* Grid items default to min-width:auto, and a frame dump has long lines —
+         without this the whole column grows past the page instead of scrolling. */
+      .turn { border-bottom: 1px solid var(--rule); padding-bottom: 1.2rem; min-width: 0; }
+      .q { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 .35rem; }
+      .via { font-size: .8rem; color: var(--ink-soft); font-family: var(--mono); }
+      .speech { font-family: var(--serif); font-size: 1.05rem; margin: .5rem 0 0; }
+      .limits {
+        margin: .7rem 0 0; padding: .6rem .8rem; background: var(--paper-deep);
+        border-left: 3px solid var(--accent); font-size: .86rem; color: var(--ink-soft);
+      }
+      .limits b { color: var(--ink); }
+      .rows { margin: .6rem 0 0; padding: 0; list-style: none; }
+      .rows li { padding: .35rem 0; border-top: 1px solid var(--rule); font-size: .9rem; }
+      .rows a { color: var(--accent); text-decoration: none; }
+      .rows a:hover { text-decoration: underline; }
+      details.frames { margin-top: .6rem; font-size: .8rem; }
+      details.frames summary { cursor: pointer; color: var(--ink-soft); }
+      pre {
+        font-family: var(--mono); font-size: .74rem; background: #fff;
+        border: 1px solid var(--rule); padding: .6rem; overflow-x: auto; margin: .4rem 0;
+      }
+      .err { color: var(--accent); }
+      footer { margin-top: 2rem; font-size: .8rem; color: var(--ink-soft); }
+      footer a { color: var(--accent); }
+      @media (max-width: 34rem) { form { flex-direction: column; } }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1 class="wordmark">Civicord<span class="dot">.</span> ask the ledger</h1>
+        <div class="status">
+          <span><span class="dotstate" id="state"></span> <span id="stateText">connecting…</span></span>
+          <span>protocol <b id="proto">—</b></span>
+          <span>tools <b id="toolCount">—</b></span>
+          <span>audit <b id="audit">—</b></span>
+        </div>
+      </header>
+
+      <p class="lede">
+        A UK election candidate website is a public record that quietly changes.
+        This page asks a self-hosted MCP server about those changes — the same
+        handshake, the same tools, the same protocol version an assistant would
+        use.
+      </p>
+
+      <form id="ask">
+        <label for="q" hidden>Question</label>
+        <input id="q" type="search" autocomplete="off" placeholder="What happened to the candidate sites in Gravesham?" />
+        <button type="submit">Ask</button>
+      </form>
+
+      <div class="chips" id="chips"></div>
+
+      <p class="how">
+        No model is in this loop. A keyword router chooses the tool, so what you
+        see is the server's contract, not a model's fluency. Every answer carries
+        the audit's own limits, attached by the server rather than added here.
+      </p>
+
+      <div id="log"></div>
+
+      <footer>
+        Record: <a href="https://civicord.pages.dev">civicord.pages.dev</a> ·
+        methodology: <a href="https://civicord.pages.dev/methodology">/methodology</a> ·
+        this server is read-only, and the answers are the ones the site prints.
+      </footer>
+    </div>
+
+    <script type="module">
+      const ENDPOINT = "/mcp";
+      const SUGGESTED = [
+        "How many candidate websites are still responding?",
+        "What happened to the candidate sites in Gravesham?",
+        "Is Adam Holloway's page gone, or just down?",
+        "Which Labour candidates have April sentences missing?",
+        "What is the record for St Ives?",
+      ];
+
+      const session = { id: null, frames: [] };
+
+      /** One JSON-RPC turn over Streamable HTTP, answering either payload shape. */
+      async function rpc(method, params, { notify = false } = {}) {
+        const body = notify
+          ? { jsonrpc: "2.0", method, params }
+          : { jsonrpc: "2.0", id: ++rpc.last, method, params };
+        const headers = { "content-type": "application/json", accept: "application/json, text/event-stream" };
+        if (session.id) headers["mcp-session-id"] = session.id;
+        const res = await fetch(ENDPOINT, { method: "POST", headers, body: JSON.stringify(body) });
+        if (res.status === 400 && notify) return null; // the SDK can reject bare notifications pre-session
+        const id = res.headers.get("mcp-session-id");
+        if (id) session.id = id;
+        if (!res.ok && res.status !== 202) throw new Error(`${method} → HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
+        const payload = await parse(res);
+        session.frames.push({ method, sent: body, got: payload });
+        if (payload?.error) throw new Error(`${method} → ${payload.error.message ?? JSON.stringify(payload.error)}`);
+        return notify ? null : payload?.result;
+      }
+      rpc.last = 0;
+
+      async function parse(res) {
+        const type = res.headers.get("content-type") ?? "";
+        const text = await res.text();
+        if (!text.trim()) return null;
+        if (type.includes("event-stream")) {
+          for (const line of text.split("\n")) {
+            if (!line.startsWith("data:")) continue;
+            const json = JSON.parse(line.slice(5).trim());
+            if (json.result || json.error) return json;
+          }
+          return null;
+        }
+        return JSON.parse(text);
+      }
+
+      /**
+       * Pick a tool from the words of the question.
+       *
+       * Names are resolved from word-runs only, never from loose tokens: a
+       * substring search on "what" answers with Helen Whately, and a demo that
+       * names the wrong candidate in front of a judge is worse than no router.
+       */
+      async function route(question) {
+        const q = question.toLowerCase();
+        const runs = nameRuns(q);
+        const seat = await find(runs, "constituencies");
+        const person = await find(runs, "candidates");
+        const counting = /how many|in total|overall|the whole|stats/.test(q);
+
+        if (seat && counting) return { name: "get_constituency", args: { slug: seat.slug } };
+        if (counting && !person) return { name: "get_summary", args: {} };
+        // A seat is what a voice caller asks about, and explain_seat is the only
+        // tool that answers in sentences built for reading out.
+        if (seat) return { name: "explain_seat", args: { slug: seat.slug } };
+        if (person) return { name: "get_candidate", args: { id: person.id } };
+        if (/missing|dropped|no longer|removed|promise|sentence/.test(q) || partyIn(q)) {
+          return {
+            name: "filter_ledger",
+            args: { droppedSentences: /missing|dropped|no longer|removed|sentence/.test(q), limit: 8, ...(partyIn(q) ? { party: partyIn(q) } : {}) },
+          };
+        }
+        return { name: "search_civicord", args: { query: runs[0] ?? q.replace(/[^a-z' -]/g, " ").trim().slice(0, 40), limit: 8 } };
+      }
+
+      /** Question grammar, not names: these must never reach the search tool. */
+      const STOP = new Set([
+        "a", "about", "all", "also", "an", "and", "any", "anyone", "everybody", "everyone", "nobody", "someone", "april", "are", "at", "audit", "audited", "august",
+        "be", "been", "before", "but", "by", "can", "could", "current", "did", "do", "does",
+        "down", "dead", "explain", "for", "from", "gone", "had", "has", "have", "how", "if", "in",
+        "index", "into", "is", "it", "its", "just", "last", "many", "me", "more", "most", "much",
+        "no", "not", "now", "of", "off", "offline", "on", "once", "or", "our", "out", "over",
+        "responding", "response", "record", "removed", "say", "seat", "sentences", "sentence",
+        "she", "still", "than", "that", "the", "their", "them", "there", "these", "they", "this",
+        "those", "tell", "to", "today", "total", "told", "up", "us", "was", "we", "were", "what",
+        "when", "where", "which", "who", "whose", "why", "will", "with", "would", "you", "your",
+        "candidate", "candidates", "constituencies", "constituency", "dataset", "diff", "dropped",
+        "happened", "ledger", "missing", "overall", "page", "pages", "promise", "promises", "signal",
+        "site", "sites", "stats", "status", "website", "websites", "whole",
+      ]);
+      const PARTY_WORDS = new Set([
+        "conservative", "conservatives", "democrat", "democrats", "fein", "féin", "green", "greens",
+        "independent", "independents", "labour", "liberal", "party", "plaid", "reform", "sinn",
+      ]);
+
+      function nameRuns(q) {
+        const words = q.toLowerCase().replace(/[^a-z' -]/g, " ").split(/[\s-]+/).filter(Boolean);
+        const runs = [];
+        let run = [];
+        for (const word of words) {
+          const token = word.replace(/'s?$/, "");
+          if (!token || STOP.has(token) || PARTY_WORDS.has(token)) {
+            if (run.length) runs.push(run.join(" "));
+            run = [];
+          } else run.push(token);
+        }
+        if (run.length) runs.push(run.join(" "));
+        return runs.filter((r) => r.length > 2).slice(0, 4);
+      }
+
+      /** Resolve the first run the server recognises as the given kind. */
+      async function find(runs, kind) {
+        for (const run of runs) {
+          const hit = await searchOne(run, kind);
+          if (hit) return hit;
+          // "cambridge stop publishing" is one run but only one name in it.
+          if (run.includes(" ")) {
+            for (const word of run.split(" ")) {
+              if (word.length < 5) continue;
+              const part = await searchOne(word, kind);
+              if (part) return part;
+            }
+          }
+        }
+        return null;
+      }
+
+      async function searchOne(query, kind) {
+        const result = await rpc("tools/call", { name: "search_civicord", arguments: { query, limit: 1 } });
+        const value = result ? JSON.parse(result.content[0].text) : null;
+        return value?.[kind]?.length ? value[kind][0] : null;
+      }
+
+      function partyIn(q) {
+        for (const p of ["labour", "conservative", "liberal democrat", "green", "reform", "plaid", "sinn féin"]) {
+          if (q.includes(p)) return p === "conservative" ? "conservative and unionist" : p;
+        }
+        return "";
+      }
+
+      /* ---------- rendering ---------- */
+
+      const el = (tag, cls, text) => {
+        const node = document.createElement(tag);
+        if (cls) node.className = cls;
+        if (text !== undefined) node.textContent = text;
+        return node;
+      };
+
+      function renderAnswer(turn, result, tool) {
+        const blocks = (result.content ?? []).map((c) => c.text ?? "");
+        const json = blocks.find((b) => b.trimStart().startsWith("{"));
+        const value = json ? JSON.parse(json) : null;
+
+        for (const line of blocks.filter((b) => !b.trimStart().startsWith("{"))) {
+          if (line.startsWith("Limits:")) {
+            const box = el("p", "limits");
+            box.append(el("b", null, "Limits "), el("span", null, line.slice("Limits:".length).trim()));
+            turn.append(box);
+          } else turn.append(el("p", "speech", line));
+        }
+        if (value) for (const node of format(tool, value)) turn.append(node);
+
+        const frames = el("details", "frames");
+        frames.append(el("summary", null, "the MCP calls behind this answer"));
+        for (const frame of session.frames) {
+          frames.append(
+            el(
+              "pre",
+              null,
+              `${frame.method} →\n${JSON.stringify(frame.sent.params ?? {}, null, 1)}\n← ${JSON.stringify(
+                frame.got?.result ?? frame.got?.error ?? frame.got,
+                null,
+                1,
+              ).slice(0, 1200)}`,
+            ),
+          );
+        }
+        session.frames = [];
+        turn.append(frames);
+      }
+
+      const link = (url, label) => {
+        const a = el("a", null, label ?? url.replace("https://civicord.pages.dev", ""));
+        a.href = url;
+        a.rel = "noopener noreferrer";
+        return a;
+      };
+
+      function format(tool, value) {
+        const list = el("ul", "rows");
+        const li = (...nodes) => {
+          const item = el("li");
+          item.append(...nodes);
+          list.append(item);
+        };
+        if (tool === "get_summary") {
+          li(el("span", null, `${value.candidates} candidate records · ${value.constituencies} seats · audited ${value.auditedAt}`));
+          li(el("span", null, `${value.live} responding · ${value.gone} unreachable · ${value.redirected} redirected`));
+          li(el("span", null, `${value.sentenceComparisons} records have a sentence comparison; ${value.textOverlapScores} have a text-overlap score`));
+          for (const limit of value.limits) li(el("span", null, limit));
+          li(link(value.record, "the ledger"));
+        } else if (tool === "get_candidate") {
+          li(el("b", null, `${value.name} — ${value.seat?.name ?? "seat not matched"}`));
+          for (const site of value.websites) li(el("span", null, site.story));
+          li(el("span", null, value.verdictCopy[1]));
+          li(link(value.record));
+        } else if (tool === "explain_seat") {
+          for (const c of value.perCandidate ?? []) li(el("span", null, c.story));
+          li(link(value.record));
+        } else if (tool === "get_constituency") {
+          for (const beat of value.timeline ?? []) {
+            li(el("b", null, `${beat.when} — ${beat.heading}`));
+            li(el("span", null, beat.body));
+            for (const item of beat.items.slice(0, 6)) li(link(item.record, item.name));
+          }
+          if (value.footnote) li(el("span", null, value.footnote));
+        } else if (tool === "filter_ledger") {
+          li(el("span", null, `${value.matched} match${value.matched === 1 ? "" : "es"}${value.truncated ? `, showing ${value.returned}` : ""}`));
+          for (const row of value.rows) {
+            li(link(row.record, row.name), el("span", null, ` — ${row.party}, ${row.seat} — ${row.summary}`));
+          }
+          if (value.note) li(el("span", null, value.note));
+        } else if (tool === "get_claim_diff") {
+          if (value.comparison) {
+            li(el("span", null, `${value.comparison.deletedCount} April sentences not found · ${value.comparison.addedCount} new homepage sentences listed apart`));
+            for (const s of value.comparison.deleted.slice(0, 3)) li(el("span", null, `“${s.text}”`));
+            li(el("span", null, value.comparison.scope));
+          } else li(el("span", null, value.note));
+          li(link(value.record));
+        } else {
+          li(el("span", null, `${value.candidates.length} candidates, ${value.constituencies.length} seats, ${value.parties.length} parties matched`));
+          for (const c of value.candidates) li(link(c.record, c.name));
+          for (const s of value.constituencies) li(link(s.record, s.name));
+        }
+        return [list];
+      }
+
+      /* ---------- boot ---------- */
+
+      const log = document.getElementById("log");
+      const stateDot = document.getElementById("state");
+      const stateText = document.getElementById("stateText");
+
+      async function ask(question) {
+        const turn = el("div", "turn");
+        turn.append(el("h2", "q", question));
+        log.prepend(turn);
+        try {
+          const { name, args } = await route(question);
+          turn.append(el("div", "via", `tools/call → ${name}(${JSON.stringify(args)})`));
+          const result = await rpc("tools/call", { name, arguments: args });
+          renderAnswer(turn, result, name);
+        } catch (err) {
+          turn.append(el("p", "speech err", String(err.message ?? err)));
+        }
+      }
+
+      document.getElementById("ask").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const input = document.getElementById("q");
+        const question = input.value.trim();
+        if (!question) return;
+        input.value = "";
+        ask(question);
+      });
+
+      const chips = document.getElementById("chips");
+      for (const text of SUGGESTED) {
+        const chip = el("button", "chip", text);
+        chip.type = "button";
+        chip.addEventListener("click", () => ask(text));
+        chips.append(chip);
+      }
+
+      try {
+        const init = await rpc("initialize", {
+          protocolVersion: "2025-11-25",
+          capabilities: {},
+          clientInfo: { name: "civicord-web-client", version: "0.1.0" },
+        });
+        stateDot.classList.add("on");
+        stateText.textContent = `connected to ${location.host}`;
+        document.getElementById("proto").textContent = init.protocolVersion;
+        await rpc("notifications/initialized", {}, { notify: true });
+        const { tools } = await rpc("tools/list", {});
+        document.getElementById("toolCount").textContent = String(tools.length);
+        const summary = await rpc("tools/call", { name: "get_summary", arguments: {} });
+        const value = JSON.parse(summary.content[0].text);
+        document.getElementById("audit").textContent = value.auditedAt;
+        document.title = `Ask the ledger — Civicord MCP (${init.protocolVersion})`;
+      } catch (err) {
+        stateDot.classList.add("err");
+        stateText.textContent = `not connected: ${String(err.message ?? err)}`;
+      }
+    </script>
+  </body>
+</html>
