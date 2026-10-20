@@ -136,13 +136,22 @@ claiming whether or not we spend it.
 
 Still open before we submit:
 
-1. **The video.** `mcp/web/index.html` is done and recorded: a 66-second silent
-   take at `data/out/mcp-demo/take.mp4`, covering the human page and the same
-   question asked of the server. Script, shot list and narration are in
-   [demo-script-mcp.md](demo-script-mcp.md); the code shot and the CI shot still
-   need the push.
-2. **Ownership form** — see the next section.
-3. **Submission text, feedback answers, friction log.**
+1. **The video — footage done, edit left.** `mcp/web/index.html` is recorded: a
+   66-second silent take at `data/out/mcp-demo/take.mp4` covering the human page
+   and the same question asked of the server, plus a 63-second take at
+   `data/out/mcp-demo/code-ci.mp4` covering `mcp/server.mjs` on GitHub and CI run
+   #39 with the `mcp` job green. Script, shot list and narration are in
+   [demo-script-mcp.md](demo-script-mcp.md). What remains is the edit: narration
+   audio, the title and close stills, and uploading the result publicly.
+2. **The two account loose ends** at the end of the next section — the Devpost /
+   GitHub / repo-owner identity, and restating the AI assistance in the entry.
+3. **The Open Source mini-challenge contribution URL**, if we want the second
+   prize: it needs a real upstream contribution, not our own repo.
+
+Written, and only needing pasting into the form: the submission answers, the
+per-tool feedback and the friction log
+([amazon-submission.md](amazon-submission.md),
+[amazon-feedback.md](amazon-feedback.md)). Entrant form is decided — see below.
 
 ### Before committing to this
 

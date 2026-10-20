@@ -6,7 +6,8 @@ English, publicly visible on YouTube or Vimeo. Recorded with Playwright at
 1440×900, so every frame is the real surface — no mockups, no staged answers.
 
 Footage so far: `data/out/mcp-demo/take.mp4` (66 s, silent) covers shots 2 and
-3. Shots 1, 4, 5 and 6 are still to make; shot 4 needs the code pushed first.
+3; `data/out/mcp-demo/code-ci.mp4` (63 s) covers shots 4 and 5. Only the title
+and close cards (1 and 6) remain, and they are stills, not captures.
 
 The rule being satisfied, verbatim from the organiser's page:
 
@@ -32,13 +33,18 @@ the in-window work.
 | 1 | 0:00–0:12 | Title card: what the ledger is, one sentence, plus "before / after" | still |
 | 2 | 0:12–0:28 | `civicord.pages.dev/candidates/1688` — Adam Holloway's record, scrolled to the verdict line | `take.mp4` 0:00–0:16 |
 | 3 | 0:28–1:26 | `http://127.0.0.1:8787` — the same question, then three more, then the frames panel open on raw JSON-RPC | `take.mp4` 0:16–1:06 |
-| 4 | 1:26–1:50 | `mcp/server.mjs` on GitHub: the SDK import and the seven `registerTool` calls with `readOnlyHint` | needs push |
-| 5 | 1:50–2:10 | CI: the `mcp` job green, `client-check.mjs` reporting "all checks passed" | Actions run |
+| 4 | 1:26–1:50 | `mcp/server.mjs` on GitHub: the SDK import and the seven `registerTool` calls with `readOnlyHint` | `code-ci.mp4` 0:00–0:14 |
+| 5 | 1:50–2:10 | CI: run #39 on `main`, python / mcp / frontend all green | `code-ci.mp4` 0:24–0:58 |
 | 6 | 2:10–2:20 | Close on the caveat sentence, then the repo URL | still |
 
 Shot 3 carries the entry. Open the frames panel last and hold it:
 `initialize → 2025-11-25` and `tools/call → explain_seat` on screen are the
 evidence the track asks for, in the page rather than in a slide about the page.
+
+Shot 5 shows the run, not the job log — GitHub asks anonymous visitors to sign
+in before opening a log, so `client-check.mjs`'s "all checks passed" is spoken
+in (5) and printed in the submission, not shown. If a frame of it is wanted,
+capture it signed-out from the commit status check tooltip instead.
 
 ## Narration
 
@@ -63,7 +69,8 @@ evidence the track asks for, in the page rather than in a slide about the page.
 > its limits attached. Look at the calls behind the answer: that is the protocol
 > on the wire, not a description of it.
 >
-> **(4)** The server is about three hundred lines. It imports the same
+> **(4)** Nine hundred lines: a 344-line server, a 386-line read side, and 192
+> lines of contract checks. The server imports the same
 > TypeScript copy modules the site's pages import, so an agent cannot be told
 > something the human page does not say. Every tool is annotated read-only.
 > There is no write path: a caller cannot change the record, and a party cannot
