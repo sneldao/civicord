@@ -215,6 +215,38 @@ has to be written as WAV.
 **Again?** Yes.
 
 
+## Coding agents (Qoder, Devin, Claude, Codex, Cursor)
+
+**Used for:** most of the writing in the window — the audit and pipeline work,
+the Astro frontend, the MCP server and its contract checks, the demo
+composition, and a great deal of these docs. One person directed throughout, and
+that is the part the rules care about.
+
+**What worked:** on surfaces where correctness is checkable, they are fast and
+the checks hold. Project rules written down travel well: this repo carries
+`skills/civicord-graph/SKILL.md`, and the film project carries `AGENTS.md` and
+`CLAUDE.md` — byte-identical, one file per vendor, same content. The instruction
+surface is the right idea; the per-vendor duplication is the part that stinks.
+
+**Needs work:** provenance. Five tools, one stamped author: three commits read
+`Cursor Agent <cursoragent@cursor.com>` and one branch reads
+`cursor/meaningful-session-5605`; everything else landed under the maintainer's
+name. So `git log` looks like a one-author project with three anomalies, and a
+rule that asks whether the work is yours cannot be answered from history without
+the entrant publishing session logs. A trailer convention would fix that.
+
+Second: agents do not look at the output. Two defects this week — a narration
+line saying eighteen months where the record says seventeen, and a composition
+that rendered its first 90 seconds in a sans and its last card in a serif — were
+both reported as finished by the agent that made them, and found by checking
+prose against data and pulling frames off the MP4.
+
+**Onboarding:** no setup worth mentioning; the cost is in reviewing.
+
+**Again?** Yes, with the verification pass as the unit of work rather than the
+commit.
+
+
 ## Data sources, not tools — but the form asks about authorisation
 
 Democracy Club candidate data (person IDs and seat keys, open terms); the

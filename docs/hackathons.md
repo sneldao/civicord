@@ -148,8 +148,9 @@ Still open before we submit:
    Left to do: upload it publicly and paste the link into
    [amazon-submission.md](amazon-submission.md) — and say in the video
    description that the voice is synthetic.
-2. **The two account loose ends** at the end of the next section — the Devpost /
-   GitHub / repo-owner identity, and restating the AI assistance in the entry.
+2. **The two account loose ends — closed 2026-10-20.** One person behind the
+   Devpost account, both author names and the repo owner, and the AI toolchain is
+   named in the README and the entry. Written up below.
 3. **The Open Source mini-challenge contribution URL**, if we want the second
    prize: it needs a real upstream contribution, not our own repo.
 
@@ -167,17 +168,19 @@ per-tool feedback and the friction log
 - **Entrant form: solo, decided 2026-10-20.** The rules want a submission "solely
   owned by the Entrant", and this is one person's project, so it goes in as an
   individual — no Representative designation needed, and the $150 promotional
-  credit is claimable directly. Two loose ends to close before submitting:
-  1. **Two accounts touch this repo.** Commits are authored as `Quincybob` (113)
-     and `snel` (2), and the remote is `github.com/sneldao/civicord`. The Devpost
-     account, the GitHub account named in the submission and the repo owner have
-     to be recognisably the same person — otherwise add the entrant as a
-     collaborator or state the relationship in the notes.
-  2. **Three commits are authored by `Cursor Agent`.** That is disclosed, not
-     hidden: `README.md` § AI-assisted development already says development is
-     human-directed with AI assistance. Repeat the fact in the submission rather
-     than letting a judge find it in `git log`, and keep the in-window MCP work
-     committed under the entrant's own account.
+  credit is claimable directly. Both loose ends this raised are closed, and are
+  recorded here because the entry now says the same thing out loud:
+  1. **One person, three names.** `Quincybob` (118 commits), `snel` (2 merge
+     commits) and the `sneldao` repo owner are all the entrant, as is the Devpost
+     account. Said in the submission rather than left for a judge to infer from
+     the remote and the author field.
+  2. **The AI toolchain is named, in the README and in the entry.** Qoder, Devin,
+     Claude, Codex and Cursor. Three commits carry a `Cursor Agent` author
+     (`9f65865`, `bf97c0d`, `f13216b`) and one PR branch carries its name
+     (`cursor/meaningful-session-5605`); the rest of the log is the entrant's own
+     account, so the author field is not a count of who wrote what. The README
+     said "Cline" until 2026-10-20, which was both wrong and contradicted by the
+     log — fixed there, and restated in [amazon-submission.md](amazon-submission.md).
 - **Third-party data authorization** is a stated requirement. Our basis:
   Democracy Club person IDs, the Campaign Lab April 2025 scrape under the CC-BY
   arrangement recorded in the repo, and a 2026-09-21 re-crawl. That has to be

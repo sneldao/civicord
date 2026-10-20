@@ -85,12 +85,15 @@ node demo.mjs                          # four questions, asked and answered
 
 The rules ask for this explicitly, so here it is separated.
 
-**Before the submission window (31 Aug 2026):** the pipeline, the audit, the
-ledger, the static site, the ENSv2 records, the x402/WebMCP agent surfaces, and
-the copy these tools now reuse. See the commit history before that date.
+**Before the submission window (31 Aug 2026):** the Campaign Lab April 2025
+scrape this project reads, the Democracy Club identifiers, and the research and
+design decisions that led here. Note that **this repository's own history starts
+inside the window** — initial commit `e60cf72`, 2026-09-07 — so the pre-window
+state is not something `git log` shows, and the before/after below is drawn from
+the artefacts and their dates rather than from history the repo does not carry.
 
-**Inside the window (31 Aug – 23 Oct 2026):** 118 commits, and the MCP work is
-the newest slice of them.
+**Inside the window (31 Aug – 23 Oct 2026):** 123 commits, every commit this
+repository has, and the MCP work is the newest slice of them.
 
 | Work | Where |
 |---|---|
@@ -107,10 +110,16 @@ significance-labelling instrument, the claim-diff scope notes, the rewindable
 ledger filters and the plain-language scope copy — see
 [significance-labelling.md](significance-labelling.md) and the commit log.
 
-**Entrant:** individual. Development is human-directed with AI coding
-assistance, which `README.md` § AI-assisted development states; three commits in
-the log are authored by an AI agent, and the MCP work is committed under the
-entrant's own GitHub account. ⟨TBD — list the MCP commit SHAs after the push⟩.
+**Entrant:** individual, one person. Both human author names in the history are
+the same person (`Quincybob`, 118 commits, and `snel`, 2 merge commits), as is
+the `sneldao` repo owner and the Devpost account. Development is human-directed with AI coding
+assistance — Qoder, Devin, Claude, Codex and Cursor — which `README.md` §
+AI-assisted development states. Three commits are authored by `Cursor Agent`
+(`9f65865`, `bf97c0d`, `f13216b`) and one PR branch carries its name
+(`cursor/meaningful-session-5605`); the rest of the log is the entrant's own
+account, so the log is not a count of who wrote what. The track work is
+`26c69e7`, which lands `mcp/`, the CI `mcp` job, and the shared copy modules the
+server imports.
 
 ## Third-party data authorization
 
@@ -140,6 +149,17 @@ Required by the rules, so stated rather than waved at:
 
 ## What's next
 
+- Another jurisdiction, and what it actually takes. `mcp/ledger.mjs` loads four
+  committed snapshots — `candidates.json`, `constituencies.json`,
+  `claim_diffs.json`, `content_diffs.json` — and hardcodes no election key: the
+  `elections` on each record come off the rows. The transport, the seven tool
+  definitions and the contract checks contain no dataset logic at all. What is
+  UK-specific in the server is *wording*, and that wording is imported from the
+  same copy modules the human pages render, which is the reason it can be swapped
+  without touching a request handler. So a second election is a URL list, an
+  audit run, a seat taxonomy and its own prose — not a second server, and not a
+  second client. We are not claiming a second dataset exists: today the record is
+  the UK, and the film ends by saying so.
 - Serve the same tools over a public origin with TLS, once we want assistants
   other than our own to reach it. The rules do not require hosting, so this is
   a product decision, not a submission one.

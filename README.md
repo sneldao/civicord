@@ -135,10 +135,13 @@ Civicord predates the AI×Graph deepening. **Pre-existing:** ENSv2 registry, sta
 
 ## AI-assisted development
 
-Development is human-directed with AI coding assistance (Cline): pipeline
-implementation, frontend scaffolding, and docs drafting. Architecture, data
-and design decisions, and project direction are human calls. Noted for
-transparency per hackathon rules.
+Development is human-directed with AI coding assistance — Qoder, Devin, Claude,
+Codex and Cursor, used across the pipeline, the frontend, the MCP server, the
+demo composition and the docs. Three commits carry a `Cursor Agent` author and
+one branch carries its name; everything else is committed under the maintainer's
+own account, including work those tools contributed to, so the log is not a
+count of who wrote what. Architecture, data and design decisions, and project
+direction are human calls. Noted for transparency per hackathon rules.
 
 ## License
 
