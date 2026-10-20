@@ -136,13 +136,15 @@ claiming whether or not we spend it.
 
 Still open before we submit:
 
-1. **The video — done, awaiting upload.** `data/film/mcp-entry/renders/mcp-entry.mp4`
-   (2:21, 1440×900) is the entry cut: the same shot list, now voiced, with 57
+1. **The video — done, awaiting upload.** `data/film/mcp-entry/renders/mcp-entry-v2.mp4`
+   (2:46, 1440×900) is the entry cut: ten shots, voiced, with 63
    caption lines and eight protocol chips timed from the narration's own
-   character alignment, a ducked music bed, and the title and close cards built
-   as part of the composition. Narration and music are machine-generated
-   (ElevenLabs) and disclosed in the submission and the feedback. Script, shot
-   list and the rebuild commands: [demo-script-mcp.md](demo-script-mcp.md).
+   character alignment, a ducked music bed, and four cards built as part of the
+   composition — a cold open on the four measured numbers, the question, the
+   audit's limits, and a closing lockup on the brand and the mission. Narration
+   and music are machine-generated (ElevenLabs) and disclosed in the submission
+   and the feedback. Script, shot list and the rebuild commands:
+   [demo-script-mcp.md](demo-script-mcp.md).
    Left to do: upload it publicly and paste the link into
    [amazon-submission.md](amazon-submission.md) — and say in the video
    description that the voice is synthetic.

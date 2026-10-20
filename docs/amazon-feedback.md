@@ -133,7 +133,7 @@ so clearly. Nothing to fix.
 
 ## ElevenLabs (narration and music)
 
-**Used for:** the voiceover — 1,772 characters of the script in six requests to
+**Used for:** the voiceover — 1,948 characters of the script in eight requests to
 `text-to-speech/{voice}/with-timestamps` (`eleven_multilingual_v2`, voice
 *Daniel — Steady Broadcaster*, stability 0.45 / similarity 0.75 / style 0.12) —
 and the instrumental bed from `POST /v1/music`.
@@ -159,9 +159,9 @@ video description has to as well.
 
 ## HyperFrames (composition and render)
 
-**Used for:** the finished cut — `data/film/mcp-entry/`, one 141.04-second
-composition at 1440×900/30: two designed cards, five footage segments, five
-lower-thirds, eight protocol chips, 57 caption lines, the ducked bed and the
+**Used for:** the finished cut — `data/film/mcp-entry/`, one 165.78-second
+composition at 1440×900/30: four designed cards, six footage segments, six
+lower-thirds, eight protocol chips, 63 caption lines, the ducked bed and the
 narration mix, rendered with `npx hyperframes render`.
 
 **What worked:** a composition is HTML, so repo discipline applies to the film.
@@ -176,7 +176,13 @@ AA) is measured, not assumed.
 **Needs work:** a lint *error* switches off the layout and contrast audits, and
 `check` then reports "0 sample(s)" — which reads as clean. `init` refuses a
 non-empty directory (the assets have to move out first) and takes
-`--non-interactive`, not `--yes`. 4,232 frames took 8m16s on one worker.
+`--non-interactive`, not `--yes`. And the gate that matters most is missing: a
+composition authored against the generic `serif` family rendered its first ~90
+seconds in a grotesque and its last card in a real serif, with `lint` quiet,
+`check` at 0 findings, and every Studio snapshot showing the correct face — the
+defect existed only in the MP4. Generic families should be resolved once per
+render and the resolved name reported. 4,974 frames took 5m33s on one worker
+(screenshot capture, hardware GPU).
 
 **Again?** Yes, for anything where the text on screen must be the text in the
 repo.
@@ -186,7 +192,8 @@ repo.
 **Used for:** everything between the API responses and the two files the
 composition plays — `loudnorm` on the narration, the bed trimmed and normalised
 before a `sidechaincompress` keyed by that narration, `amix` into the final
-mixes, and one capture re-timed to 30fps.
+mixes, a 5s `acrossfade` loop of the bed once the film outgrew one generated
+take, and one capture re-timed to 30fps.
 
 **What worked:** every stage is one reproducible command in
 `tools/build-audio.py`, so re-recording a line is a re-run, not a re-edit.
@@ -195,7 +202,13 @@ mixes, and one capture re-timed to 30fps.
 which silently truncated the bed to the length of the loudness pass. The fix
 (`apad` then `atrim`) is in the documentation but nothing warns you on the way
 in. The build script now asserts the output length against the composition
-because the failure was inaudible on a spot check.
+because the failure was inaudible on a spot check — and the pad turned out to be
+the trap a second time: it stretches a too-short source to the requested length,
+so the assertion passes over 15 seconds of silence. Assert the source, not just
+the result. `acrossfade` has two of its own: it needs both inputs on the same
+sample format (`aformat=sample_fmts=fltp:…` first) or it hands the encoder a
+frame it cannot pad, and `libmp3lame` refuses its output outright, so the loop
+has to be written as WAV.
 
 **Onboarding:** the man page, as ever.
 
