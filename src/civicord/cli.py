@@ -143,7 +143,10 @@ def cmd_audit(args: argparse.Namespace) -> None:
     )
     results = asyncio.run(
         audit.run_audit(
-            [(u, h) for u, h, _ in targets_all], concurrency=args.concurrency, timeout=args.timeout
+            [(u, h) for u, h, _ in targets_all],
+            concurrency=args.concurrency,
+            timeout=args.timeout,
+            proxy=args.proxy,
         )
     )
 

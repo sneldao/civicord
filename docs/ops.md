@@ -40,7 +40,10 @@ Two traps found deploying the October refresh:
    `inconclusive_blocked` (unverifiable, never counted as gone) and sends a
    browser User-Agent. To re-check blocked rows through Bright Data, set
    `HTTPS_PROXY`/`HTTP_PROXY` on the audit command — httpx picks them up via
-   `trust_env`, no code change needed.
+   `trust_env`, no code change needed. Bright Data format:
+   `http://brd-customer-<id>-zone-residential:<pass>@brd.superproxy.io:22225`
+   — set as the `CIVICORD_PROXY` repo secret to re-check blocked rows in CI
+   (`civicord audit --status inconclusive_blocked`), or pass `--proxy` locally.
 
 ## Cloudflare accounts — READ THIS FIRST
 

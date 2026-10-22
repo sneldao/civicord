@@ -45,6 +45,8 @@ jobs:
         run: civicord download --full --large-json && civicord ingest
 
       - name: Monthly audit + change signals
+        env:
+          CIVICORD_PROXY: ${{ secrets.CIVICORD_PROXY }}
         run: civicord audit --content-check && civicord changes && civicord report
 
       - name: Quarterly re-crawl + claim diff

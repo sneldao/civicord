@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import csv
 import logging
+import os
 import ssl
 import time
 from dataclasses import dataclass
@@ -115,6 +116,7 @@ async def run_audit(
     targets: list[tuple[str, str | None]],
     concurrency: int = 8,
     timeout: float = 15.0,
+    proxy: str | None = None,
 ) -> list[AuditResult]:
     """Audit (url, name_hint) pairs concurrently, preserving input order."""
     sem = asyncio.Semaphore(concurrency)
@@ -123,7 +125,10 @@ async def run_audit(
         "Accept-Language": "en-GB,en;q=0.9",
         "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
     }
-    async with httpx.AsyncClient(follow_redirects=True, timeout=timeout, headers=headers) as client:
+    proxy = proxy or os.environ.get("CIVICORD_PROXY") or os.environ.get("HTTPS_PROXY")
+    async with httpx.AsyncClient(
+        follow_redirects=True, timeout=timeout, headers=headers, proxy=proxy
+    ) as client:
         tasks = [check_url(client, url, name_hint=name_hint, sem=sem) for url, name_hint in targets]
         return await asyncio.gather(*tasks)
 
