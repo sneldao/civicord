@@ -20,6 +20,24 @@ and deployed (`c1804fad`); subgraph **v0.0.3 deployed** (`QmUcjfa4x4…`).
 | Legacy/unused | Vercel (`civicord.vercel.app`) | `vercel.json` still present; superseded by Pages — delete when confident |
 | Future | VPS available for pipeline cron + FastAPI search API | Not yet used |
 
+## Audit vantage point + snapshot gotchas (2026-10-22 — READ BEFORE NEXT REFRESH)
+
+Two traps found deploying the October refresh:
+
+1. **`build-data.mjs` remote-fetch clobbers a merged snapshot.** With no pipeline
+   CSVs it fetches `civicord.pages.dev/data/candidates.json` — i.e., the *old*
+   production snapshot — over the just-merged local file. After merging a
+   refresh PR: `git checkout -- frontend/src/data/` (or run the pipeline steps
+   individually) BEFORE `npm run build`.
+2. **CI audits measure datacenter IP reputation, not decay.** The Oct 22 run
+   flipped 374 sites live→error; 304 were 403 and 29 were 429 — Cloudflare/WAF
+   answers to the GitHub Actions runner IP. All sampled "dead" sites return 200
+   to a browser from a residential connection. True October decay is likely
+   ~10–30 sites. The October snapshot was **reverted**; do not re-publish a CI
+   audit until `civicord audit` sends a browser User-Agent or runs from a
+   residential vantage (fix the workflow or run the audit locally and push the
+   CSVs). See [cadence.md](cadence.md).
+
 ## Cloudflare accounts — READ THIS FIRST
 
 Two accounts are involved, and wrangler's default behavior burned us once
