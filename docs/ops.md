@@ -44,6 +44,12 @@ Two traps found deploying the October refresh:
    `http://brd-customer-<id>-zone-residential:<pass>@brd.superproxy.io:22225`
    — set as the `CIVICORD_PROXY` repo secret to re-check blocked rows in CI
    (`civicord audit --status inconclusive_blocked`), or pass `--proxy` locally.
+   Residential re-check of the 374 October flips (2026-10-22, local run):
+   **330 still live (200)**, 20 still 403 (genuinely inconclusive), ~24
+   genuinely dead — true October decay ≈ 44 sites, not 374. Bright Data
+   creds live in `BRIGHTDATA_USER`/`BRIGHTDATA_PASS` env (local) + macOS
+   Keychain `civicord-brightdata`; the Proxy Manager server address is in
+   the user's Bright Data welcome email — not yet wired to CI.
 
 ## Cloudflare accounts — READ THIS FIRST
 
