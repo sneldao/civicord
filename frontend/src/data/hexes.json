@@ -56,7 +56,7 @@
         "timeout": 0,
         "other": 0,
         "redirected": 3,
-        "onchain": 1,
+        "onchain": 0,
         "liveShare": 0.75,
         "livePct": 75,
         "gonePct": 25
@@ -105,15 +105,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -160,15 +160,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 1,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -325,15 +325,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -440,7 +440,7 @@
         "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 3,
+        "redirected": 2,
         "onchain": 0,
         "liveShare": 0.6,
         "livePct": 60,
@@ -765,15 +765,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 2,
+        "http_error": 3,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6,
-        "livePct": 60,
+        "liveShare": 0.4,
+        "livePct": 40,
         "gonePct": 0
       }
     },
@@ -820,15 +820,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -875,15 +875,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -1150,16 +1150,16 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 3,
-        "gone": 1,
-        "http_error": 0,
-        "timeout": 1,
+        "live": 2,
+        "gone": 2,
+        "http_error": 1,
+        "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6,
-        "livePct": 60,
-        "gonePct": 20
+        "liveShare": 0.4,
+        "livePct": 40,
+        "gonePct": 40
       }
     },
     {
@@ -1260,15 +1260,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -1315,15 +1315,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
-        "timeout": 0,
+        "http_error": 1,
+        "timeout": 1,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -1370,15 +1370,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -1426,15 +1426,15 @@
         "sites": 3,
         "candidates": 3,
         "live": 0,
-        "gone": 0,
-        "http_error": 2,
+        "gone": 1,
+        "http_error": 1,
         "timeout": 1,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
         "liveShare": 0,
         "livePct": 0,
-        "gonePct": 0
+        "gonePct": 33
       }
     },
     {
@@ -1480,15 +1480,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -1706,7 +1706,7 @@
         "timeout": 0,
         "other": 0,
         "redirected": 1,
-        "onchain": 1,
+        "onchain": 0,
         "liveShare": 0.6666666666666666,
         "livePct": 67,
         "gonePct": 33
@@ -1755,15 +1755,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 3,
+        "live": 2,
         "gone": 1,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.6,
-        "livePct": 60,
+        "liveShare": 0.4,
+        "livePct": 40,
         "gonePct": 20
       }
     },
@@ -1810,15 +1810,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -1865,15 +1865,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -2030,15 +2030,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 3,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 1,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.75,
-        "livePct": 75,
+        "liveShare": 0.25,
+        "livePct": 25,
         "gonePct": 0
       }
     },
@@ -2085,15 +2085,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -2305,15 +2305,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -2415,15 +2415,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -2855,15 +2855,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -3075,16 +3075,16 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
-        "gone": 0,
+        "live": 2,
+        "gone": 1,
         "http_error": 0,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
-        "gonePct": 0
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
+        "gonePct": 33
       }
     },
     {
@@ -3185,15 +3185,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 33
       }
     },
@@ -3295,15 +3295,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -3350,15 +3350,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 4,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -3405,15 +3405,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 3,
+        "live": 2,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.75,
-        "livePct": 75,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 25
       }
     },
@@ -3515,15 +3515,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -3625,15 +3625,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -3900,15 +3900,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -4340,16 +4340,16 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
-        "gone": 1,
+        "live": 0,
+        "gone": 2,
         "http_error": 0,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
-        "gonePct": 50
+        "liveShare": 0,
+        "livePct": 0,
+        "gonePct": 100
       }
     },
     {
@@ -4450,15 +4450,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0.25,
+        "livePct": 25,
         "gonePct": 25
       }
     },
@@ -4560,15 +4560,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -4835,15 +4835,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -4890,15 +4890,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -4945,15 +4945,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 2,
+        "live": 3,
         "gone": 0,
-        "http_error": 3,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.4,
-        "livePct": 40,
+        "liveShare": 0.6,
+        "livePct": 60,
         "gonePct": 0
       }
     },
@@ -5275,15 +5275,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -5330,15 +5330,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -5715,15 +5715,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -5771,15 +5771,15 @@
         "sites": 2,
         "candidates": 2,
         "live": 0,
-        "gone": 1,
+        "gone": 0,
         "http_error": 0,
-        "timeout": 1,
+        "timeout": 2,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
         "liveShare": 0,
         "livePct": 0,
-        "gonePct": 50
+        "gonePct": 0
       }
     },
     {
@@ -5825,15 +5825,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -5880,15 +5880,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -5935,15 +5935,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -5990,15 +5990,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 4,
+        "live": 2,
         "gone": 0,
-        "http_error": 1,
-        "timeout": 0,
+        "http_error": 2,
+        "timeout": 1,
         "other": 0,
-        "redirected": 2,
+        "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.8,
-        "livePct": 80,
+        "liveShare": 0.4,
+        "livePct": 40,
         "gonePct": 0
       }
     },
@@ -6045,15 +6045,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0.25,
+        "livePct": 25,
         "gonePct": 25
       }
     },
@@ -6105,7 +6105,7 @@
         "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 2,
+        "redirected": 1,
         "onchain": 0,
         "liveShare": 0.3333333333333333,
         "livePct": 33,
@@ -6210,15 +6210,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -6595,15 +6595,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -6705,15 +6705,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -6870,15 +6870,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -7090,15 +7090,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -7200,15 +7200,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -7310,15 +7310,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -7530,15 +7530,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -7805,15 +7805,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 4,
+        "live": 3,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.8,
-        "livePct": 80,
+        "liveShare": 0.6,
+        "livePct": 60,
         "gonePct": 20
       }
     },
@@ -7915,15 +7915,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -7975,7 +7975,7 @@
         "http_error": 1,
         "timeout": 1,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
         "liveShare": 0,
         "livePct": 0,
@@ -8025,15 +8025,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -8135,15 +8135,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -8300,15 +8300,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -8410,15 +8410,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -8740,15 +8740,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -8795,15 +8795,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -9070,16 +9070,16 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 0,
-        "gone": 1,
+        "live": 1,
+        "gone": 0,
         "http_error": 0,
         "timeout": 0,
         "other": 0,
-        "redirected": 0,
+        "redirected": 1,
         "onchain": 0,
-        "liveShare": 0,
-        "livePct": 0,
-        "gonePct": 100
+        "liveShare": 1,
+        "livePct": 100,
+        "gonePct": 0
       }
     },
     {
@@ -9345,15 +9345,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -9510,15 +9510,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -9565,15 +9565,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -9785,15 +9785,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -9895,15 +9895,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -9951,15 +9951,15 @@
         "sites": 1,
         "candidates": 1,
         "live": 0,
-        "gone": 0,
-        "http_error": 1,
+        "gone": 1,
+        "http_error": 0,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
         "liveShare": 0,
         "livePct": 0,
-        "gonePct": 0
+        "gonePct": 100
       }
     },
     {
@@ -10065,7 +10065,7 @@
         "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 0,
+        "redirected": 1,
         "onchain": 0,
         "liveShare": 0.5,
         "livePct": 50,
@@ -10445,15 +10445,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -10500,15 +10500,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -10555,15 +10555,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 67
       }
     },
@@ -10610,15 +10610,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 33
       }
     },
@@ -10720,15 +10720,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -10775,15 +10775,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -10945,7 +10945,7 @@
         "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
         "liveShare": 0.3333333333333333,
         "livePct": 33,
@@ -10995,16 +10995,16 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
-        "gone": 1,
-        "http_error": 0,
+        "live": 1,
+        "gone": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
-        "gonePct": 33
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
+        "gonePct": 0
       }
     },
     {
@@ -11105,15 +11105,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -11325,15 +11325,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 3,
+        "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -11380,15 +11380,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -11436,15 +11436,15 @@
         "sites": 1,
         "candidates": 1,
         "live": 0,
-        "gone": 1,
-        "http_error": 0,
+        "gone": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
         "liveShare": 0,
         "livePct": 0,
-        "gonePct": 100
+        "gonePct": 0
       }
     },
     {
@@ -11710,15 +11710,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -11765,15 +11765,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
-        "timeout": 0,
+        "http_error": 1,
+        "timeout": 1,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -11875,15 +11875,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -12150,15 +12150,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -12205,15 +12205,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -12260,16 +12260,16 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
-        "gone": 0,
-        "http_error": 0,
+        "live": 0,
+        "gone": 1,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
-        "gonePct": 0
+        "liveShare": 0,
+        "livePct": 0,
+        "gonePct": 50
       }
     },
     {
@@ -12315,15 +12315,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 4,
+        "live": 3,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.75,
+        "livePct": 75,
         "gonePct": 0
       }
     },
@@ -12480,15 +12480,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 2,
+        "live": 0,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -12590,15 +12590,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -12700,15 +12700,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 2,
+        "live": 1,
         "gone": 2,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.4,
-        "livePct": 40,
+        "liveShare": 0.2,
+        "livePct": 20,
         "gonePct": 40
       }
     },
@@ -12755,15 +12755,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -12865,15 +12865,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -12975,15 +12975,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -13085,15 +13085,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -13195,15 +13195,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -13415,15 +13415,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -13635,15 +13635,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -13690,15 +13690,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 2,
+        "live": 1,
         "gone": 0,
         "http_error": 2,
-        "timeout": 0,
+        "timeout": 1,
         "other": 0,
-        "redirected": 2,
+        "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0.25,
+        "livePct": 25,
         "gonePct": 0
       }
     },
@@ -13745,15 +13745,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -13970,7 +13970,7 @@
         "http_error": 0,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
         "liveShare": 1,
         "livePct": 100,
@@ -14076,15 +14076,15 @@
         "sites": 2,
         "candidates": 2,
         "live": 0,
-        "gone": 2,
-        "http_error": 0,
+        "gone": 1,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 0,
+        "redirected": 1,
         "onchain": 0,
         "liveShare": 0,
         "livePct": 0,
-        "gonePct": 100
+        "gonePct": 50
       }
     },
     {
@@ -14130,15 +14130,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -14240,15 +14240,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 1,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -14295,15 +14295,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 67
       }
     },
@@ -14350,15 +14350,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -14570,15 +14570,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -15120,15 +15120,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 3,
+        "live": 2,
         "gone": 1,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.6,
-        "livePct": 60,
+        "liveShare": 0.4,
+        "livePct": 40,
         "gonePct": 20
       }
     },
@@ -15340,15 +15340,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 2,
+        "http_error": 3,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -15560,15 +15560,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -15725,15 +15725,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -15945,16 +15945,16 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
-        "gone": 1,
+        "live": 2,
+        "gone": 0,
         "http_error": 0,
         "timeout": 0,
         "other": 0,
-        "redirected": 0,
+        "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
-        "gonePct": 50
+        "liveShare": 1,
+        "livePct": 100,
+        "gonePct": 0
       }
     },
     {
@@ -16275,15 +16275,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -16550,15 +16550,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -16605,15 +16605,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 3,
+        "live": 2,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6,
-        "livePct": 60,
+        "liveShare": 0.4,
+        "livePct": 40,
         "gonePct": 40
       }
     },
@@ -16825,15 +16825,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 2,
+        "redirected": 3,
         "onchain": 0,
-        "liveShare": 0.75,
-        "livePct": 75,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -17210,15 +17210,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 2,
+        "live": 1,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 2,
+        "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0.25,
+        "livePct": 25,
         "gonePct": 50
       }
     },
@@ -17430,16 +17430,16 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 3,
-        "gone": 1,
+        "live": 2,
+        "gone": 2,
         "http_error": 0,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.75,
-        "livePct": 75,
-        "gonePct": 25
+        "liveShare": 0.5,
+        "livePct": 50,
+        "gonePct": 50
       }
     },
     {
@@ -17650,15 +17650,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -17705,15 +17705,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 3,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -17760,15 +17760,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -17925,15 +17925,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -18200,15 +18200,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -18310,15 +18310,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -18365,15 +18365,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 3,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 0,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 1,
+        "livePct": 100,
         "gonePct": 0
       }
     },
@@ -18420,15 +18420,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 33
       }
     },
@@ -18475,15 +18475,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 3,
+        "live": 2,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6,
-        "livePct": 60,
+        "liveShare": 0.4,
+        "livePct": 40,
         "gonePct": 40
       }
     },
@@ -18696,15 +18696,15 @@
         "sites": 1,
         "candidates": 1,
         "live": 0,
-        "gone": 0,
-        "http_error": 1,
+        "gone": 1,
+        "http_error": 0,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
         "liveShare": 0,
         "livePct": 0,
-        "gonePct": 0
+        "gonePct": 100
       }
     },
     {
@@ -18805,15 +18805,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -18915,15 +18915,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -19025,15 +19025,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -19135,15 +19135,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 2,
+        "live": 1,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0.25,
+        "livePct": 25,
         "gonePct": 50
       }
     },
@@ -19245,15 +19245,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 4,
+        "live": 3,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.75,
+        "livePct": 75,
         "gonePct": 0
       }
     },
@@ -19305,7 +19305,7 @@
         "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
         "liveShare": 0.5,
         "livePct": 50,
@@ -19360,7 +19360,7 @@
         "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 2,
+        "redirected": 1,
         "onchain": 0,
         "liveShare": 0.3333333333333333,
         "livePct": 33,
@@ -19465,16 +19465,16 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
-        "gone": 0,
+        "live": 2,
+        "gone": 1,
         "http_error": 0,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
-        "gonePct": 0
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
+        "gonePct": 33
       }
     },
     {
@@ -19630,15 +19630,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 1,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -19685,15 +19685,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -19740,15 +19740,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -19850,15 +19850,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 5,
+        "live": 3,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6,
+        "livePct": 60,
         "gonePct": 0
       }
     },
@@ -19905,15 +19905,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 2,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 0,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 1,
+        "livePct": 100,
         "gonePct": 0
       }
     },
@@ -19960,15 +19960,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 33
       }
     },
@@ -20016,15 +20016,15 @@
         "sites": 3,
         "candidates": 3,
         "live": 2,
-        "gone": 1,
-        "http_error": 0,
+        "gone": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
         "liveShare": 0.6666666666666666,
         "livePct": 67,
-        "gonePct": 33
+        "gonePct": 0
       }
     },
     {
@@ -20125,16 +20125,16 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 5,
-        "gone": 0,
+        "live": 4,
+        "gone": 1,
         "http_error": 0,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
-        "gonePct": 0
+        "liveShare": 0.8,
+        "livePct": 80,
+        "gonePct": 20
       }
     },
     {
@@ -20180,15 +20180,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 2,
+        "http_error": 3,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0.25,
+        "livePct": 25,
         "gonePct": 0
       }
     },
@@ -20235,16 +20235,16 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
-        "gone": 0,
+        "live": 1,
+        "gone": 1,
         "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 2,
-        "onchain": 1,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
-        "gonePct": 0
+        "redirected": 1,
+        "onchain": 0,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
+        "gonePct": 33
       }
     },
     {
@@ -20291,15 +20291,15 @@
         "sites": 2,
         "candidates": 2,
         "live": 0,
-        "gone": 2,
-        "http_error": 0,
+        "gone": 1,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
         "liveShare": 0,
         "livePct": 0,
-        "gonePct": 100
+        "gonePct": 50
       }
     },
     {
@@ -20345,15 +20345,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -20400,15 +20400,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -20455,15 +20455,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -20510,15 +20510,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 2,
+        "live": 1,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0.25,
+        "livePct": 25,
         "gonePct": 50
       }
     },
@@ -20565,15 +20565,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -20675,15 +20675,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
         "http_error": 0,
-        "timeout": 0,
+        "timeout": 1,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -20840,15 +20840,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -20950,16 +20950,16 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
-        "gone": 0,
-        "http_error": 1,
+        "live": 0,
+        "gone": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
-        "gonePct": 0
+        "liveShare": 0,
+        "livePct": 0,
+        "gonePct": 33
       }
     },
     {
@@ -21005,15 +21005,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 67
       }
     },
@@ -21115,16 +21115,16 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
-        "gone": 1,
+        "live": 2,
+        "gone": 0,
         "http_error": 0,
         "timeout": 0,
         "other": 0,
-        "redirected": 0,
+        "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
-        "gonePct": 50
+        "liveShare": 1,
+        "livePct": 100,
+        "gonePct": 0
       }
     },
     {
@@ -21170,15 +21170,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -21280,15 +21280,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
-        "timeout": 0,
+        "http_error": 1,
+        "timeout": 1,
         "other": 0,
-        "redirected": 2,
+        "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -21335,15 +21335,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -21390,15 +21390,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -21445,15 +21445,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -21500,16 +21500,16 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
-        "gone": 1,
+        "live": 1,
+        "gone": 2,
         "http_error": 0,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
-        "gonePct": 33
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
+        "gonePct": 67
       }
     },
     {
@@ -21555,15 +21555,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -21610,15 +21610,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 1,
+        "live": 2,
         "gone": 2,
-        "http_error": 2,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.2,
-        "livePct": 20,
+        "liveShare": 0.4,
+        "livePct": 40,
         "gonePct": 40
       }
     },
@@ -21665,15 +21665,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 3,
+        "live": 2,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6,
-        "livePct": 60,
+        "liveShare": 0.4,
+        "livePct": 40,
         "gonePct": 40
       }
     },
@@ -21720,15 +21720,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -21775,15 +21775,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -21885,15 +21885,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -21995,15 +21995,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -22105,16 +22105,16 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 3,
-        "gone": 0,
+        "live": 2,
+        "gone": 1,
         "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.75,
-        "livePct": 75,
-        "gonePct": 0
+        "liveShare": 0.5,
+        "livePct": 50,
+        "gonePct": 25
       }
     },
     {
@@ -22162,10 +22162,10 @@
         "candidates": 2,
         "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
-        "other": 1,
-        "redirected": 0,
+        "other": 0,
+        "redirected": 1,
         "onchain": 0,
         "liveShare": 0,
         "livePct": 0,
@@ -22215,15 +22215,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 33
       }
     },
@@ -22380,15 +22380,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 4,
+        "live": 3,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.8,
-        "livePct": 80,
+        "liveShare": 0.6,
+        "livePct": 60,
         "gonePct": 0
       }
     },
@@ -22490,15 +22490,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -22545,15 +22545,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -22655,15 +22655,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -23040,15 +23040,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 2,
+        "live": 1,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0.25,
+        "livePct": 25,
         "gonePct": 50
       }
     },
@@ -23095,15 +23095,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0.25,
+        "livePct": 25,
         "gonePct": 25
       }
     },
@@ -23150,15 +23150,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -23315,15 +23315,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 3,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -23370,15 +23370,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 4,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 3,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.25,
+        "livePct": 25,
         "gonePct": 0
       }
     },
@@ -23425,15 +23425,15 @@
       "stats": {
         "sites": 6,
         "candidates": 6,
-        "live": 4,
+        "live": 3,
         "gone": 1,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 17
       }
     },
@@ -23485,7 +23485,7 @@
         "http_error": 0,
         "timeout": 0,
         "other": 0,
-        "redirected": 2,
+        "redirected": 1,
         "onchain": 0,
         "liveShare": 0.75,
         "livePct": 75,
@@ -23755,15 +23755,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -23810,15 +23810,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -24030,15 +24030,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -24085,15 +24085,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -24250,15 +24250,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -24305,15 +24305,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -24416,15 +24416,15 @@
         "sites": 2,
         "candidates": 2,
         "live": 1,
-        "gone": 0,
+        "gone": 1,
         "http_error": 0,
-        "timeout": 1,
+        "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
         "liveShare": 0.5,
         "livePct": 50,
-        "gonePct": 0
+        "gonePct": 50
       }
     },
     {
@@ -24470,15 +24470,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 3,
+        "live": 2,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.75,
-        "livePct": 75,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 25
       }
     },
@@ -24525,15 +24525,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -24690,15 +24690,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -24745,15 +24745,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 3,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.75,
-        "livePct": 75,
+        "liveShare": 0.25,
+        "livePct": 25,
         "gonePct": 25
       }
     },
@@ -24965,15 +24965,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -25020,15 +25020,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 4,
+        "live": 3,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.75,
+        "livePct": 75,
         "gonePct": 0
       }
     },
@@ -25075,15 +25075,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 1,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.75,
-        "livePct": 75,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -25130,15 +25130,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -25350,15 +25350,15 @@
       "stats": {
         "sites": 6,
         "candidates": 6,
-        "live": 4,
+        "live": 3,
         "gone": 0,
-        "http_error": 2,
+        "http_error": 3,
         "timeout": 0,
         "other": 0,
         "redirected": 3,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -25571,15 +25571,15 @@
         "sites": 2,
         "candidates": 2,
         "live": 0,
-        "gone": 1,
-        "http_error": 1,
+        "gone": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 2,
         "onchain": 0,
         "liveShare": 0,
         "livePct": 0,
-        "gonePct": 50
+        "gonePct": 0
       }
     },
     {
@@ -25735,15 +25735,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
         "http_error": 0,
-        "timeout": 0,
+        "timeout": 1,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -25900,15 +25900,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -26010,15 +26010,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 33
       }
     },
@@ -26065,15 +26065,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 3,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -26231,15 +26231,15 @@
         "sites": 7,
         "candidates": 7,
         "live": 4,
-        "gone": 2,
-        "http_error": 1,
+        "gone": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
         "liveShare": 0.5714285714285714,
         "livePct": 57,
-        "gonePct": 29
+        "gonePct": 14
       }
     },
     {
@@ -26285,15 +26285,15 @@
       "stats": {
         "sites": 7,
         "candidates": 7,
-        "live": 5,
+        "live": 3,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.7142857142857143,
-        "livePct": 71,
+        "liveShare": 0.42857142857142855,
+        "livePct": 43,
         "gonePct": 29
       }
     },
@@ -26505,16 +26505,16 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
-        "gone": 0,
+        "live": 0,
+        "gone": 1,
         "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
-        "gonePct": 0
+        "liveShare": 0,
+        "livePct": 0,
+        "gonePct": 50
       }
     },
     {
@@ -26560,15 +26560,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.75,
-        "livePct": 75,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -26615,15 +26615,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 67
       }
     },
@@ -26670,15 +26670,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 67
       }
     },
@@ -26890,15 +26890,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 4,
+        "live": 3,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.8,
-        "livePct": 80,
+        "liveShare": 0.6,
+        "livePct": 60,
         "gonePct": 20
       }
     },
@@ -26945,15 +26945,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -27055,16 +27055,16 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
-        "gone": 1,
+        "live": 2,
+        "gone": 0,
         "http_error": 0,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
-        "gonePct": 50
+        "liveShare": 1,
+        "livePct": 100,
+        "gonePct": 0
       }
     },
     {
@@ -27225,7 +27225,7 @@
         "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 0,
+        "redirected": 1,
         "onchain": 0,
         "liveShare": 0.6666666666666666,
         "livePct": 67,
@@ -27277,9 +27277,9 @@
         "candidates": 2,
         "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
-        "other": 1,
+        "other": 0,
         "redirected": 0,
         "onchain": 0,
         "liveShare": 0,
@@ -27385,15 +27385,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -27440,15 +27440,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -27495,15 +27495,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -27550,15 +27550,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -27716,15 +27716,15 @@
         "sites": 3,
         "candidates": 3,
         "live": 2,
-        "gone": 0,
-        "http_error": 1,
+        "gone": 1,
+        "http_error": 0,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
         "liveShare": 0.6666666666666666,
         "livePct": 67,
-        "gonePct": 0
+        "gonePct": 33
       }
     },
     {
@@ -27775,7 +27775,7 @@
         "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 2,
+        "redirected": 1,
         "onchain": 0,
         "liveShare": 0.6666666666666666,
         "livePct": 67,
@@ -27825,15 +27825,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -27990,15 +27990,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 3,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -28050,7 +28050,7 @@
         "http_error": 0,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
         "liveShare": 1,
         "livePct": 100,
@@ -28100,15 +28100,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -28155,15 +28155,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 3,
+        "live": 2,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.75,
-        "livePct": 75,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 25
       }
     },
@@ -28210,15 +28210,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 2,
+        "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -28265,15 +28265,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -28320,15 +28320,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 3,
+        "live": 1,
         "gone": 1,
-        "http_error": 1,
-        "timeout": 0,
+        "http_error": 2,
+        "timeout": 1,
         "other": 0,
-        "redirected": 3,
+        "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.6,
-        "livePct": 60,
+        "liveShare": 0.2,
+        "livePct": 20,
         "gonePct": 20
       }
     },
@@ -28485,15 +28485,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -28760,15 +28760,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -28875,7 +28875,7 @@
         "http_error": 3,
         "timeout": 0,
         "other": 0,
-        "redirected": 3,
+        "redirected": 2,
         "onchain": 0,
         "liveShare": 0.4,
         "livePct": 40,
@@ -28925,15 +28925,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 2,
+        "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -28980,15 +28980,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -29035,15 +29035,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -29090,15 +29090,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 3,
+        "live": 2,
         "gone": 1,
         "http_error": 0,
-        "timeout": 0,
+        "timeout": 1,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.75,
-        "livePct": 75,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 25
       }
     },
@@ -29145,15 +29145,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 4,
+        "live": 3,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.75,
+        "livePct": 75,
         "gonePct": 0
       }
     },
@@ -29255,15 +29255,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -29365,15 +29365,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -29475,16 +29475,16 @@
       "stats": {
         "sites": 6,
         "candidates": 6,
-        "live": 4,
-        "gone": 0,
+        "live": 3,
+        "gone": 1,
         "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
-        "gonePct": 0
+        "liveShare": 0.5,
+        "livePct": 50,
+        "gonePct": 17
       }
     },
     {
@@ -29530,15 +29530,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -29585,15 +29585,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 0,
+        "live": 1,
         "gone": 0,
-        "http_error": 2,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0,
-        "livePct": 0,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -29695,16 +29695,16 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
-        "gone": 0,
+        "live": 2,
+        "gone": 1,
         "http_error": 0,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
-        "gonePct": 0
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
+        "gonePct": 33
       }
     },
     {
@@ -29750,15 +29750,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -29860,15 +29860,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -29970,15 +29970,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -30025,15 +30025,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -30080,15 +30080,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -30135,15 +30135,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -30190,15 +30190,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.75,
-        "livePct": 75,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -30575,15 +30575,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0.25,
+        "livePct": 25,
         "gonePct": 25
       }
     },
@@ -30685,15 +30685,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -30740,15 +30740,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.75,
-        "livePct": 75,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -30850,15 +30850,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -30962,10 +30962,10 @@
         "candidates": 4,
         "live": 0,
         "gone": 2,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
-        "other": 1,
-        "redirected": 1,
+        "other": 0,
+        "redirected": 2,
         "onchain": 0,
         "liveShare": 0,
         "livePct": 0,
@@ -31070,16 +31070,16 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
-        "gone": 0,
-        "http_error": 0,
-        "timeout": 1,
+        "live": 0,
+        "gone": 1,
+        "http_error": 1,
+        "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
-        "gonePct": 0
+        "liveShare": 0,
+        "livePct": 0,
+        "gonePct": 50
       }
     },
     {
@@ -31125,15 +31125,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -31235,15 +31235,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -31290,15 +31290,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -31455,15 +31455,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -31565,15 +31565,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 1,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 33
       }
     },
@@ -31620,15 +31620,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -31730,15 +31730,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -31785,15 +31785,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -31895,15 +31895,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 4,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -32005,15 +32005,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -32060,15 +32060,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -32115,15 +32115,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 4,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -32225,15 +32225,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -32335,15 +32335,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -32390,15 +32390,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 3,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -32500,15 +32500,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -32555,15 +32555,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -32835,7 +32835,7 @@
         "http_error": 0,
         "timeout": 0,
         "other": 0,
-        "redirected": 3,
+        "redirected": 1,
         "onchain": 0,
         "liveShare": 0.75,
         "livePct": 75,
@@ -32886,15 +32886,15 @@
         "sites": 3,
         "candidates": 3,
         "live": 2,
-        "gone": 1,
-        "http_error": 0,
+        "gone": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
         "liveShare": 0.6666666666666666,
         "livePct": 67,
-        "gonePct": 33
+        "gonePct": 0
       }
     },
     {
@@ -32940,15 +32940,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -32995,15 +32995,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
         "gonePct": 0
       }
     },
@@ -33050,15 +33050,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -33105,15 +33105,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -33215,16 +33215,16 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
-        "gone": 1,
+        "live": 2,
+        "gone": 0,
         "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 0,
+        "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
-        "gonePct": 33
+        "liveShare": 0.6666666666666666,
+        "livePct": 67,
+        "gonePct": 0
       }
     },
     {
@@ -33270,15 +33270,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 2,
+        "live": 1,
         "gone": 2,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.4,
-        "livePct": 40,
+        "liveShare": 0.2,
+        "livePct": 20,
         "gonePct": 40
       }
     },
@@ -33325,16 +33325,16 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
-        "gone": 0,
+        "live": 0,
+        "gone": 1,
         "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 2,
+        "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
-        "gonePct": 0
+        "liveShare": 0,
+        "livePct": 0,
+        "gonePct": 50
       }
     },
     {
@@ -33380,15 +33380,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 0
       }
     },
@@ -33600,15 +33600,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 2,
+        "live": 0,
         "gone": 2,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -33820,15 +33820,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 4,
+        "live": 2,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.8,
-        "livePct": 80,
+        "liveShare": 0.4,
+        "livePct": 40,
         "gonePct": 20
       }
     },
@@ -33875,15 +33875,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 33
       }
     },
@@ -33930,15 +33930,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 2,
+        "http_error": 3,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.3333333333333333,
-        "livePct": 33,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -34205,15 +34205,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -34260,15 +34260,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -34315,15 +34315,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -34370,15 +34370,15 @@
       "stats": {
         "sites": 1,
         "candidates": 1,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -34425,16 +34425,16 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 2,
-        "gone": 0,
-        "http_error": 2,
+        "live": 0,
+        "gone": 1,
+        "http_error": 3,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
-        "gonePct": 0
+        "liveShare": 0,
+        "livePct": 0,
+        "gonePct": 25
       }
     },
     {
@@ -34480,16 +34480,16 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
-        "gone": 1,
+        "live": 0,
+        "gone": 0,
         "http_error": 0,
-        "timeout": 0,
+        "timeout": 2,
         "other": 0,
-        "redirected": 1,
+        "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
-        "gonePct": 50
+        "liveShare": 0,
+        "livePct": 0,
+        "gonePct": 0
       }
     },
     {
@@ -34590,15 +34590,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -34700,15 +34700,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 0
       }
     },
@@ -34810,15 +34810,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -34865,15 +34865,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -34920,15 +34920,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 4,
+        "live": 3,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 0.8,
-        "livePct": 80,
+        "liveShare": 0.6,
+        "livePct": 60,
         "gonePct": 0
       }
     },
@@ -34975,15 +34975,15 @@
       "stats": {
         "sites": 4,
         "candidates": 4,
-        "live": 3,
+        "live": 2,
         "gone": 0,
-        "http_error": 1,
+        "http_error": 2,
         "timeout": 0,
         "other": 0,
         "redirected": 0,
         "onchain": 0,
-        "liveShare": 0.75,
-        "livePct": 75,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -35030,15 +35030,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 1,
+        "live": 0,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.5,
-        "livePct": 50,
+        "liveShare": 0,
+        "livePct": 0,
         "gonePct": 50
       }
     },
@@ -35195,15 +35195,15 @@
       "stats": {
         "sites": 3,
         "candidates": 3,
-        "live": 2,
+        "live": 1,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.6666666666666666,
-        "livePct": 67,
+        "liveShare": 0.3333333333333333,
+        "livePct": 33,
         "gonePct": 33
       }
     },
@@ -35250,15 +35250,15 @@
       "stats": {
         "sites": 2,
         "candidates": 2,
-        "live": 2,
+        "live": 1,
         "gone": 0,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
         "redirected": 2,
         "onchain": 0,
-        "liveShare": 1,
-        "livePct": 100,
+        "liveShare": 0.5,
+        "livePct": 50,
         "gonePct": 0
       }
     },
@@ -35690,15 +35690,15 @@
       "stats": {
         "sites": 5,
         "candidates": 5,
-        "live": 4,
+        "live": 3,
         "gone": 1,
-        "http_error": 0,
+        "http_error": 1,
         "timeout": 0,
         "other": 0,
-        "redirected": 2,
+        "redirected": 1,
         "onchain": 0,
-        "liveShare": 0.8,
-        "livePct": 80,
+        "liveShare": 0.6,
+        "livePct": 60,
         "gonePct": 20
       }
     },
