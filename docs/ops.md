@@ -36,7 +36,11 @@ Two traps found deploying the October refresh:
    ~10–30 sites. The October snapshot was **reverted**; do not re-publish a CI
    audit until `civicord audit` sends a browser User-Agent or runs from a
    residential vantage (fix the workflow or run the audit locally and push the
-   CSVs). See [cadence.md](cadence.md).
+   CSVs). See [cadence.md](cadence.md). The audit now classifies 403/429 as
+   `inconclusive_blocked` (unverifiable, never counted as gone) and sends a
+   browser User-Agent. To re-check blocked rows through Bright Data, set
+   `HTTPS_PROXY`/`HTTP_PROXY` on the audit command — httpx picks them up via
+   `trust_env`, no code change needed.
 
 ## Cloudflare accounts — READ THIS FIRST
 

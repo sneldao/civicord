@@ -4,6 +4,7 @@ export const RECORD_ORIGIN = "https://civicord.pages.dev";
 export const statusLabels: Record<string, string> = {
   live: "Responding",
   http_error: "HTTP error",
+  inconclusive_blocked: "Blocked by the site’s protection — status unverifiable",
   dns_error: "DNS failure",
   timeout: "Timed out",
   ssl_error: "SSL error",

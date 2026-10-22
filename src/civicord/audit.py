@@ -12,12 +12,11 @@ from pathlib import Path
 
 import httpx
 
-from .campaignlab import USER_AGENT
-
 logger = logging.getLogger(__name__)
 
 CLASSES = [
     "live",
+    "inconclusive_blocked",
     "http_error",
     "dns_error",
     "timeout",
@@ -94,7 +93,9 @@ async def check_url(
         except httpx.HTTPStatusError as exc:
             return AuditResult(
                 url=url,
-                status_class="http_error",
+                status_class="inconclusive_blocked"
+                if exc.response.status_code in (403, 429)
+                else "http_error",
                 status_code=exc.response.status_code,
                 final_url=str(exc.response.url),
                 redirected=str(exc.response.url) != url,
@@ -117,7 +118,11 @@ async def run_audit(
 ) -> list[AuditResult]:
     """Audit (url, name_hint) pairs concurrently, preserving input order."""
     sem = asyncio.Semaphore(concurrency)
-    headers = {"User-Agent": USER_AGENT, "Accept": "text/html,application/xhtml+xml,*/*;q=0.8"}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
+    }
     async with httpx.AsyncClient(follow_redirects=True, timeout=timeout, headers=headers) as client:
         tasks = [check_url(client, url, name_hint=name_hint, sem=sem) for url, name_hint in targets]
         return await asyncio.gather(*tasks)

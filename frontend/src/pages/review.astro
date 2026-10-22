@@ -96,13 +96,13 @@ import "../styles/global.css";
               : "The queue is empty.";
           }
           if (claims.length) {
-            document.getElementById("review-claims").hidden = false;
-            const l = document.getElementById("review-claims-list");
+            document.getElementById("review-claims")!.hidden = false;
+            const l = document.getElementById("review-claims-list")!;
             claims.forEach((r) => l.append(row(r)));
           }
           if (corrections.length) {
-            document.getElementById("review-corrections").hidden = false;
-            const l = document.getElementById("review-corrections-list");
+            document.getElementById("review-corrections")!.hidden = false;
+            const l = document.getElementById("review-corrections-list")!;
             corrections.forEach((r) => l.append(row(r)));
           }
         } catch {
