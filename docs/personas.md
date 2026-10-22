@@ -81,6 +81,34 @@ The MCP/WebMCP tools, Bazantic x402 gateway and Graph subgraph are live.
 Demand is real but unproven; they stay reachable (Agent view, `/mcp`)
 without being homepage-primary.
 
+## Homepage contract
+
+The homepage is a routing layer, not a brochure: its only job is to get each
+persona one click into the depth ladder (`/` → orientation → exploration →
+a record). It drifts easily — between Sept and Oct 2026 it shed the search
+box, the scale stats, the persona doors and every data-encoded visual,
+becoming a bare quote card. Guard against that: the page must always carry
+
+- **One sourced exhibit.** A real stored change (deleted text vs. what the
+  site serves now), chosen by `pickLeadWalkback` — fate-aware ranking prefers
+  structural disappearances (dead or repurposed domains) over sentence-level
+  ones, because the record then needs no caveat. Never synthesise wording.
+- **The core action in the hero.** Search by candidate or constituency —
+  visitors should touch the product, not read about it.
+- **Scale as credibility.** Candidates, seats with sites, % responding,
+  failures, redirects — plus the April → latest-audit decay line.
+- **One data-encoded visual artifact.** The halftone hex (`HexThumb` on the
+  UK region card) is the signature; every persona-free space should still
+  show the data, not decoration.
+- **Persona doors.** Steward / journalist / researcher routing above the
+  regions pitch — regions are the least persona-relevant section, so they
+  stay last.
+- **The trust line.** Free to read, openly licensed, every claim sourced.
+
+Every path on the page should terminate at a record, and every record offers
+the three exits: trust it (evidence + verification), take it (citation,
+permalinked filters), fix it (propose a correction).
+
 ## Continuity principle
 
 Value here compounds with time. One audit is a curiosity; twelve audits

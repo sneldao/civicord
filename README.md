@@ -16,6 +16,15 @@ web-monitoring and the Library of Congress's Elections Web Archive — see
 
 ## Status
 
+**2026-10-22 · Exhibit-led homepage.** The door page leads with a sourced
+before/after exhibit (fate-aware `pickLeadWalkback` prefers structural
+disappearances — pledges that now resolve to a default server page over
+sentence-level churn), and the artifacts lost in the persona reshuffle are
+back: hero search, scale stats + decay line, persona doors, good-strip, and
+the halftone hex as a static thumb on the UK region card (`HexThumb`, sharing
+`lib/hex-style` with the interactive map). The invariants live in
+[docs/personas.md](docs/personas.md) §Homepage contract.
+
 **2026-09-21 · Persona-shaped product.** Stakeholder feedback said the UI
 exposed the system's internal model, not users' tasks. [docs/personas.md](docs/personas.md)
 is now the north star: **roster stewards** get a digest-style `/steward`

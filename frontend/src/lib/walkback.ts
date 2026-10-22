@@ -4,7 +4,12 @@
 
 export interface WalkbackPerson {
   id: string;
-  websites?: Array<{ parties?: string[]; posts?: string[] }>;
+  changeSignal?: string;
+  websites?: Array<{
+    parties?: string[];
+    posts?: string[];
+    audit?: { statusClass?: string; redirected?: boolean; nameFound?: boolean | null } | null;
+  }>;
 }
 
 export interface WalkbackClaim {
@@ -23,6 +28,8 @@ export interface WalkbackRow {
   added_count?: number;
 }
 
+export type WalkbackFate = "gone" | "repurposed" | "redirected" | "live";
+
 export interface WalkbackLead {
   personId: string;
   name: string;
@@ -33,11 +40,14 @@ export interface WalkbackLead {
   party: string;
   seat: string;
   topics: string[];
+  fate: WalkbackFate;
+  afterText: string;
 }
 
-const PROMISE = /\b(As your MP I will|If elected I will|As an MP I will)\b/;
+const PLEDGE =
+  /\b(as your (mp|candidate|member)|if elected|i will|i’ll|i pledge|pledge to|promise to)\b/i;
 const NAV =
-  /^(top of page|read more|my experience|about me|about |welcome|skip to|cookie|privacy|home )\b/i;
+  /^(top of page|read more|my experience|about me|about |welcome|skip to|cookie|privacy|home |search this site|embedded files)\b/i;
 
 export function isReadableWalkback(text: string): boolean {
   const t = text.trim();
@@ -65,7 +75,27 @@ function partySeat(person: WalkbackPerson | undefined): { party: string; seat: s
   };
 }
 
+function fateOf(person: WalkbackPerson | undefined): WalkbackFate {
+  const site = person?.websites?.[0];
+  const status = site?.audit?.statusClass;
+  if (person?.changeSignal === "gone" || (status && status !== "live")) return "gone";
+  if (person?.changeSignal === "repurposed_suspect") return "repurposed";
+  if (person?.changeSignal === "redirected" || site?.audit?.redirected) return "redirected";
+  return "live";
+}
+
+// A short, self-explanatory added text can stand in for the "after" panel —
+// e.g. a default server page where the campaign site used to be.
+function pickAfterText(row: WalkbackRow): string {
+  for (const claim of row.added ?? []) {
+    const t = String(claim.text ?? "").trim().replace(/\s+/g, " ");
+    if (t.length >= 12 && t.length <= 160 && /^[\p{L}\p{N}“"']/u.test(t)) return t;
+  }
+  return "";
+}
+
 interface Hit extends WalkbackLead {
+  fateRank: number;
   tier: number;
 }
 
@@ -80,14 +110,19 @@ export function pickLeadWalkback(
   for (const [personId, row] of Object.entries(byPerson)) {
     const person = peopleById.get(personId);
     const { party, seat } = partySeat(person);
+    const fate = fateOf(person);
+    // Structural disappearances (dead or repurposed domains) outrank
+    // sentence-level ones — the record speaks for itself without a caveat.
+    const fateRank = fate === "gone" || fate === "repurposed" ? 0 : 1;
     for (const claim of row.deleted ?? []) {
       const text = String(claim.text ?? "").trim();
       if (!text || !isReadableWalkback(text)) continue;
       const topics = (claim.topics ?? []).filter(Boolean);
-      const promised = PROMISE.test(text);
-      if (!promised && topics.length === 0) continue;
+      const pledged = PLEDGE.test(text);
+      if (!pledged && topics.length === 0) continue;
       hits.push({
-        tier: promised && topics.length > 0 ? 0 : promised ? 1 : 2,
+        fateRank,
+        tier: pledged && topics.length > 0 ? 0 : pledged ? 1 : 2,
         personId,
         name: row.name || personId,
         text,
@@ -97,17 +132,20 @@ export function pickLeadWalkback(
         party,
         seat,
         topics,
+        fate,
+        afterText: pickAfterText(row),
       });
     }
   }
 
   hits.sort(
     (a, b) =>
+      a.fateRank - b.fateRank ||
       a.tier - b.tier ||
       Number(a.personId) - Number(b.personId) ||
       a.text.localeCompare(b.text),
   );
   if (!hits.length) return null;
-  const { tier: _tier, ...lead } = hits[0];
+  const { fateRank: _fateRank, tier: _tier, ...lead } = hits[0];
   return lead;
 }

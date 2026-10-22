@@ -1,5 +1,6 @@
 ---
 import hexDataImport from "../data/hexes.json";
+import { hexFillFor as fillFor, hexOpacityFor as opacityFor, hexDotCountFor as dotCountFor } from "../lib/hex-style";
 
 interface HexStat {
   sites: number;
@@ -48,27 +49,6 @@ function pointsStr(pts: [number, number][]) {
 //  - inner halftone dots via <pattern> applied as second rect clipped to hex
 // For MVP (Wednesday): keep it simple: solid fill by liveShare + dot overlay as 1-3 small circles centered in hex (stipple metaphor without heavy patterns)
 // A11y: still double-encoded via fill + dot count.
-
-function fillFor(stats: HexStat): string {
-  if (stats.sites === 0) return "var(--paper-deep)"; // empty — 17 seats with no scraped site
-  const p = stats.livePct;
-  if (p >= 66) return "var(--live)";
-  if (p >= 40) return "var(--warn)";
-  return "var(--gone)";
-}
-function opacityFor(stats: HexStat): number {
-  if (stats.sites === 0) return 0.22;
-  // we want halftone metaphor: gone seats are more opaque/muddy, live are lighter but still vivid — use alpha to suggest density
-  if (stats.livePct >= 66) return 0.88;
-  if (stats.livePct >= 40) return 0.72;
-  return 0.95;
-}
-function dotCountFor(stats: HexStat): number {
-  if (stats.sites === 0) return 0;
-  if (stats.livePct >= 66) return 1;
-  if (stats.livePct >= 40) return 2;
-  return 3;
-}
 
 const emptyCount = hexes.filter((h) => h.stats.sites === 0).length;
 ---

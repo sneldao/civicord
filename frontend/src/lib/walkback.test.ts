@@ -31,7 +31,12 @@ test("lead sentence is taken from a deleted claim, not invented", () => {
     (row.deleted ?? []).some((c) => c.text === lead.text),
     "lead text is a stored deleted sentence",
   );
-  assert.match(lead.text, /\b(As your MP I will|If elected I will|As an MP I will)\b/);
+  assert.match(
+    lead.text,
+    /\b(as your (mp|candidate|member)|if elected|i will|i’ll|i pledge|pledge to|promise to)\b/i,
+  );
+  // Structural disappearances outrank sentence-level ones when both exist.
+  assert.ok(["gone", "repurposed"].includes(lead.fate));
   assert.ok(lead.party);
   assert.ok(lead.seat);
   assert.equal(scopeExplanation(lead.scopeNote).includes("homepage"), true);

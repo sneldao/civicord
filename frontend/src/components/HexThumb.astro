@@ -1,0 +1,46 @@
+---
+import hexDataImport from "../data/hexes.json";
+import { hexFillFor, hexOpacityFor } from "../lib/hex-style";
+
+/**
+ * Static decorative halftone hex thumbnail — same visual encode as the
+ * interactive map, no interactivity. Used as the UK region card's visual.
+ */
+interface HexEntry {
+  slug: string;
+  name: string;
+  points: [number, number][];
+  stats: { sites: number; livePct: number };
+}
+
+let hexData: { viewBox: string; width: number; hexes: HexEntry[] } = { viewBox: "0 0 700 1000", width: 700, hexes: [] };
+try {
+  const raw: any = hexDataImport as any;
+  if (raw && Array.isArray(raw.hexes)) hexData = raw;
+  else if (Array.isArray(raw?.default?.hexes)) hexData = raw.default;
+} catch {}
+const { hexes, viewBox, width } = hexData;
+
+function pointsStr(pts: [number, number][]) {
+  return pts.map(([x, y]) => `${x},${y}`).join(" ");
+}
+---
+
+<svg
+  class="hexthumb-svg"
+  viewBox={viewBox}
+  aria-hidden="true"
+  focusable="false"
+  preserveAspectRatio="xMidYMid meet"
+>
+  {hexes.map((h) => (
+    <polygon
+      points={pointsStr(h.points)}
+      fill={hexFillFor(h.stats)}
+      fill-opacity={hexOpacityFor(h.stats)}
+      stroke="var(--paper)"
+      stroke-width={Math.max(900, width * 0.0015)}
+      stroke-linejoin="round"
+    />
+  ))}
+</svg>

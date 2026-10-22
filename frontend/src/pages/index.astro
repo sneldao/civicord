@@ -2,10 +2,11 @@
 import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import CommandPalette from "../components/CommandPalette.astro";
+import HexThumb from "../components/HexThumb.astro";
 import MobileEssentials from "../components/MobileEssentials.astro";
 import ScrollReveal from "../components/ScrollReveal.astro";
 import WebMCP from "../components/WebMCP.astro";
-import { pickLeadWalkback, scopeExplanation } from "../lib/walkback";
+import { pickLeadWalkback, scopeExplanation, type WalkbackFate } from "../lib/walkback";
 import "../styles/global.css";
 import constituenciesRaw from "../data/constituencies.json";
 import claimDiffsRaw from "../data/claim_diffs.json";
@@ -16,6 +17,7 @@ try {
   const arr = Array.isArray(raw) ? raw : Array.isArray(raw?.default) ? raw.default : [];
   if (arr.length) constituencies = arr;
 } catch {}
+const constituenciesForSearch = constituencies.map((c) => ({ slug: c.slug, name: c.name }));
 const withSites = constituencies.filter((c) => c.stats.sites > 0).length;
 const officialSeats = constituencies.some((c) => c.gssCode);
 const seatsTotal = constituencies.length || 650;
@@ -28,10 +30,31 @@ const seatMeta = !constituencies.length
 
 const all = await getCollection("candidates");
 const candidates = all.map((e) => e.data);
+const websites = candidates.flatMap((c) => c.websites);
+const audited = websites.filter((w) => w.audit);
+const live = audited.filter((w) => w.audit?.statusClass === "live");
+const redirected = audited.filter((w) => w.audit?.redirected);
+const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
+const GONE_CLASSES = ["dns_error", "connection_error"];
+const gone = audited.filter((w) => GONE_CLASSES.includes(w.audit?.statusClass ?? ""));
+const livePct = audited.length ? pct(live.length, audited.length) : 0;
+const randomIds = candidates.map((c) => c.id);
+
 const lead = pickLeadWalkback(claimDiffsRaw as { byPerson?: Record<string, any> }, candidates);
 const leadChecked = lead?.checkedAt && /^\d{4}-\d{2}-\d{2}$/.test(lead.checkedAt)
   ? new Date(`${lead.checkedAt}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
   : lead?.checkedAt ?? "";
+
+const fateKicker: Record<WalkbackFate, string> = {
+  gone: "The site no longer responds",
+  repurposed: "The site no longer mentions them",
+  redirected: "The address now points elsewhere",
+  live: "Gone from the homepage",
+};
+const structural = lead?.fate === "gone" || lead?.fate === "repurposed";
+const scopeText = structural && lead?.afterText
+  ? "The April scrape covered the whole site; the later fetch of the homepage served only this."
+  : scopeExplanation(lead?.scopeNote ?? "");
 ---
 
 <html lang="en-GB">
@@ -40,12 +63,12 @@ const leadChecked = lead?.checkedAt && /^\d{4}-\d{2}-\d{2}$/.test(lead.checkedAt
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="A sentence a UK campaign published in April 2025 that was not on the later homepage, with its source. Civicord keeps the public record of what campaigns published, and what changed."
+      content="A pledge a UK campaign published in April 2025 that its site no longer serves — sourced, verifiable, correctable. Civicord keeps the record of what campaigns published, and what changed."
     />
     <meta property="og:title" content="Civicord — the public record for political websites" />
     <meta
       property="og:description"
-      content="A sentence a UK campaign published in April 2025 that was not on the later homepage, with its source."
+      content="A pledge a UK campaign published in April 2025 that its site no longer serves — sourced, verifiable, correctable."
     />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
@@ -55,78 +78,220 @@ const leadChecked = lead?.checkedAt && /^\d{4}-\d{2}-\d{2}$/.test(lead.checkedAt
   </head>
   <body class="reveal-root door-page">
     <a class="skip-link" href="#main">Skip to content</a>
+    <div class="progress" aria-hidden="true"><b id="progress-bar"></b></div>
 
     <header class="masthead door-masthead">
       <h1 class="wordmark">Civicord<span class="dot">.</span></h1>
-      <p class="lede door-lede">What a UK campaign published, and what the later homepage no longer contained.</p>
+      <p class="lede door-lede">
+        Campaign websites go quiet after the election. We keep what they said —
+        and what disappeared.
+      </p>
+      <p class="tagline door-support muted">
+        Free to read, openly licensed, every claim sourced. The UK is the first dataset.
+      </p>
     </header>
 
     <main id="main" tabindex="-1">
       {lead ? (
-        <article class="walkback-lead" id="walkback-lead" aria-labelledby="walkback-kicker">
-          <p class="walkback-kicker" id="walkback-kicker">No longer found · April 2025 → {leadChecked}</p>
-          <blockquote class="walkback-quote">{lead.text}</blockquote>
-          <p class="walkback-source">
-            Source: {lead.name}{lead.party ? `, ${lead.party}` : ""}{lead.seat ? `, ${lead.seat}` : ""}.
-            This sentence is in the April 2025 Campaign Lab scrape of{" "}
-            <a href={lead.url} rel="noopener noreferrer">{lead.url}</a>
-            {" "}and was not in the homepage fetched {leadChecked}.{" "}
+        <article class="exhibit" id="walkback-lead" aria-labelledby="exhibit-kicker" data-reveal>
+          <p class="exhibit-kicker" id="exhibit-kicker">
+            <span class="exhibit-stamp">Exhibit</span>
+            {fateKicker[lead.fate]} · April 2025 → September 2026
+          </p>
+          <div class="exhibit-panels">
+            <figure class="exhibit-panel exhibit-before">
+              <figcaption>What the campaign published · April 2025</figcaption>
+              <blockquote class="exhibit-quote">{lead.text}</blockquote>
+              <p class="exhibit-attr">
+                — {lead.name}{lead.party ? `, ${lead.party}` : ""}{lead.seat ? `, ${lead.seat}` : ""} ·{" "}
+                <a href={lead.url} rel="noopener noreferrer">{lead.url}</a>
+              </p>
+            </figure>
+            <span class="exhibit-arrow" aria-hidden="true">→</span>
+            <figure class="exhibit-panel exhibit-after">
+              <figcaption>What the homepage serves · fetched {leadChecked}</figcaption>
+              {lead.afterText ? (
+                <blockquote class="exhibit-quote exhibit-quote-after">{lead.afterText}</blockquote>
+              ) : (
+                <p class="exhibit-quote exhibit-quote-after">This text was not on the homepage.</p>
+              )}
+            </figure>
+          </div>
+          <p class="exhibit-scope muted">
+            {scopeText}{" "}
             <a href={`/candidates/${lead.personId}#claims`}>Read the before and after</a>.
           </p>
-          <p class="walkback-scope muted">{scopeExplanation(lead.scopeNote)}</p>
-          <div class="door-cta" role="group" aria-label="Continue from this sentence">
+          <div class="door-cta" role="group" aria-label="Continue from this exhibit">
             <a class="btn-primary" href={`/candidates/${lead.personId}#claims`}>Open this record</a>
             <a class="btn-ghost" href={`/candidates/${lead.personId}#correction`}>Propose a correction</a>
           </div>
-          <p class="walkback-next">
-            <a href="/steward">Roster digest</a>
-            {" · "}
-            <a href="/journalists">Journalist leads</a>
-            {" · "}
-            <a href="/browse">Ledger</a>
-            {" · "}
-            <a href="/uk">United Kingdom</a>
-            {" · "}
-            <a href="/methodology#verified">What is verified, and what is not</a>
-          </p>
         </article>
       ) : (
         <p id="walkback-lead">No deleted sentence is stored in this snapshot.</p>
       )}
 
+      <section class="browse-cta" aria-label="Search and browse the ledger" data-reveal>
+        <div class="search-hero" role="search">
+          <input
+            id="q-hero"
+            type="search"
+            placeholder="Find a candidate or a constituency — try “Farage” or “Leeds Central”"
+            autocomplete="off"
+            aria-label="Search candidates and constituencies"
+            list="hero-constituencies"
+          />
+          <datalist id="hero-constituencies">
+            {constituenciesForSearch.map((c) => <option value={c.name}></option>)}
+          </datalist>
+          <button type="button" id="q-go">Search the record →</button>
+        </div>
+        <div class="browse-actions" style="margin-top:0.55rem">
+          <a class="btn-ghost" href="/browse">Browse the ledger ↗</a>
+          <button type="button" id="random-home" class="btn-ghost">Surprise me — random record</button>
+        </div>
+      </section>
+
+      <section class="stats" aria-label="Audit summary" data-reveal>
+        <div class="stat"><b>{candidates.length.toLocaleString("en-GB")}</b><span>Candidates</span></div>
+        <div class="stat"><b>{seatsWithSites}</b><span>of {seatsTotal} seats have sites</span></div>
+        <div class="stat"><b>{audited.length ? pct(live.length, audited.length) : "—"}%</b><span>URLs responding</span></div>
+        <div class="stat"><b>{gone.length.toLocaleString("en-GB")}</b><span>DNS / connection failures</span></div>
+        <div class="stat"><b>{redirected.length.toLocaleString("en-GB")}</b><span>Redirect elsewhere</span></div>
+      </section>
+      <p class="decay-line" aria-label="Decay over time" data-reveal>
+        <span class="decay-when"><b>April 2025</b></span>
+        <span class="decay-arrow" aria-hidden="true">→</span>
+        <span class="decay-when"><b>September 2026</b> — <b class="decay-now">{livePct}%</b> responding</span>
+      </p>
+
+      <ul class="good-strip door-strip" data-reveal>
+        <li><b>Public good</b><span>free to read, tamper-evident</span></li>
+        <li><b>Open</b><span>AGPL-3.0 code · OGL boundaries</span></li>
+        <li><b>Verifiable</b><span>every claim links to its source</span></li>
+      </ul>
+
+      <section class="persona-doors" aria-labelledby="doors-title" data-reveal>
+        <h2 id="doors-title">Choose how you work with the record</h2>
+        <p class="muted">Same audit facts, shaped around the question you actually arrive with.</p>
+        <div class="feature-grid">
+          <a class="feature-card feature-card--wide" href="/steward">
+            <span>
+              <span class="f-label">For roster stewards</span>
+              <h3>I look after a roster of campaign sites</h3>
+              <span class="f-meta">What died, what now points at a parked domain, what changed — grouped by action needed, with CSV export per group.</span>
+              <span class="f-cta">Open the roster digest →</span>
+            </span>
+            <span class="wide-cta" aria-hidden="true">{livePct}% responding<br />last audit · Sept 2026</span>
+          </a>
+          <a class="feature-card" href="/journalists">
+            <span class="f-label">For journalists</span>
+            <h3>The story is in the change</h3>
+            <span class="f-meta">Pre-filtered leads from the change feed — dead domains, vanished candidates, transformed content — each one citable.</span>
+            <span class="f-cta">See the leads →</span>
+          </a>
+          <a class="feature-card" href="/browse?change=repurposed_suspect">
+            <span class="f-label">For researchers</span>
+            <h3>Longitudinal, stable, citable</h3>
+            <span class="f-meta">2,375 candidate records keyed on Democracy Club IDs, filterable by outcome, party and place. Copy citation on every record.</span>
+            <span class="f-cta">Enter the ledger →</span>
+          </a>
+        </div>
+        <p class="also-links">
+          Also: <a href="/methodology#verified">what is verified, and what is not</a> · <a href="/steward">roster digest</a> · <a href="/journalists">journalist leads</a>
+        </p>
+      </section>
+
       <section class="future door-regions" id="regions" aria-label="Regions" data-reveal>
         <h2>Built for one election. Designed for any.</h2>
         <p class="muted future-lede">
-          Roster + crawl + a place to keep the record. Pick a region.
+          Any democracy needs three things: a <b>public roster</b>, a <b>crawl</b> of the campaign web,
+          and a <b>place to keep the record</b>. Pick a region — or bring your own.
         </p>
         <div class="future-grid" data-reveal-stagger>
           <a class="future-card is-live" href="/uk">
             <span class="fc-status">Live now</span>
             <b class="vt-uk-title">United Kingdom</b>
-            <span class="fc-meta">{candidates.length.toLocaleString("en-GB")} candidates · {seatMeta} · Sept 2026</span>
+            <span class="fc-hexthumb"><HexThumb /></span>
+            <span class="fc-meta">{candidates.length.toLocaleString("en-GB")} candidates · {seatMeta} · {livePct}% responding · audited Sept 2026</span>
             <span class="fc-cta">Explore the dataset ↗</span>
           </a>
           <a class="future-card" href="https://github.com/sneldao/civicord/issues">
-            <span class="fc-status">Propose</span>
+            <span class="fc-status">Proposed</span>
             <b>France</b>
-            <span class="fc-meta">577 circonscriptions</span>
+            <span class="fc-meta">577 circonscriptions · a roster exists; needs a crawl</span>
             <span class="fc-cta">Start a region ↗</span>
           </a>
           <a class="future-card" href="https://github.com/sneldao/civicord/issues">
-            <span class="fc-status">Propose</span>
+            <span class="fc-status">Proposed</span>
             <b>United States</b>
-            <span class="fc-meta">435 districts</span>
+            <span class="fc-meta">435 districts · LoC + EDGI are close cousins</span>
             <span class="fc-cta">Start a region ↗</span>
           </a>
           <a class="future-card" href="/methodology">
             <span class="fc-status">Blueprint</span>
             <b>Your democracy</b>
-            <span class="fc-meta">Bring a roster and a crawl</span>
+            <span class="fc-meta">Read the method, then bring a roster and a crawl</span>
             <span class="fc-cta">How it works ↗</span>
           </a>
         </div>
       </section>
     </main>
+
+    <footer>
+      <p class="footer-good">
+        Built as a public good — free to read, openly licensed, citable, and designed to
+        outlive the election it documents.
+      </p>
+    </footer>
+
+    <script define:vars={{ randomIds, constituenciesForSearch }}>
+      const HOME_IDS = randomIds;
+      const CONS = constituenciesForSearch;
+      const consByNameLower = new Map(CONS.map((c) => [c.name.toLowerCase(), c.slug]));
+      document.addEventListener("astro:page-load", () => {
+        const input = document.getElementById("q-hero");
+        const btn = document.getElementById("q-go");
+        const go = () => {
+          const v = (input?.value ?? "").trim().slice(0, 120);
+          if (!v) { location.href = "/browse"; return; }
+          const slug = consByNameLower.get(v.toLowerCase());
+          if (slug) { location.href = `/constituencies/${slug}`; return; }
+          location.href = `/browse?q=${encodeURIComponent(v)}`;
+        };
+        if (input && btn) {
+          input.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+          btn.addEventListener("click", go);
+        }
+
+        document.getElementById("random-home")?.addEventListener("click", () => {
+          const id = HOME_IDS[Math.floor(Math.random() * HOME_IDS.length)];
+          location.href = `/candidates/${id}`;
+        });
+
+        document.addEventListener("keydown", (e) => {
+          const tag = (document.activeElement?.tagName ?? "").toLowerCase();
+          const typing = tag === "input" || tag === "textarea" || tag === "select" || (document.activeElement?.isContentEditable);
+          if (e.key === "/" && !typing) {
+            e.preventDefault();
+            input?.focus();
+          }
+          if (e.key === "Escape" && typing && document.activeElement === input) {
+            input.value = "";
+            input.blur();
+          }
+        });
+
+        const bar = document.getElementById("progress-bar");
+        if (bar) {
+          const onScroll = () => {
+            const max = document.documentElement.scrollHeight - innerHeight;
+            bar.style.width = `${max > 0 ? Math.min(100, (scrollY / max) * 100) : 0}%`;
+          };
+          addEventListener("scroll", onScroll, { passive: true });
+          onScroll();
+        }
+      });
+    </script>
 
     <CommandPalette />
     <MobileEssentials />
