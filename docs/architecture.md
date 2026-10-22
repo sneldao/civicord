@@ -96,7 +96,9 @@ judges, the gateway spec and every shared link depend on them. A second region
 would add a `region` field to the payload and an alias `?jurisdiction=`
 alongside `?constituency=` — not a new schema, and not a URL break. The landing
 page (`frontend/src/pages/index.astro`) states the abstraction explicitly via a
-region picker and an *“Add your region”* section.
+sourced before/after exhibit and a region section ending in a *“Your
+democracy”* blueprint card — invariants in [personas.md](personas.md)
+§Homepage contract.
 
 ### Agent interfaces (2026-09-12, self-hosted server added 2026-10-20)
 
