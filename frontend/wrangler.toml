@@ -11,3 +11,9 @@ pages_build_output_dir = "dist"
 [[r2_buckets]]
 binding = "DATA"
 bucket_name = "civicord-data"
+
+# Correction + claim review queue (see docs/claim-flow.md). Without this,
+# POST /api/corrections falls back to in-memory storage that dies with the isolate.
+[[kv_namespaces]]
+binding = "CORRECTIONS_KV"
+id = "817a6d1f414d46989680095732efcef6"

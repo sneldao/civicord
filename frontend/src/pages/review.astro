@@ -1,0 +1,118 @@
+---
+import { ClientRouter } from "astro:transitions";
+import MobileEssentials from "../components/MobileEssentials.astro";
+import "../styles/global.css";
+---
+
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Review queue — corrections and record claims waiting for human review. Nothing here has been applied to any record." />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Review queue — Civicord</title>
+    <ClientRouter />
+  </head>
+  <body class="reveal-root">
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="masthead">
+      <div class="masthead-top">
+        <h1 class="wordmark"><a href="/" aria-label="Civicord home">Civicord<span class="dot">.</span></a></h1>
+      </div>
+      <p class="crumb"><a href="/">Civicord</a> / <b>Review queue</b></p>
+      <p class="lede">
+        Corrections and record claims waiting for a human to review. Nothing on
+        this page has been applied — a queued request is not an edit.
+      </p>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <p class="muted" id="review-status" role="status" aria-live="polite">Loading the queue…</p>
+      <section id="review-claims" aria-labelledby="claims-h" hidden>
+        <h2 id="claims-h">Record claims</h2>
+        <ol class="correction-queue" id="review-claims-list"></ol>
+      </section>
+      <section id="review-corrections" aria-labelledby="corrections-h" hidden>
+        <h2 id="corrections-h">Corrections</h2>
+        <ol class="correction-queue" id="review-corrections-list"></ol>
+      </section>
+    </main>
+
+    <script>
+      function esc(v) { return String(v ?? ""); }
+      function row(r) {
+        const li = document.createElement("li");
+        const status = document.createElement("p");
+        status.className = "cq-status";
+        const when = document.createElement("p");
+        when.className = "muted";
+        when.textContent = `${r.receivedAt ? `Received ${r.receivedAt}. ` : ""}${r.id || ""}`;
+        if (r.kind === "claim") {
+          status.textContent = "Claim request — verify before any access";
+          const who = document.createElement("p");
+          const b = document.createElement("b");
+          b.textContent = "Claimed by. ";
+          who.append(b, document.createTextNode(`${esc(r.claimantName)} (${esc(r.role)})`));
+          const proof = document.createElement("p");
+          const pb = document.createElement("b");
+          pb.textContent = "Proof offered. ";
+          proof.append(pb, document.createTextNode(esc(r.proofNote)));
+          li.append(status, who, proof);
+        } else {
+          status.textContent = "Correction request — not applied";
+          const wrong = document.createElement("p");
+          const wb = document.createElement("b");
+          wb.textContent = "What looks wrong. ";
+          wrong.append(wb, document.createTextNode(esc(r.whatIsWrong)));
+          const prop = document.createElement("p");
+          const prb = document.createElement("b");
+          prb.textContent = "Proposed. ";
+          prop.append(prb, document.createTextNode(esc(r.proposedCorrection)));
+          li.append(status, wrong, prop);
+        }
+        const rec = document.createElement("p");
+        const link = document.createElement("a");
+        link.href = r.recordUrl || `/candidates/${r.personId}`;
+        link.textContent = `${r.personName || r.personId} — open record`;
+        rec.append(link);
+        li.append(rec, when);
+        return li;
+      }
+
+      async function load() {
+        const status = document.getElementById("review-status");
+        try {
+          const res = await fetch("/api/corrections?all=1", { headers: { accept: "application/json" } });
+          if (!res.ok) throw new Error(String(res.status));
+          const data = await res.json();
+          const rows = Array.isArray(data.requests) ? data.requests : [];
+          const claims = rows.filter((r) => r.kind === "claim");
+          const corrections = rows.filter((r) => r.kind !== "claim");
+          if (status) {
+            status.textContent = rows.length
+              ? `${rows.length} queued request${rows.length === 1 ? "" : "s"} — ${claims.length} claim${claims.length === 1 ? "" : "s"}, ${corrections.length} correction${corrections.length === 1 ? "" : "s"}.`
+              : "The queue is empty.";
+          }
+          if (claims.length) {
+            document.getElementById("review-claims").hidden = false;
+            const l = document.getElementById("review-claims-list");
+            claims.forEach((r) => l.append(row(r)));
+          }
+          if (corrections.length) {
+            document.getElementById("review-corrections").hidden = false;
+            const l = document.getElementById("review-corrections-list");
+            corrections.forEach((r) => l.append(row(r)));
+          }
+        } catch {
+          if (status) status.textContent = "The review queue could not be reached.";
+        }
+      }
+      document.addEventListener("astro:page-load", load);
+      load();
+    </script>
+
+    <MobileEssentials />
+  </body>
+</html>

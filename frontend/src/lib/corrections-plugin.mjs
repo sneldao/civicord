@@ -55,6 +55,13 @@ export async function handleCorrectionRequest(req, res, file) {
   if (req.method === "GET") {
     const url = new URL(req.url || "/", "http://127.0.0.1");
     const personId = (url.searchParams.get("personId") || "").trim();
+    if (url.searchParams.get("all") === "1") {
+      const requests = await listCorrections(file, "");
+      res.statusCode = 200;
+      res.setHeader("content-type", "application/json; charset=utf-8");
+      res.end(JSON.stringify({ requests, stored: "queue", effect: "request", note: QUEUE_NOTE }));
+      return true;
+    }
     if (!/^\d{1,12}$/.test(personId)) {
       res.statusCode = 400;
       res.setHeader("content-type", "application/json; charset=utf-8");

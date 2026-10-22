@@ -74,7 +74,7 @@ jobs:
           BRANCH="refresh/$(date -u +%Y-%m-%d)"
           git checkout -b "$BRANCH"
           git commit -m "Scheduled snapshot refresh ($(date -u +%Y-%m-%d))"
-          git push -u origin "$BRANCH"
+          git push -u origin "$BRANCH" --force-with-lease
           gh pr create --title "Snapshot refresh $(date -u +%Y-%m-%d)" \
             --body "Automated refresh (monthly audit$([ "${{ inputs.full }}" = "true" ] && echo " + quarterly recrawl/claimdiff")). Review counts, then merge + deploy per docs/ops.md."
         env:

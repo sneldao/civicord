@@ -980,6 +980,10 @@ async function handleCorrections(request, url, env) {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsJson });
   if (request.method === "GET") {
     const personId = (url.searchParams.get("personId") || "").trim();
+    if (url.searchParams.get("all") === "1") {
+      const all = (await readCorrectionQueue(env)).map(publicCorrection);
+      return correctionJson({ requests: all, stored: "queue", effect: "request", note: QUEUE_NOTE });
+    }
     if (!/^\d{1,12}$/.test(personId)) {
       return correctionJson({ error: "personId_required", note: QUEUE_NOTE }, 400);
     }
