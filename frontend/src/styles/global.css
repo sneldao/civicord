@@ -953,7 +953,7 @@ tbody tr.is-settling {
 
 /* Reduced motion: content simply appears, nothing moves */
 @media (prefers-reduced-motion: reduce) {
-  .reveal-root *, tbody tr, .palette-row, .door-field-svg circle,
+  .reveal-root *, tbody tr, .palette-row,
   [data-reveal], [data-reveal].is-in [data-reveal-stagger] > * { animation: none !important; }
   [data-reveal] { opacity: 1; transform: none; transition: none !important; }
   [data-reveal] [data-reveal-stagger] > * { opacity: 1 !important; }
@@ -964,8 +964,6 @@ tbody tr.is-settling {
     transform: none;
   }
   .board.is-on .board-bar b { width: var(--w, 0%); }
-  .door-field-svg circle { opacity: 0.85 !important; }
-  .door-field-svg .df-gone { opacity: 0.7 !important; }
   .peek-morph { display: none !important; }
   ::view-transition-group(*),
   ::view-transition-old(*),
@@ -1299,74 +1297,8 @@ tbody tr.is-settling {
 .door-support { margin-top: 0.55rem; max-width: 34em; }
 .door-cta { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 1.15rem; align-items: center; }
 .door-strip { margin-top: 1.35rem; }
-.door-visual {
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-  padding: 0.85rem 0.9rem 0.8rem;
-  border: 2px solid var(--ink);
-  border-radius: 10px;
-  background:
-    linear-gradient(160deg, rgba(255,255,255,0.55), rgba(242,237,223,0.35)),
-    var(--paper-deep);
-  text-decoration: none;
-  color: inherit;
-  transition: transform var(--duration-instant) var(--ease-out), box-shadow var(--duration-instant) var(--ease-out);
-}
-.door-visual:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(28, 36, 52, 0.12); color: inherit; }
-.door-visual:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.door-visual-cta { font-size: 0.82rem; font-weight: 700; color: var(--accent); }
-.door-field { margin: 0; }
-.door-field-svg { width: 100%; height: auto; display: block; }
-.door-field-svg circle {
-  opacity: 0;
-  animation: door-dot-in var(--duration-enter) var(--ease-out) both;
-  animation-delay: calc(var(--di, 0) * 4ms);
-}
-.door-field-svg .df-live { fill: var(--live); }
-.door-field-svg .df-gone { fill: var(--gone); }
-@keyframes door-dot-in {
-  from { opacity: 0; }
-  to { opacity: 0.88; }
-}
-.door-field-svg .df-gone {
-  animation-name: door-dot-in-gone;
-}
-@keyframes door-dot-in-gone {
-  from { opacity: 0; }
-  to { opacity: 0.7; }
-}
-.door-field-cap {
-  display: flex; flex-wrap: wrap; gap: 0.55rem 1rem;
-  margin-top: 0.45rem; font-size: 0.72rem; color: var(--muted);
-}
-.df-key { display: inline-flex; align-items: center; gap: 0.35rem; }
-.df-swatch { width: 0.55rem; height: 0.55rem; border-radius: 50%; display: inline-block; }
-.df-swatch.live { background: var(--live); }
-.df-swatch.gone { background: var(--gone); }
-.door-uk-teaser { margin: 2rem 0 0; }
-.door-uk-card {
-  display: flex; flex-direction: column; gap: 0.35rem;
-  padding: 1.15rem 1.2rem 1.05rem;
-  border: 2px solid var(--ink);
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(255,255,255,0.72), rgba(242,237,223,0.55)),
-    var(--paper-deep);
-  text-decoration: none;
-  transition: transform var(--duration-instant) var(--ease-out), box-shadow var(--duration-instant) var(--ease-out);
-}
-.door-uk-card:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(28, 36, 52, 0.1); color: inherit; }
-.door-uk-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.door-uk-kicker { display: flex; align-items: center; gap: 0.45rem; font-size: 0.72rem; color: var(--muted); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-.door-uk-title { font-family: var(--serif); font-size: clamp(1.45rem, 3.5vw, 1.85rem); line-height: 1.15; }
-.door-uk-meta { font-size: 0.88rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-.door-uk-story { font-size: 0.92rem; color: var(--ink); max-width: 38em; line-height: 1.45; margin-top: 0.15rem; }
-.door-uk-cta { margin-top: 0.45rem; font-weight: 700; color: var(--accent); font-size: 0.9rem; }
-.door-regions { margin-top: 2.2rem; }
 @media (max-width: 860px) {
   .door-hero { grid-template-columns: 1fr; }
-  .door-visual { max-width: 28rem; }
 }
 .wordmark-link { margin: 0; }
 .wordmark-link a { text-decoration: none; color: inherit; }

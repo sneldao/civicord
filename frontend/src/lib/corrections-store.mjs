@@ -2,8 +2,10 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
   appendRequest,
+  buildQueuedClaim,
   buildQueuedRequest,
   publicCorrection,
+  validateClaim,
   validateCorrection,
 } from "./corrections.mjs";
 
@@ -24,9 +26,12 @@ export async function writeQueue(file, queue) {
 }
 
 export async function submitCorrection(file, input, now = new Date()) {
-  const validated = validateCorrection(input);
+  const isClaim = input && String(input.kind ?? "") === "claim";
+  const validated = isClaim ? validateClaim(input) : validateCorrection(input);
   if (!validated.ok) return validated;
-  const request = buildQueuedRequest(validated.value, now);
+  const request = isClaim
+    ? buildQueuedClaim(validated.value, now)
+    : buildQueuedRequest(validated.value, now);
   const queue = appendRequest(await readQueue(file), request);
   await writeQueue(file, queue);
   return { ok: true, request };

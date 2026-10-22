@@ -69,6 +69,75 @@ export function newCorrectionId(now = new Date()) {
   return `cor_${now.getTime().toString(36)}_${rand}`;
 }
 
+// A claim is not a correction: the claimant says "this is my record" and names
+// how a reviewer could verify it. Nothing is claimed on assertion alone — the
+// row is queued for the same human review as corrections.
+export const CLAIM_NOTE =
+  "Queued for review. A claim does not change the record or grant any update access until a person verifies it.";
+
+const CLAIM_ROLES = ["candidate", "team", "other"];
+
+export function validateClaim(input) {
+  const errors = [];
+  const body = input && typeof input === "object" ? input : {};
+  if (String(body.fax_number ?? "").trim()) {
+    return { ok: false, errors: ["rejected"] };
+  }
+
+  const personId = String(body.personId ?? "").trim();
+  if (!/^\d{1,12}$/.test(personId)) errors.push("personId");
+
+  const claimantName = String(body.claimantName ?? "").trim();
+  if (!claimantName || claimantName.length > NAME_MAX) errors.push("claimantName");
+
+  const contact = String(body.contact ?? "").trim();
+  if (!contact.includes("@") || contact.length > CONTACT_MAX) errors.push("contact");
+
+  const role = CLAIM_ROLES.includes(String(body.role ?? "")) ? String(body.role) : "other";
+
+  const proofNote = String(body.proofNote ?? "").trim();
+  if (proofNote.length < TEXT_MIN || proofNote.length > TEXT_MAX) errors.push("proofNote");
+
+  const personName = String(body.personName ?? "").trim().slice(0, NAME_MAX);
+
+  if (errors.length) return { ok: false, errors };
+
+  return {
+    ok: true,
+    value: {
+      personId,
+      personName,
+      recordUrl: `/candidates/${personId}`,
+      claimantName,
+      contact,
+      role,
+      proofNote,
+    },
+  };
+}
+
+export function newClaimId(now = new Date()) {
+  const rand = Math.random().toString(36).slice(2, 8);
+  return `clm_${now.getTime().toString(36)}_${rand}`;
+}
+
+export function buildQueuedClaim(value, now = new Date()) {
+  return {
+    id: newClaimId(now),
+    kind: "claim",
+    status: "queued",
+    effect: "claim-request",
+    receivedAt: now.toISOString(),
+    personId: value.personId,
+    personName: value.personName,
+    recordUrl: value.recordUrl,
+    claimantName: value.claimantName,
+    role: value.role,
+    proofNote: value.proofNote,
+    contact: value.contact,
+  };
+}
+
 export function buildQueuedRequest(value, now = new Date()) {
   return {
     id: newCorrectionId(now),

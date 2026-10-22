@@ -10,6 +10,16 @@ Full-corpus publication is unblocked on Campaign Lab’s side: they agreed
 (2026-09-12) that we may publicly reuse and redistribute the extracted page
 text with credit (CC-BY). Keep attribution on any bulk text/diff release.
 
+## The exhibit pitch (2026-10-22)
+
+The homepage now leads with a sourced before/after exhibit — a real deleted
+pledge against what the site serves today (current pick: a Labour &
+Co-operative candidate's "If elected today, I will…" list whose domain now
+returns a default server page). For journalists and partners this is the
+two-line demo: open the homepage, click "Open this record", land on the
+citable before/after. Use it in outreach instead of describing the dataset in
+the abstract — the artifact is the argument.
+
 ## Priority order
 
 1. **Democracy Club** — IDs, distribution, possible institutional home

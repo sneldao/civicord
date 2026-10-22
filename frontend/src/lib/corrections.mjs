@@ -4,9 +4,13 @@
 
 export {
   QUEUE_NOTE,
+  CLAIM_NOTE,
   validateCorrection,
+  validateClaim,
   newCorrectionId,
+  newClaimId,
   buildQueuedRequest,
+  buildQueuedClaim,
   publicCorrection,
   appendRequest,
   parseCorrectionBody,

@@ -1,0 +1,111 @@
+---
+interface Props {
+  personId: string;
+  personName: string;
+}
+const { personId, personName } = Astro.props;
+---
+
+<section class="correction-request record-evidence" id="claim" aria-labelledby="claim-title" tabindex="-1">
+  <h2 id="claim-title">Is this your record?</h2>
+  <p class="muted">
+    If you are {personName} or work on their campaign, you can claim this record.
+    Say how a reviewer could verify it — a campaign-domain email, a link on the
+    live site, or your Democracy Club profile. A claim is queued for a person to
+    check; it grants no edit access and changes nothing until verified.
+  </p>
+  <form id="claim-form" action="/api/corrections" method="post" data-person-id={personId}>
+    <input type="hidden" name="personId" value={personId} />
+    <input type="hidden" name="personName" value={personName} />
+    <input type="hidden" name="kind" value="claim" />
+    <p class="correction-honeypot">
+      <label for="claim-fax">Fax</label>
+      <input id="claim-fax" name="fax_number" type="text" tabindex="-1" autocomplete="off" />
+    </p>
+    <label for="claimant-name">Your name</label>
+    <input id="claimant-name" name="claimantName" type="text" required maxlength="200" autocomplete="name" />
+    <label for="claim-contact">Your email <span class="hint">where a reviewer reaches you — never published</span></label>
+    <input id="claim-contact" name="contact" type="email" required maxlength="200" autocomplete="email" />
+    <label for="claim-role">You are</label>
+    <select id="claim-role" name="role">
+      <option value="candidate">The candidate</option>
+      <option value="team">Campaign staff or agent</option>
+      <option value="other">Someone else</option>
+    </select>
+    <label for="claim-proof">How can a reviewer verify this is you? <span class="hint">e.g. “email me at …@lennyrolles.org.uk” or a page you control that names you</span></label>
+    <textarea id="claim-proof" name="proofNote" required minlength="20" maxlength="2000" rows="3"></textarea>
+    <p class="correction-actions">
+      <button type="submit" class="btn-primary">Submit claim</button>
+    </p>
+    <p id="claim-status" class="muted" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<script>
+  import { validateClaim } from "../lib/corrections.mjs";
+
+  const fieldCopy: Record<string, string> = {
+    claimantName: "Add your name.",
+    contact: "Add an email a reviewer can reach you at.",
+    proofNote: "Say how a reviewer could verify this is you, in at least a short sentence.",
+    personId: "This record has no candidate id to attach the claim to.",
+    rejected: "That request was refused.",
+  };
+
+  function bindClaimForm() {
+    const form = document.querySelector<HTMLFormElement>("#claim-form");
+    if (!form || form.dataset.bound === "1") return;
+    form.dataset.bound = "1";
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const status = document.querySelector<HTMLElement>("#claim-status");
+      const payload = Object.fromEntries(new FormData(form).entries());
+      const validated = validateClaim(payload);
+      if (!validated.ok) {
+        if (status) {
+          status.textContent = (validated.errors ?? [])
+            .map((name: string) => fieldCopy[name] || name)
+            .join(" ");
+        }
+        return;
+      }
+      const button = form.querySelector<HTMLButtonElement>("button[type=submit]");
+      if (button) button.disabled = true;
+      if (status) status.textContent = "Sending the claim…";
+      try {
+        const res = await fetch("/api/corrections", {
+          method: "POST",
+          headers: { "content-type": "application/json", accept: "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const body = await res.json().catch(() => null);
+        if (res.status === 400) {
+          const fields = Array.isArray(body?.fields) ? body.fields : [];
+          if (status) {
+            status.textContent = fields.length
+              ? fields.map((name: string) => fieldCopy[name] || name).join(" ")
+              : "The review queue refused the claim. Nothing on the record changed.";
+          }
+          return;
+        }
+        if (!res.ok || !body || body.status !== "queued") throw new Error("unreachable");
+        if (status) {
+          status.textContent =
+            "Claim queued for review. Nothing on the record changed; a reviewer will be in touch at the email you gave.";
+        }
+        form.reset();
+      } catch {
+        if (status) {
+          status.textContent =
+            "The review queue could not be reached — the claim was not stored. Nothing on the record changed.";
+        }
+      } finally {
+        if (button) button.disabled = false;
+      }
+    });
+  }
+
+  document.addEventListener("astro:page-load", bindClaimForm);
+  bindClaimForm();
+</script>

@@ -7,6 +7,7 @@ import ScrollReveal from "../../components/ScrollReveal.astro";
 import AgentView from "../../components/AgentView.astro";
 import WebMCP from "../../components/WebMCP.astro";
 import CorrectionRequest from "../../components/CorrectionRequest.astro";
+import ClaimRecord from "../../components/ClaimRecord.astro";
 import ClaimPairs from "../../components/ClaimPairs.astro";
 import ClientRecordScript from "../../components/ClientRecordScript.astro";
 import { ClientRouter } from "astro:transitions";
@@ -187,6 +188,7 @@ const personShareText =
       <a class="btn-ghost" href="#evidence">View evidence</a>
       {claimDiff && (claimDiff.deleted?.length > 0 || claimDiff.added?.length > 0) && <a class="btn-ghost" href="#claims">Before and after</a>}
       <a class="btn-ghost" href="#correction">Propose a correction</a>
+      <a class="btn-ghost" href="#claim">Is this your record? Claim it</a>
       <a class="btn-ghost" href={`/candidates/${person.id}/reply`}>Reply if this is wrong</a>
       <button
         type="button"
@@ -307,6 +309,7 @@ const personShareText =
     )}
 
     <CorrectionRequest personId={person.id} personName={person.name} />
+    <ClaimRecord personId={person.id} personName={person.name} />
 
     {contentDiff && (
       <section class="content-chrono" aria-label="Content chronology">

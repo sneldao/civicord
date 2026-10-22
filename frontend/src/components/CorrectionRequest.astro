@@ -99,6 +99,24 @@ const { personId, personName } = Astro.props;
       const item = document.createElement("li");
       const status = document.createElement("p");
       status.className = "cq-status";
+      if ((request as any).kind === "claim") {
+        status.textContent = "Claim request — queued for review, grants no edit access";
+        const who = document.createElement("p");
+        const whoLabel = document.createElement("b");
+        whoLabel.textContent = "Claimed by. ";
+        const r = request as any;
+        who.append(whoLabel, document.createTextNode(`${r.claimantName || "—"} (${r.role || "other"})`));
+        const proof = document.createElement("p");
+        const proofLabel = document.createElement("b");
+        proofLabel.textContent = "How they say a reviewer can verify. ";
+        proof.append(proofLabel, document.createTextNode(r.proofNote || ""));
+        const when = document.createElement("p");
+        when.className = "muted";
+        when.textContent = `${r.receivedAt ? `Received ${r.receivedAt}. ` : ""}Stored in the review queue.`;
+        item.append(status, who, proof, when);
+        list.append(item);
+        continue;
+      }
       status.textContent = request.deviceOnly
         ? "Queued on this device only — not applied"
         : "Queued for review — not applied to the record";

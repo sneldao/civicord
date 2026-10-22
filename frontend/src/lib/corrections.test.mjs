@@ -91,3 +91,49 @@ test("POST /api/corrections persists and GET returns the same request", async ()
     server.close();
   }
 });
+
+const goodClaim = {
+  kind: "claim",
+  personId: "55924",
+  personName: "Lenny Rolles",
+  claimantName: "Lenny Rolles",
+  contact: "lenny@lennyrolles.org.uk",
+  role: "candidate",
+  proofNote: "I can email you from the campaign domain address listed on the site footer.",
+};
+
+test("a claim is queued as a claim-request, contact stripped from the public view", async () => {
+  const { validateClaim, buildQueuedClaim, publicCorrection } = await import("./corrections.mjs");
+  const validated = validateClaim(goodClaim);
+  assert.equal(validated.ok, true);
+  const row = buildQueuedClaim(validated.value, new Date("2026-10-22T12:00:00Z"));
+  assert.equal(row.kind, "claim");
+  assert.equal(row.effect, "claim-request");
+  assert.equal(row.status, "queued");
+  assert.match(row.id, /^clm_/);
+  const pub = publicCorrection(row);
+  assert.equal("contact" in pub, false);
+  assert.equal(pub.contactProvided, true);
+  assert.equal(pub.claimantName, goodClaim.claimantName);
+});
+
+test("claims without a verifiable contact or proof are refused", async () => {
+  const { validateClaim } = await import("./corrections.mjs");
+  assert.equal(validateClaim({ ...goodClaim, contact: "not-an-email" }).ok, false);
+  assert.equal(validateClaim({ ...goodClaim, contact: "" }).ok, false);
+  assert.equal(validateClaim({ ...goodClaim, proofNote: "trust me" }).ok, false);
+  assert.equal(validateClaim({ ...goodClaim, claimantName: "" }).ok, false);
+  assert.equal(validateClaim({ ...goodClaim, fax_number: "spam" }).ok, false);
+});
+
+test("claim submissions flow through the store as claims", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "civicord-claims-"));
+  const file = path.join(dir, "queue.json");
+  const saved = await submitCorrection(file, goodClaim, new Date("2026-10-22T12:00:00Z"));
+  assert.equal(saved.ok, true);
+  assert.equal(saved.request.kind, "claim");
+  const listed = await listCorrections(file, "55924");
+  assert.equal(listed.length, 1);
+  assert.equal(listed[0].kind, "claim");
+  assert.equal("contact" in listed[0], false);
+});

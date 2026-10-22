@@ -14,9 +14,11 @@
 import {
   QUEUE_NOTE,
   appendRequest,
+  buildQueuedClaim,
   buildQueuedRequest,
   parseCorrectionBody,
   publicCorrection,
+  validateClaim,
   validateCorrection,
 } from "./corrections-rules.mjs";
 
@@ -994,11 +996,14 @@ async function handleCorrections(request, url, env) {
   if (!parsed.ok) {
     return correctionJson({ error: parsed.error, note: QUEUE_NOTE }, 400);
   }
-  const validated = validateCorrection(parsed.value);
+  const isClaim = String(parsed.value?.kind ?? "") === "claim";
+  const validated = isClaim ? validateClaim(parsed.value) : validateCorrection(parsed.value);
   if (!validated.ok) {
     return correctionJson({ error: "invalid", fields: validated.errors, note: QUEUE_NOTE }, 400);
   }
-  const requestRow = buildQueuedRequest(validated.value);
+  const requestRow = isClaim
+    ? buildQueuedClaim(validated.value)
+    : buildQueuedRequest(validated.value);
   const queue = appendRequest(await readCorrectionQueue(env), requestRow);
   await writeCorrectionQueue(env, queue);
   return correctionJson({ ...publicCorrection(requestRow), note: QUEUE_NOTE }, 201);
