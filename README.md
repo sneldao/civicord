@@ -156,4 +156,8 @@ direction are human calls. Noted for transparency per hackathon rules.
 
 Code: [AGPL-3.0](LICENSE) (aligning with Democracy Club's approach).
 Datasets: CC-BY for Civicord-derived outputs; Campaign Lab April 2025 scrape
-text reusable with credit (CC-BY) — agreed 2026-09-12.
+text reusable with credit (CC-BY) — agreed 2026-09-12.- 2026-10-22 (ops): CI audit proved its own vantage — 374 "dead" sites,
+  330 still answer 200 from residential (~88% bot-block artifact). Audit
+  now classes 403/429 as `inconclusive_blocked`, sends a browser UA, and
+  takes `CIVICORD_PROXY` (Bright Data ready). Published snapshot = verified
+  September baseline. See docs/ops.md.

@@ -17,3 +17,11 @@ runs the quarterly pass on demand.
 Election timing overrides the calendar: a called election triggers an
 immediate full pass (baseline) plus a post-election pass (the flagship
 candidate→MP transition story).
+
+**Vantage requirement (2026-10-22):** audits must run from a residential/proxy
+vantage — the Oct 22 CI run flipped 374 sites live→error; 330 still answered 200
+from residential (88% bot-block artifact). The audit classes 403/429 as
+`inconclusive_blocked` and is two-stage: cheap CI pass, then
+`civicord audit --status inconclusive_blocked` via `CIVICORD_PROXY` re-checks
+only blocked rows. Merging a blocked-only re-check into the full snapshot is
+still manual.
