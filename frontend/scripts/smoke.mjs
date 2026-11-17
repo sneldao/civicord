@@ -24,7 +24,7 @@ try {
 } catch {}
 
 const checks = [
-  ["/", 200, ["skip-link", "main", "walkback-lead", "No longer found", "Civicord"]],
+  ["/", 200, ["skip-link", "main", "walkback-lead", "exhibit-kicker", "Civicord"]],
   ["/uk", 200, ["hexmap", "q-hero-top"]],
   ["/browse", 200, ["ledger-body", "pagination", "skip-link", "filterbar"]],
   ["/steward", 200, ["dg-died", "dg-parked", "dg-disappeared", "export-btn", "What we can\u2019t tell you", "following"]],

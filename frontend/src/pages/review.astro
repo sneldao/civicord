@@ -54,7 +54,8 @@ import "../styles/global.css";
     <script>
       function esc(v) { return String(v ?? ""); }
       function token() {
-        return (document.getElementById("review-token") || {}).value || "";
+        const el = document.getElementById("review-token");
+        return el instanceof HTMLInputElement ? el.value : "";
       }
 
       function labelled(label, text) {
@@ -215,7 +216,7 @@ import "../styles/global.css";
       }
 
       const tokenInput = document.getElementById("review-token");
-      if (tokenInput) {
+      if (tokenInput instanceof HTMLInputElement) {
         tokenInput.value = localStorage.getItem("civicord-review-token") || "";
         tokenInput.addEventListener("change", () => {
           localStorage.setItem("civicord-review-token", tokenInput.value);
