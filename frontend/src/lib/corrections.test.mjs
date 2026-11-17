@@ -5,8 +5,14 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { createServer } from "node:http";
 import { once } from "node:events";
-import { QUEUE_NOTE, validateCorrection } from "./corrections.mjs";
-import { listCorrections, submitCorrection } from "./corrections-store.mjs";
+import { QUEUE_NOTE, validateCorrection, validateDecision } from "./corrections.mjs";
+import {
+  decisionsFileFor,
+  listCorrections,
+  listDecisions,
+  submitCorrection,
+  submitDecision,
+} from "./corrections-store.mjs";
 import { handleCorrectionRequest } from "./corrections-plugin.mjs";
 
 const good = {
@@ -136,4 +142,87 @@ test("claim submissions flow through the store as claims", async () => {
   assert.equal(listed.length, 1);
   assert.equal(listed[0].kind, "claim");
   assert.equal("contact" in listed[0], false);
+});
+
+test("decision validation refuses bad ids and unknown outcomes", () => {
+  assert.equal(validateDecision({ id: "cor_abc_1", decision: "accepted" }).ok, true);
+  assert.equal(validateDecision({ id: "clm_abc_1", decision: "rejected", note: "duplicate" }).ok, true);
+  assert.equal(validateDecision({ id: "cor_abc_1", decision: "maybe" }).ok, false);
+  assert.equal(validateDecision({ id: "not-an-id", decision: "accepted" }).ok, false);
+  assert.equal(validateDecision({ id: "", decision: "accepted" }).ok, false);
+});
+
+test("a decision flips the row once and lands in the public log", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "civicord-decisions-"));
+  const file = path.join(dir, "correction-queue.json");
+  const decisionsFile = decisionsFileFor(file);
+  const saved = await submitCorrection(file, good, new Date("2026-11-16T12:00:00Z"));
+  const id = saved.request.id;
+
+  const bad = await submitDecision(file, decisionsFile, { id: "cor_missing_1", decision: "accepted" });
+  assert.equal(bad.ok, false);
+  assert.equal(bad.status, 404);
+
+  const decided = await submitDecision(
+    file,
+    decisionsFile,
+    { id, decision: "accepted", note: "verified against the campaign domain" },
+    new Date("2026-11-16T13:00:00Z"),
+  );
+  assert.equal(decided.ok, true);
+  assert.equal(decided.decision.id, id);
+  assert.equal("contact" in decided.decision, false);
+
+  const rows = await listCorrections(file, "38841");
+  assert.equal(rows[0].status, "accepted");
+  const again = await submitDecision(file, decisionsFile, { id, decision: "rejected" });
+  assert.equal(again.ok, false);
+  assert.equal(again.status, 409);
+  assert.equal(again.current, "accepted");
+
+  const log = await listDecisions(decisionsFile);
+  assert.equal(log.length, 1);
+  assert.equal(log[0].decision, "accepted");
+  assert.equal(log[0].note, "verified against the campaign domain");
+});
+
+test("POST /api/corrections/decide needs the review token", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "civicord-decide-"));
+  const file = path.join(dir, "correction-queue.json");
+  const saved = await submitCorrection(file, good);
+  const server = createServer((req, res) => {
+    handleCorrectionRequest(req, res, file).then((handled) => {
+      if (!handled) {
+        res.statusCode = 404;
+        res.end();
+      }
+    });
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const port = server.address().port;
+  const post = (headers) =>
+    fetch(`http://127.0.0.1:${port}/api/corrections/decide`, {
+      method: "POST",
+      headers: { "content-type": "application/json", ...headers },
+      body: JSON.stringify({ id: saved.request.id, decision: "accepted" }),
+    });
+  const prev = process.env.CIVICORD_REVIEW_TOKEN;
+  try {
+    delete process.env.CIVICORD_REVIEW_TOKEN;
+    assert.equal((await post({})).status, 501);
+    process.env.CIVICORD_REVIEW_TOKEN = "test-token";
+    assert.equal((await post({})).status, 401);
+    const ok = await post({ authorization: "Bearer test-token" });
+    assert.equal(ok.status, 200);
+    assert.equal((await ok.json()).decision, "accepted");
+    const log = await fetch(`http://127.0.0.1:${port}/api/corrections/decisions`);
+    const body = await log.json();
+    assert.equal(body.decisions.length, 1);
+    assert.equal(body.decisions[0].id, saved.request.id);
+  } finally {
+    if (prev === undefined) delete process.env.CIVICORD_REVIEW_TOKEN;
+    else process.env.CIVICORD_REVIEW_TOKEN = prev;
+    server.close();
+  }
 });

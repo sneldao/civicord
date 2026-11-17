@@ -183,3 +183,49 @@ export function parseCorrectionBody(raw, contentType) {
     return { ok: false, error: "invalid_body" };
   }
 }
+
+// A maintainer decision flips a queued row's status and is itself public —
+// sunlight is the abuse control (docs/claim-flow.md). Applying an accepted
+// correction to the record remains a maintainer act outside the queue; the
+// decision log only records that review happened.
+export const DECISION_NOTE =
+  "A review decision. Accepted items are applied to the record by a maintainer and stay visible in the public decisions log — nothing is edited silently.";
+
+export const DECISIONS = ["accepted", "rejected"];
+
+export function validateDecision(input) {
+  const errors = [];
+  const body = input && typeof input === "object" ? input : {};
+  const id = String(body.id ?? "").trim();
+  if (!/^(cor|clm)_[a-z0-9_]+$/i.test(id)) errors.push("id");
+  const decision = String(body.decision ?? "").trim();
+  if (!DECISIONS.includes(decision)) errors.push("decision");
+  const note = String(body.note ?? "").trim();
+  if (note.length > TEXT_MAX) errors.push("note");
+  if (errors.length) return { ok: false, errors };
+  return { ok: true, value: { id, decision, note } };
+}
+
+// The public decision-log entry — deliberately carries no claimant contact,
+// the same rule the public queue view holds.
+export function buildDecision(request, value, now = new Date()) {
+  return {
+    id: request.id,
+    kind: request.kind === "claim" ? "claim" : "correction",
+    personId: request.personId,
+    personName: request.personName,
+    recordUrl: request.recordUrl,
+    decision: value.decision,
+    note: value.note,
+    decidedAt: now.toISOString(),
+  };
+}
+
+// Flips the queued row to its decided status; decided rows cannot be decided
+// again (a changed mind is a new row, so the log stays honest).
+export function markDecided(request, value, now = new Date()) {
+  request.status = value.decision;
+  request.decidedAt = now.toISOString();
+  if (value.note) request.decisionNote = value.note;
+  return request;
+}

@@ -2,11 +2,14 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
   appendRequest,
+  buildDecision,
   buildQueuedClaim,
   buildQueuedRequest,
+  markDecided,
   publicCorrection,
   validateClaim,
   validateCorrection,
+  validateDecision,
 } from "./corrections.mjs";
 
 export async function readQueue(file) {
@@ -42,4 +45,35 @@ export async function listCorrections(file, personId) {
   const id = String(personId ?? "").trim();
   const rows = id ? queue.filter((r) => r.personId === id) : queue;
   return rows.map(publicCorrection);
+}
+
+// Dev/preview decisions file — sibling of the queue file, mirrors the
+// worker's corrections-decisions-v1 KV key. Falls back to a .decisions.json
+// suffix so a custom CIVICORD_CORRECTION_QUEUE path can never be clobbered.
+export function decisionsFileFor(queueFile) {
+  if (/correction-queue(\.json)?$/.test(queueFile)) {
+    return queueFile.replace(/correction-queue(\.json)?$/, "correction-decisions$1");
+  }
+  return `${queueFile.replace(/\.json$/, "")}.decisions.json`;
+}
+
+export async function submitDecision(queueFile, decisionsFile, input, now = new Date()) {
+  const validated = validateDecision(input);
+  if (!validated.ok) return { ok: false, status: 400, errors: validated.errors };
+  const queue = await readQueue(queueFile);
+  const row = queue.find((r) => r.id === validated.value.id);
+  if (!row) return { ok: false, status: 404, error: "not_found" };
+  if (row.status && row.status !== "queued") {
+    return { ok: false, status: 409, error: "already_decided", current: row.status };
+  }
+  markDecided(row, validated.value, now);
+  await writeQueue(queueFile, queue);
+  const decision = buildDecision(row, validated.value, now);
+  const log = appendRequest(await readQueue(decisionsFile), decision);
+  await writeQueue(decisionsFile, log);
+  return { ok: true, decision };
+}
+
+export async function listDecisions(decisionsFile) {
+  return (await readQueue(decisionsFile)).slice().reverse();
 }

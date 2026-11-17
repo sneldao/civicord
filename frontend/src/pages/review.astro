@@ -24,11 +24,18 @@ import "../styles/global.css";
       <p class="crumb"><a href="/">Civicord</a> / <b>Review queue</b></p>
       <p class="lede">
         Corrections and record claims waiting for a human to review. Nothing on
-        this page has been applied — a queued request is not an edit.
+        this page has been applied — a queued request is not an edit, and a
+        decision only marks the queue. Applying an accepted correction to the
+        record is a separate maintainer act.
       </p>
     </header>
 
     <main id="main" tabindex="-1">
+      <p class="muted">
+        <label for="review-token">Reviewer token</label>
+        <input id="review-token" type="password" autocomplete="off" placeholder="Required to accept or reject" />
+        <span class="muted" id="review-token-hint">stored in this browser only</span>
+      </p>
       <p class="muted" id="review-status" role="status" aria-live="polite">Loading the queue…</p>
       <section id="review-claims" aria-labelledby="claims-h" hidden>
         <h2 id="claims-h">Record claims</h2>
@@ -38,10 +45,80 @@ import "../styles/global.css";
         <h2 id="corrections-h">Corrections</h2>
         <ol class="correction-queue" id="review-corrections-list"></ol>
       </section>
+      <section id="review-decisions" aria-labelledby="decisions-h" hidden>
+        <h2 id="decisions-h">Decisions log</h2>
+        <ol class="correction-queue" id="review-decisions-list"></ol>
+      </section>
     </main>
 
     <script>
       function esc(v) { return String(v ?? ""); }
+      function token() {
+        return (document.getElementById("review-token") || {}).value || "";
+      }
+
+      function labelled(label, text) {
+        const p = document.createElement("p");
+        const b = document.createElement("b");
+        b.textContent = label;
+        p.append(b, document.createTextNode(text));
+        return p;
+      }
+
+      function decisionLine(r) {
+        if (!r.status || r.status === "queued") return null;
+        const p = document.createElement("p");
+        p.className = "cq-status";
+        p.textContent = `${r.status === "accepted" ? "Accepted" : "Rejected"}${r.decidedAt ? ` ${r.decidedAt}` : ""}${r.decisionNote ? ` — ${r.decisionNote}` : ""}`;
+        return p;
+      }
+
+      function actions(li, r) {
+        const wrap = document.createElement("div");
+        const note = document.createElement("input");
+        note.type = "text";
+        note.placeholder = "Reviewer note (optional, public)";
+        note.setAttribute("aria-label", "Reviewer note");
+        const accept = document.createElement("button");
+        accept.textContent = "Accept";
+        const reject = document.createElement("button");
+        reject.textContent = "Reject";
+        const out = document.createElement("span");
+        out.className = "muted";
+        async function decide(decision) {
+          out.textContent = " Saving…";
+          try {
+            const res = await fetch("/api/corrections/decide", {
+              method: "POST",
+              headers: {
+                "content-type": "application/json",
+                accept: "application/json",
+                authorization: `Bearer ${token()}`,
+              },
+              body: JSON.stringify({ id: r.id, decision, note: note.value.trim() }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+              out.textContent = ` Not saved (${data.error || res.status}).`;
+              return;
+            }
+            r.status = decision;
+            r.decidedAt = data.decidedAt;
+            r.decisionNote = data.note;
+            wrap.remove();
+            const line = decisionLine(r);
+            if (line) li.append(line);
+            loadDecisions();
+          } catch {
+            out.textContent = " Not saved (network error).";
+          }
+        }
+        accept.addEventListener("click", () => decide("accepted"));
+        reject.addEventListener("click", () => decide("rejected"));
+        wrap.append(note, document.createTextNode(" "), accept, document.createTextNode(" "), reject, out);
+        return wrap;
+      }
+
       function row(r) {
         const li = document.createElement("li");
         const status = document.createElement("p");
@@ -51,26 +128,19 @@ import "../styles/global.css";
         when.textContent = `${r.receivedAt ? `Received ${r.receivedAt}. ` : ""}${r.id || ""}`;
         if (r.kind === "claim") {
           status.textContent = "Claim request — verify before any access";
-          const who = document.createElement("p");
-          const b = document.createElement("b");
-          b.textContent = "Claimed by. ";
-          who.append(b, document.createTextNode(`${esc(r.claimantName)} (${esc(r.role)})`));
-          const proof = document.createElement("p");
-          const pb = document.createElement("b");
-          pb.textContent = "Proof offered. ";
-          proof.append(pb, document.createTextNode(esc(r.proofNote)));
-          li.append(status, who, proof);
+          li.append(
+            status,
+            labelled("Claimed by. ", `${esc(r.claimantName)} (${esc(r.role)})`),
+            labelled("Proof offered. ", esc(r.proofNote))
+          );
         } else {
           status.textContent = "Correction request — not applied";
-          const wrong = document.createElement("p");
-          const wb = document.createElement("b");
-          wb.textContent = "What looks wrong. ";
-          wrong.append(wb, document.createTextNode(esc(r.whatIsWrong)));
-          const prop = document.createElement("p");
-          const prb = document.createElement("b");
-          prb.textContent = "Proposed. ";
-          prop.append(prb, document.createTextNode(esc(r.proposedCorrection)));
-          li.append(status, wrong, prop);
+          li.append(
+            status,
+            labelled("What looks wrong. ", esc(r.whatIsWrong)),
+            labelled("Proposed. ", esc(r.proposedCorrection)),
+            labelled("Source. ", esc(r.sourceUrl))
+          );
         }
         const rec = document.createElement("p");
         const link = document.createElement("a");
@@ -78,7 +148,39 @@ import "../styles/global.css";
         link.textContent = `${r.personName || r.personId} — open record`;
         rec.append(link);
         li.append(rec, when);
+        const line = decisionLine(r);
+        if (line) li.append(line);
+        else li.append(actions(li, r));
         return li;
+      }
+
+      function decisionRow(d) {
+        const li = document.createElement("li");
+        const status = document.createElement("p");
+        status.className = "cq-status";
+        status.textContent = `${d.decision === "accepted" ? "Accepted" : "Rejected"} — ${d.kind}`;
+        li.append(
+          status,
+          labelled("Request. ", esc(d.id)),
+          labelled("Record. ", `${esc(d.personName || d.personId)}`),
+          labelled("Decided. ", `${esc(d.decidedAt)}${d.note ? ` — ${d.note}` : ""}`)
+        );
+        return li;
+      }
+
+      async function loadDecisions() {
+        const section = document.getElementById("review-decisions");
+        const list = document.getElementById("review-decisions-list");
+        if (!section || !list) return;
+        try {
+          const res = await fetch("/api/corrections/decisions", { headers: { accept: "application/json" } });
+          if (!res.ok) return;
+          const data = await res.json();
+          const rows = Array.isArray(data.decisions) ? data.decisions : [];
+          list.replaceChildren();
+          rows.forEach((d) => list.append(decisionRow(d)));
+          section.hidden = rows.length === 0;
+        } catch { /* decisions log is supplementary */ }
       }
 
       async function load() {
@@ -90,9 +192,10 @@ import "../styles/global.css";
           const rows = Array.isArray(data.requests) ? data.requests : [];
           const claims = rows.filter((r) => r.kind === "claim");
           const corrections = rows.filter((r) => r.kind !== "claim");
+          const pending = rows.filter((r) => !r.status || r.status === "queued").length;
           if (status) {
             status.textContent = rows.length
-              ? `${rows.length} queued request${rows.length === 1 ? "" : "s"} — ${claims.length} claim${claims.length === 1 ? "" : "s"}, ${corrections.length} correction${corrections.length === 1 ? "" : "s"}.`
+              ? `${rows.length} request${rows.length === 1 ? "" : "s"} — ${pending} awaiting review, ${claims.length} claim${claims.length === 1 ? "" : "s"}, ${corrections.length} correction${corrections.length === 1 ? "" : "s"}.`
               : "The queue is empty.";
           }
           if (claims.length) {
@@ -108,6 +211,15 @@ import "../styles/global.css";
         } catch {
           if (status) status.textContent = "The review queue could not be reached.";
         }
+        loadDecisions();
+      }
+
+      const tokenInput = document.getElementById("review-token");
+      if (tokenInput) {
+        tokenInput.value = localStorage.getItem("civicord-review-token") || "";
+        tokenInput.addEventListener("change", () => {
+          localStorage.setItem("civicord-review-token", tokenInput.value);
+        });
       }
       document.addEventListener("astro:page-load", load);
       load();

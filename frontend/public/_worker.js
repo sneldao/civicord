@@ -12,14 +12,18 @@
 // All other requests fall through to the static Astro assets.
 
 import {
+  DECISION_NOTE,
   QUEUE_NOTE,
   appendRequest,
+  buildDecision,
   buildQueuedClaim,
   buildQueuedRequest,
+  markDecided,
   parseCorrectionBody,
   publicCorrection,
   validateClaim,
   validateCorrection,
+  validateDecision,
 } from "./corrections-rules.mjs";
 
 const SUBGRAPH_STUDIO =
@@ -37,7 +41,7 @@ const DEFAULT_TEXT_KEYS = ["url", "status", "vnd.civicord.person_name", "vnd.civ
 const corsJson = {
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, POST, OPTIONS",
-  "access-control-allow-headers": "content-type, accept",
+  "access-control-allow-headers": "content-type, accept, authorization",
 };
 
 /* vendor: js-sha3@0.9.3 keccak256 — https://github.com/emn178/js-sha3 (MIT) */
@@ -1013,11 +1017,90 @@ async function handleCorrections(request, url, env) {
   return correctionJson({ ...publicCorrection(requestRow), note: QUEUE_NOTE }, 201);
 }
 
+// Decisions are maintainer-only writes and a public read — sunlight is the
+// abuse control. REVIEW_TOKEN (Pages secret) gates the write; when unset the
+// endpoint says so rather than running open.
+const DECISIONS_KV_KEY = "corrections-decisions-v1";
+const decisionLog = []; // in-memory fallback while no KV binding exists
+
+async function readDecisionLog(env) {
+  if (env && env.CORRECTIONS_KV) {
+    const raw = await env.CORRECTIONS_KV.get(DECISIONS_KV_KEY);
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return decisionLog.slice();
+}
+
+async function writeDecisionLog(env, list) {
+  if (env && env.CORRECTIONS_KV) {
+    await env.CORRECTIONS_KV.put(DECISIONS_KV_KEY, JSON.stringify(list));
+    return;
+  }
+  decisionLog.length = 0;
+  decisionLog.push(...list);
+}
+
+function reviewAuthorized(request, env) {
+  const token = env && env.REVIEW_TOKEN ? String(env.REVIEW_TOKEN) : "";
+  if (!token) return { ok: false, status: 501, error: "review_not_configured" };
+  if ((request.headers.get("authorization") || "") !== `Bearer ${token}`) {
+    return { ok: false, status: 401, error: "unauthorized" };
+  }
+  return { ok: true };
+}
+
+async function handleDecide(request, env) {
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsJson });
+  if (request.method !== "POST") {
+    return correctionJson({ error: "method_not_allowed", note: DECISION_NOTE }, 405);
+  }
+  const auth = reviewAuthorized(request, env);
+  if (!auth.ok) return correctionJson({ error: auth.error, note: DECISION_NOTE }, auth.status);
+  const parsed = parseCorrectionBody(await request.text(), request.headers.get("content-type") || "");
+  if (!parsed.ok) return correctionJson({ error: parsed.error, note: DECISION_NOTE }, 400);
+  const validated = validateDecision(parsed.value);
+  if (!validated.ok) {
+    return correctionJson({ error: "invalid", fields: validated.errors, note: DECISION_NOTE }, 400);
+  }
+  const queue = await readCorrectionQueue(env);
+  const row = queue.find((r) => r.id === validated.value.id);
+  if (!row) return correctionJson({ error: "not_found", note: DECISION_NOTE }, 404);
+  if (row.status && row.status !== "queued") {
+    return correctionJson({ error: "already_decided", status: row.status, note: DECISION_NOTE }, 409);
+  }
+  markDecided(row, validated.value);
+  await writeCorrectionQueue(env, queue);
+  const decision = buildDecision(row, validated.value);
+  await writeDecisionLog(env, appendRequest(await readDecisionLog(env), decision));
+  return correctionJson({ ...decision, note: DECISION_NOTE }, 200);
+}
+
+async function handleDecisions(request, env) {
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsJson });
+  if (request.method !== "GET") {
+    return correctionJson({ error: "method_not_allowed", note: DECISION_NOTE }, 405);
+  }
+  const decisions = (await readDecisionLog(env)).slice().reverse();
+  return correctionJson({ decisions, effect: "review-log", note: DECISION_NOTE });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     let pathname = url.pathname;
 
+    if (pathname === "/api/corrections/decide" || pathname === "/api/corrections/decide/") {
+      return handleDecide(request, env);
+    }
+    if (pathname === "/api/corrections/decisions" || pathname === "/api/corrections/decisions/") {
+      return handleDecisions(request, env);
+    }
     if (pathname === "/api/corrections" || pathname === "/api/corrections/") {
       return handleCorrections(request, url, env);
     }
