@@ -16,6 +16,15 @@ web-monitoring and the Library of Congress's Elections Web Archive — see
 
 ## Status
 
+**2026-11-16 · Two-stage audit lands; review queue gains decisions.** `civicord
+audit --status <class>` re-checks filtered rows (residential vantage for
+`inconclusive_blocked`) and merges back into the snapshot — the vantage fix is
+now code, not runbook. The claim flow gains maintainer decisions:
+`POST /api/corrections/decide` (token-gated) writes a public decisions log;
+`/review` is actionable. Opportunity stack re-ranked in
+[docs/plan.md](docs/plan.md): outreach + take-the-pen + vantage + NLnet OIS
+(3 Jan) ahead of hackathons.
+
 **2026-10-22 · Exhibit-led homepage.** The door page leads with a sourced
 before/after exhibit (fate-aware `pickLeadWalkback` prefers structural
 disappearances — pledges that now resolve to a default server page over

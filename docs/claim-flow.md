@@ -1,17 +1,27 @@
 # Take the pen — candidate claim flow (design)
 
-Status (2026-10-22): corrections AND claim requests are queued from the
-candidate record. A claim (`kind: "claim"`, id `clm_*`) carries claimant name,
-role, a contact email (stripped from the public queue view), and a proof note
-saying how a reviewer could verify — it grants no edit access on its own.
-Same endpoint (`POST /api/corrections`), same queue, same rule: never an
-edit of the audit, the scrape, or the on-chain fields. Storage: local
-dev/preview writes `frontend/.data/correction-queue.json`; on Pages the
-queue persists to a `CORRECTIONS_KV` KV binding when one is configured
-(create with `npx wrangler kv namespace create CORRECTIONS_KV`, bind in
-Pages dashboard), otherwise it is in-memory per instance and dies with the
-isolate — bind the KV namespace before soliciting real candidate claims.
-Maintainer acceptance and on-chain delegate writes are still not built.
+Status (2026-11-16): the review queue now takes decisions. Corrections AND
+claim requests are queued from the candidate record (`POST /api/corrections`,
+KV-bound via `CORRECTIONS_KV` — bound in prod). `/review` is actionable:
+a maintainer pastes a reviewer token, writes an optional public note, and
+accepts or rejects each row. `POST /api/corrections/decide` (Bearer
+`REVIEW_TOKEN` Pages secret; 501 when unset, 401 on mismatch, 409 on a
+second decision) flips the row's status and appends to the public
+decisions log — `GET /api/corrections/decisions`, newest first, no
+claimant contact. Sunlight is the abuse control: the queue view and the
+log are both public; only the write is gated.
+
+Applying an accepted correction remains a deliberate maintainer act: the
+queue never edits the audit, the scrape, or the on-chain record — an
+accepted row is input to the next publish/audit cycle, logged. The
+ENSv2 delegate path exists as `scripts/publish/grant.py` (grant/revoke
+`ROLE_SET_TEXT` on one text key to one account) — with the documented
+scoping caveat: a setter grant covers that key on **every** name on the
+resolver, so it suits namespace-shared keys or trusted delegates until
+per-candidate resolver instances exist.
+
+Storage: local dev/preview writes `frontend/.data/correction-queue.json`
++ `correction-decisions.json`; dev token env is `CIVICORD_REVIEW_TOKEN`.
 Ownership settled 2026-09-21: candidate updates are ours and the candidates'
 to design; Campaign Lab is distribution, not owner.
 

@@ -43,7 +43,8 @@ Two traps found deploying the October refresh:
    `trust_env`, no code change needed. Bright Data format:
    `http://brd-customer-<id>-zone-residential:<pass>@brd.superproxy.io:22225`
    — set as the `CIVICORD_PROXY` repo secret to re-check blocked rows in CI
-   (`civicord audit --status inconclusive_blocked`), or pass `--proxy` locally.
+   (`civicord audit --status inconclusive_blocked`, which merges results back
+   into `audit_liveness.csv` in place), or pass `--proxy` locally.
    Residential re-check of the 374 October flips (2026-10-22, local run):
    **330 still live (200)**, 20 still 403 (genuinely inconclusive), ~24
    genuinely dead — true October decay ≈ 44 sites, not 374. Bright Data
@@ -101,6 +102,13 @@ the full audit and tonight's bugfixes).
 **Top-up address (deployer/gas payer):** `0xfa104deA24CbC347100adE461883403bdd79E0eC`
 (the matching private key lives **outside this repo** — its location is
 deliberately not documented here; see the operator's local secret store).
+
+**Review token (added 2026-11-16):** `POST /api/corrections/decide` is gated
+by a `REVIEW_TOKEN` Pages secret (set in the Pages dashboard → Settings →
+Environment variables, Production). Until it's set the endpoint returns
+`501 review_not_configured` — deliberately, so it can never run open. Local
+dev uses `CIVICORD_REVIEW_TOKEN` in the shell env. The token value lives in
+the operator's secret store, not here.
 
 **RPC setup (updated tonight):** `scripts/publish/ensv2.py` now derives
 `RPC_URL` from repo-root `.env:ALCHEMY_KEY` (with `publicnode` as fallback)

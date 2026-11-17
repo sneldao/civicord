@@ -27,6 +27,12 @@ the abstract — the artifact is the argument.
 3. **EDGI** — reuse of web-monitoring components
 4. **mySociety** — patterns, audience, possible integration surface
 
+**Status 2026-11-16: all four drafts below are still unsent** — the log shows
+only Campaign Lab contact. The YNR-URL question in the Democracy Club draft
+now has a second reason to ask: the May 2027 local-election spike
+(cadence.md §May 2027) depends on the answer. Sending is the highest-leverage
+non-engineering action open.
+
 ## Draft: Democracy Club
 
 > Subject: Candidate website tracker — reusing your data, seeking your input

@@ -1,9 +1,13 @@
 # Hackathon entries
 
-Two entries we can make honestly, both open as of 2026-10-19. Dates and rule
-text below were read off the organiser's own pages on that date, not from search
-snippets — the eligibility lines are quoted verbatim because they are the
-reasons we can enter at all.
+Two entries we can make honestly, both open as of 2026-10-19. A third
+opportunity — a recurring grant program, not a prize — was assessed on
+2026-11-16; an app is built locally and not submitted (§3). A fourth — a
+real grant, the largest opportunity assessed — was added 2026-11-16 (§4).
+Dates and rule text below were read off the
+organiser's own pages on the stated dates, not from search snippets — the
+eligibility lines are quoted verbatim because they are the reasons we can
+enter at all.
 
 Everything else found in the same sweep is listed under "not entering" further
 down, with the one-line reason, so nobody has to re-research it.
@@ -254,8 +258,161 @@ and deliberately not claiming the labelling results we do not have yet.
 
 ---
 
-## Not entering
+## 3. Anna Founding Builder Program — Anima × DoraHacks
 
+A recurring monthly grant for published Anna Marketplace apps, **not a prize**.
+Program: <https://dorahacks.io/hackathon/2349/detail> · rules:
+[forum topic 205](https://forum.anna.partners/t/turn-your-ai-agents-apps-into-recurring-monthly-grants-join-the-anna-ai-os-founding-builder-program-up-to-80k-month-pool/205)
+(read 2026-11-16; the 16 November entry here was written from a summary and
+had the window, the money and the multi-app rule wrong — corrected below).
+
+| | |
+|---|---|
+| Window | **1 Sep 2026 – 31 Mar 2027.** "Reach at least 200 Qualified App MAU (Tier E) in any single calendar month during the window." 30 November is not a cutoff |
+| Money | Tier E 200+ MAU **$50/mo** · D 500+ $100 · C 1,000+ $200 · B 4,000+ $1,000 · A 10,000+ $2,500 · S 20,000+ $5,000. "You only receive the grant for the highest tier reached in that calendar month." The $5,000 figure needs 20,000 users |
+| Multiple apps | From 1 Oct: "Users who appear in more than one App are counted only once, while users who are unique to different Apps are added together." and "Each Builder may receive no more than one grant per calendar month." |
+| Qualified run | "It successfully executes the App's declared primary function and returns a meaningful, non-trivial result." Not counted: opening or installing, failed runs, and "usage from developer, team, or internal QA test accounts" |
+| Review | "We only approve complete, independently usable Apps—not raw scripts, bare MCP servers, or technical demos." Criteria include "**AI-Native Core**: Primary value must depend on AI reasoning or workflows" and operating "without broken external dependencies" |
+| Upkeep | "At least one meaningful maintenance or product improvement activity" each month |
+
+### What the earlier read got wrong about us
+
+It said `mcp/` "is already the portable core". Three things in the rules and
+in a sibling project's six review rounds on Anna (Brume, same builder) say
+otherwise:
+
+1. **A bare MCP server is named as not approvable.** The entry would be a
+   new UI bundle, not the server.
+2. **`explain_seat` is deterministic by design** — speech and limits come out
+   of `change-feed.ts` and `record-copy.ts`, which is the whole point of it.
+   A lookup that returns our own sentences is not an AI-native core, and
+   Brume was rejected for exactly that shape (a fixed function with an AI
+   line on the end).
+3. **A run only counts if the server can see it.** For an app without a
+   tool process that means a successful `llm.complete` producing the result;
+   a read of our public JSON leaves nothing in Anna's logs.
+
+So qualifying requires a model to *write* something about a candidate's
+record. That is the one thing standing rule 3 and `mcp/client-check.mjs` exist
+to prevent: a change signal paraphrased into "removed" or "deleted" by a
+model the user picked and we cannot pin.
+
+### The only shape that would be honest
+
+Recorded so nobody re-derives it, not as a commitment:
+
+- Bundle-only app; `external_origins: ["https://civicord.pages.dev"]`; it
+  reads the same static JSON the site serves, so there is no server of ours
+  to break. Needs a CORS header on `/api/*` and one new build output: the
+  `seatAnswer` result per constituency as static JSON, generated from the
+  same copy modules.
+- The model does one job: turn a free question ("what happened to the
+  Reform candidate's site in Clacton?") into a seat or candidate from a
+  closed list the bundle supplies from `search-index.json`. Code validates
+  the pick; a miss asks the person to choose.
+- The answer on screen is our speech and our limits, verbatim. If a model
+  sentence is shown at all it passes the `client-check` rules in the bundle
+  first: no internal slugs, no figure or name absent from the record, none
+  of the intent verbs, and the limits are appended by code, never written.
+
+That is defensible as a product and weak as an "AI-native core": a reviewer
+can fairly call it a lookup with routing.
+
+### Verdict: last of three, and not submitted before Anna answers one question
+
+Not a deadline problem any more — the window is open until March. The
+reasons are these:
+
+- The grant is per builder. Civicord would be the third app in a portfolio
+  with Brume and Doorknock, adding only its distinct users, to move a $50
+  tier toward a $100 one.
+- Our audience is UK stewards and journalists. An Anna sign-in is heavier
+  than a pageview, and none of them is there today.
+- The only qualifying design puts model-written prose next to named
+  candidates. One bad paraphrase costs the ledger more than the grant pays
+  in a year.
+
+Reopen if: Doorknock passes review and shows that marketplace users arrive
+without our own push; **and** a UK election event gives people a reason to
+ask seat questions; **and** the routing-only design is accepted by Anna
+staff as AI-native when asked on the forum before any build.
+
+Worth doing regardless, because the site and `mcp/` both gain: the per-seat
+answer as static JSON (`/api/constituencies/{slug}/answer.json`), which is
+`explain_seat` for any client that cannot hold an MCP session.
+
+### Status, 2026-11-16
+
+Built locally at the owner's direction, in the routing-only shape above with
+one change: the app ships a **snapshot inside its bundle** (2.8 MB, 650 seat
+answers generated from `mcp/ledger.mjs` by `anna/scripts/build-snapshot.mjs`)
+instead of calling the site, so it needs no CORS header, no new endpoint and
+no deploy. A re-audit means regenerating the snapshot and cutting a version.
+
+- The model returns a seat slug, candidate indexes and one of three focus
+  values, each validated against a closed list. No model-written text is
+  rendered or saved; `anna/test/render.mjs` holds that line.
+- Limits are always shown directly under the speech. The words block is
+  `leadLine`, now exported from `mcp/ledger.mjs` and used by `seatAnswer`
+  itself, so the MCP tool and the app speak one sentence. `npm run check` in
+  `mcp/` passed after the change.
+- 19 tests + 11 smoke checks, `anna-app validate --strict`, one run through
+  the local dev harness. Uncommitted; nothing published or submitted.
+
+The verdict above stands on priority: third of three, and the AI-native
+question is unanswered. **Ask Anna staff on the forum whether closed-set
+routing counts as an AI-native core before spending a review round on it.**
+
+---
+
+## 4. NLnet — Open Internet Stack (OIS Restack) open call
+
+Not a hackathon — a grant, like §3 but bigger. Assessed 2026-11-16.
+<https://nlnet.nl/funding> · <https://nlnet.nl/news/2026/20261103-call.html> ·
+<https://ngi.eu/opencalls/>
+
+|| |
+|---|---|
+| Deadline | **3 Jan 2027, 12:00 noon CET** (calls recur every odd month — 3 Mar is the next if missed) |
+| Money | **€5,000–50,000**, scalable if the project proves out; cost-recovery basis, not commercial rates |
+| Eligibility | Anyone: individuals, non-profits, public institutions, companies. No team or org requirement |
+| Conditions | All outcomes open — code under a recognised FOSS licence, open data/standards. AGPL-3.0 + CC-BY already satisfies this |
+| Shape | Rolling open call; short proposal form by design ("low-threshold… so as not to waste your time") |
+
+### Why this out-ranks every prize on this page
+
+Every hackathon entry above is judged on what fits the sponsor; this fund is
+judged on what we already are. The portfolio definition — "deliver, mature and
+scale operational internet commons… open source software, open data, open
+standards… that improve openness, trustworthiness, resilience and user
+autonomy" — describes Civicord almost verbatim: an AGPL pipeline publishing a
+CC-BY longitudinal public record, with an institutional-home succession plan
+already written down (personas.md §Governance). The ask writes itself: fund
+the two-stage audit vantage, the claim flow, and a second jurisdiction as the
+maturity work the grant exists to pay for.
+
+One grant at the floor (€5k) exceeds the combined realistic cash EV of every
+entry on this page. The recurring deadline means a weak first attempt costs a
+re-application, not the opportunity.
+
+### Status, 2026-11-16
+
+Assessed, not drafted. Before writing: pick the work package (vantage + claim
+flow + May-2027 election pass is one coherent "mature the commons" narrative),
+read 2–3 funded proposals in the same space for tone, and check whether
+applying as an individual vs. through Campaign Lab changes anything.
+
+---
+
+## Watching (not open today)
+
+|| Event | Trigger to re-open |
+|---|---|---|
+| Next ETHGlobal online edition | All 2027 events are in-person (Cannes Apr, New York Jun, Tokyo Aug, Lisbon Oct) — watch ethglobal.com/events for the next async; Continuity Track was the genuine fit |
+| Solana x402 hackathon repeat | Best technical fit found in the Sept sweep; closed, worth re-checking if re-run |
+| Colosseum | No open hackathon (program runs ~2×/year; Eternal paused); wants crypto startups, not public ledgers — re-check only if a public-goods track appears |
+
+## Not entering
 | Event | Reason |
 |---|---|
 | Kiroween 2026 (AWS/Kiro, $100k) | "Only new projects created during the submission period will be eligible." |

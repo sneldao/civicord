@@ -1,6 +1,28 @@
 # Plan
 
 Delivery phases, the current sprint, and risks. Last updated 2026-09-11 23:35 BST.
+
+> **2026-11-16 addendum — current priorities.** The Sept sprint plan below is
+> historical. The live opportunity stack, ranked (full reasoning in
+> [hackathons.md](hackathons.md) and [personas.md](personas.md)):
+>
+> 1. **Send the outreach drafts** — four finished emails, none sent; the
+>    institutional-home question is the project's durability story.
+> 2. **Take-the-pen finish** — acceptance flow + decisions log + delegate
+>    grant tool (KV already bound; `/review` was read-only).
+> 3. **Two-stage vantage close-out** — `--status` re-check + merge (landed
+>    2026-11-16), then the monthly cadence is trustworthy.
+> 4. **NLnet OIS grant** (deadline 3 Jan 2027, €5–50k) — the largest single
+>    funding opportunity; proposal = fund vantage + claim flow + May-2027
+>    pass as "maturing the commons".
+> 5. **May 2027 local elections** — first live election pass; roster spike
+>    ~Mar (see [cadence.md](cadence.md)).
+> 6. **Publish the HackerNoon draft** ([hackernoon-decentralize-ai.md](hackernoon-decentralize-ai.md))
+>    — Round 2 open until Feb; doubles as shipping the significance findings.
+> 7. **Anna** — built, uncommitted; ask the AI-native-core question on the
+>    forum before submitting.
+> 8. **France 2027** — the second-jurisdiction proof; spike notes in
+>    [france-2027.md](france-2027.md).
 (Day-of-week note: 2026-09-08 is a **Tuesday**; earlier drafts of this file
 labelled it Monday — all day labels below use the corrected mapping.)
 
