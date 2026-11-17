@@ -125,7 +125,31 @@ def cmd_ingest(args: argparse.Namespace) -> None:
     print(f"Outputs: {out}/candidacies.csv, {out}/websites.csv, {out}/pages.csv")
 
 
+AUDIT_FIELDS = [
+    "url",
+    "person_id",
+    "person_name",
+    "status_class",
+    "status_code",
+    "final_url",
+    "redirected",
+    "name_found",
+    "error",
+    "elapsed_ms",
+]
+
+
+def _write_audit_csv(path, rows) -> None:
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(AUDIT_FIELDS)
+        for r in rows:
+            w.writerow([r[k] for k in AUDIT_FIELDS])
+
+
 def cmd_audit(args: argparse.Namespace) -> None:
+    if args.status:
+        return cmd_audit_recheck(args)
     websites_csv = args.data_dir / "out" / "websites.csv"
     with open(websites_csv, encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
@@ -191,6 +215,54 @@ def cmd_audit(args: argparse.Namespace) -> None:
         print(f"  {cls:<18} {n:>5}{pct}")
     live = counts.get("live", 0)
     print(f"Liveness: {live}/{total} live ({live / total:.0%})" if total else "No URLs audited")
+
+
+def cmd_audit_recheck(args: argparse.Namespace) -> None:
+    """Re-audit only rows whose status_class matches --status, merging results
+    back into audit_liveness.csv in place (the two-stage vantage design)."""
+    out_csv = args.data_dir / "out" / "audit_liveness.csv"
+    if not out_csv.exists():
+        raise SystemExit(f"No {out_csv} — run a full `civicord audit` first.")
+    wanted = {s.strip() for s in args.status.split(",") if s.strip()}
+    with open(out_csv, encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    idx = [i for i, r in enumerate(rows) if r["status_class"] in wanted]
+    if not idx:
+        print(f"No rows with status_class in {sorted(wanted)} — nothing to re-check.")
+        return
+
+    logger.info("Re-auditing %d of %d rows (status in %s)...", len(idx), len(rows), sorted(wanted))
+    results = asyncio.run(
+        audit.run_audit(
+            [
+                (rows[i]["url"], rows[i]["person_name"].split()[-1] if args.content_check else None)
+                for i in idx
+            ],
+            concurrency=args.concurrency,
+            timeout=args.timeout,
+            proxy=args.proxy,
+        )
+    )
+
+    transitions: dict[tuple[str, str], int] = {}
+    for i, res in zip(idx, results):
+        before = rows[i]["status_class"]
+        transitions[(before, res.status_class)] = transitions.get((before, res.status_class), 0) + 1
+        rows[i].update(
+            status_class=res.status_class,
+            status_code=res.status_code or "",
+            final_url=res.final_url or "",
+            redirected=str(bool(res.redirected)),
+            name_found=str(res.name_found) if res.name_found is not None else "",
+            error=res.error or "",
+            elapsed_ms=res.elapsed_ms,
+        )
+    _write_audit_csv(out_csv, rows)
+
+    print(f"\nRe-check of {len(idx)} URLs -> {out_csv} (merged in place)")
+    for (before, after), n in sorted(transitions.items(), key=lambda kv: -kv[1]):
+        arrow = "  unchanged " if before == after else "-> "
+        print(f"  {before:<22}{arrow}{after:<22}{n:>5}")
 
 
 def cmd_recrawl(args: argparse.Namespace) -> None:
@@ -520,6 +592,19 @@ def main(argv: list[str] | None = None) -> int:
         "--content-check",
         action="store_true",
         help="GET bodies and check candidate surname appears",
+    )
+    p.add_argument(
+        "--proxy",
+        default=None,
+        help="Proxy URL for this pass (default: CIVICORD_PROXY or HTTPS_PROXY env)",
+    )
+    p.add_argument(
+        "--status",
+        default="",
+        help=(
+            "Re-check only: comma-separated status_class list from audit_liveness.csv "
+            "(e.g. inconclusive_blocked). Re-audits those rows and merges back in place."
+        ),
     )
     p.set_defaults(func=cmd_audit)
 

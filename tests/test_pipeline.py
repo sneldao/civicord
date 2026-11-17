@@ -176,7 +176,12 @@ def test_classify_and_summarize():
 
 @pytest.mark.parametrize(
     "status,expected",
-    [(404, "http_error"), (500, "http_error"), (403, "http_error")],
+    [
+        (404, "http_error"),
+        (500, "http_error"),
+        (403, "inconclusive_blocked"),
+        (429, "inconclusive_blocked"),
+    ],
 )
 def test_http_error_classes(status, expected):
     async def run():

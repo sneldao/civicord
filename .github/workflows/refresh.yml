@@ -21,6 +21,8 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    env:
+      HAS_RESIDENTIAL_PROXY: ${{ secrets.CIVICORD_PROXY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -44,10 +46,23 @@ jobs:
       - name: Download + ingest baseline roster
         run: civicord download --full --large-json && civicord ingest
 
-      - name: Monthly audit + change signals
+      # Two-stage vantage (docs/cadence.md): stage 1 runs from the CI network —
+      # cheap but 403/429-prone — so CIVICORD_PROXY is deliberately NOT set here.
+      - name: Monthly audit (CI vantage)
+        run: civicord audit --content-check
+
+      # Stage 2 re-checks only inconclusive_blocked rows through the residential
+      # proxy and merges them back into audit_liveness.csv. Skipped when the
+      # secret is unset (secrets can't gate `if:` directly — HAS_RESIDENTIAL_PROXY
+      # mirrors it at job level).
+      - name: Re-check blocked rows (residential vantage)
+        if: env.HAS_RESIDENTIAL_PROXY != ''
         env:
           CIVICORD_PROXY: ${{ secrets.CIVICORD_PROXY }}
-        run: civicord audit --content-check && civicord changes && civicord report
+        run: civicord audit --status inconclusive_blocked --content-check
+
+      - name: Change signals + report
+        run: civicord changes && civicord report
 
       - name: Quarterly re-crawl + claim diff
         if: inputs.full == 'true'
