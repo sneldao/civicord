@@ -114,6 +114,12 @@ Environment variables, Production). Until it's set the endpoint returns
 dev uses `CIVICORD_REVIEW_TOKEN` in the shell env. The token value lives in
 the operator's secret store, not here.
 
+**`grant.py` verified on Sepolia (2026-11-16):** grant → delegate
+`0x892A…843b` (eac-delegate.key) could simulate `setText` on
+`vnd.civicord.corrections`, `url` still reverted (key-scoping holds);
+revoke → the same simulation reverts. Grant `0x598e…948c`, revoke
+`0xe0c7…de2f`; no roles left behind.
+
 **RPC setup (updated tonight):** `scripts/publish/ensv2.py` now derives
 `RPC_URL` from repo-root `.env:ALCHEMY_KEY` (with `publicnode` as fallback)
 via `_resolve_rpc_endpoints()`. `call()` and `blast_send()` share that

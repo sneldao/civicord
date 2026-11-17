@@ -11,6 +11,12 @@ audit of 2026-09-07; every claim links to a public record a reader can open.
 Publish after the second labelling pass lands, or publish without it and say the
 pass is running — the second is honest, the first is not.
 
+Re-verified 2026-11-16 against the live snapshot (`data/candidates.json`):
+1,513 live, 659 redirected, 441 gone, 471 `redirected` signal, 448
+`repurposed_suspect`, 2,375 records — all as stated. Static page count is now
+5,412 and the public decisions log (`/api/corrections/decisions`) shipped, so
+the four-transports section mentions it.
+
 Suggested title: **Two-thirds of our redirect alerts were noise.**
 
 (Precise: it is 427 of 659 redirect rows, not two-thirds of every alert we raise.)
@@ -135,8 +141,10 @@ Here is the part that is relevant to anyone building agent access to public data
 The same ledger is now reachable four ways, and the design constraint was that no
 transport may say something the others don't:
 
-1. **A static site** — 5,411 prerendered pages, readable without JavaScript,
-   with citation, correction and reply affordances on every record.
+1. **A static site** — 5,412 prerendered pages, readable without JavaScript,
+   with citation, correction and reply affordances on every record — and a
+   public decisions log, so a correction we accept shows the same scrutiny as
+   the record it amends.
 2. **A JSON API** — 2,375 per-candidate records and 650 per-seat summaries,
    generated from the same CSVs at build time, plus an OpenAPI description and an
    `llms.txt`.
