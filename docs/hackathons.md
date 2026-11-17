@@ -363,7 +363,10 @@ The verdict above stands on priority: third of three, and the AI-native
 question is unanswered. **Ask Anna staff on the forum whether closed-set
 routing counts as an AI-native core before spending a review round on it.**
 
-Draft question, ready to post (2026-11-16):
+**Posted 2026-11-17** as topic 594 in Developers:
+<https://forum.anna.partners/t/review-criteria-question-does-closed-set-model-routing-count-as-an-ai-native-core/594>
+(the Announcements thread is staff-reply-only — a reply there was not an
+option). Text as posted:
 
 > Review-criteria question before we spend a review round. Our app looks
 > like this: the model's only job is routing — it reads a free-text
