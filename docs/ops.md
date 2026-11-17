@@ -4,7 +4,11 @@ Infrastructure and deployment notes for Civicord. This doc is **internal** —
 it's safe to commit (no secrets), but unlike `architecture.md` /
 `onchain-plan.md` it documents *how we run* the project rather than what it is.
 
-Last updated: 2026-09-12 — change-feed signals + Wayback significance spike
+Last updated: 2026-11-16 — claim-review endpoints deployed
+(`4a4ce5af`, manual `wrangler pages deploy dist`; `/api/corrections`,
+`/api/corrections/decisions` 200, `decide` correctly 501s until
+`REVIEW_TOKEN` is set); earlier 2026-09-12 — change-feed signals +
+Wayback significance spike
 live (`content_diffs.json`, browse `?sig=`, candidate Content chronology);
 prior 2026-09-11 23:45 — gateway **LIVE** (`civicord-aieyq.bazgateway.com`,
 marketplace *Pending verification*), OG deeds live, worker alias for
