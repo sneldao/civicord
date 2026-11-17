@@ -363,6 +363,20 @@ The verdict above stands on priority: third of three, and the AI-native
 question is unanswered. **Ask Anna staff on the forum whether closed-set
 routing counts as an AI-native core before spending a review round on it.**
 
+Draft question, ready to post (2026-11-16):
+
+> Review-criteria question before we spend a review round. Our app looks
+> like this: the model's only job is routing — it reads a free-text
+> question (e.g. "what happened to candidate X's website?") and returns a
+> pick from a closed list (a seat slug + candidate indexes) that code
+> validates. All rendered text is precomputed copy served from a bundled
+> snapshot; **no model-written text is ever displayed or stored**. Does
+> closed-set routing of this kind qualify as an "AI-Native Core" under
+> the review criteria — where the AI reasoning determines which record
+> the user sees — or is it reviewed as a deterministic lookup with an AI
+> front-end? We want to submit only if the honest shape of the app is
+> what you're counting.
+
 ---
 
 ## 4. NLnet — Open Internet Stack (OIS Restack) open call
@@ -377,7 +391,8 @@ Not a hackathon — a grant, like §3 but bigger. Assessed 2026-11-16.
 | Money | **€5,000–50,000**, scalable if the project proves out; cost-recovery basis, not commercial rates |
 | Eligibility | Anyone: individuals, non-profits, public institutions, companies. No team or org requirement |
 | Conditions | All outcomes open — code under a recognised FOSS licence, open data/standards. AGPL-3.0 + CC-BY already satisfies this |
-| Shape | Rolling open call; short proposal form by design ("low-threshold… so as not to waste your time") |
+| Scope watch-out | Call page states **"AI-related projects are not within scope"** (>1M-user exception). Pitch the audit/record/claim-flow commons, not the agent surfaces — see nlnet-ois.md |
+| Shape | Rolling open call; short proposal form by design ("low-threshold… so as not to waste your time"). Working draft: **docs/nlnet-ois.md** |
 
 ### Why this out-ranks every prize on this page
 
