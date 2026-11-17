@@ -59,3 +59,4 @@ subgraph/build/
 frontend/dist/
 # Note: subgraph/generated/ is intentionally tracked so `npx graph build`
 # works without codegen in a fresh clone.
+.dev.vars

@@ -107,12 +107,14 @@ the full audit and tonight's bugfixes).
 (the matching private key lives **outside this repo** — its location is
 deliberately not documented here; see the operator's local secret store).
 
-**Review token (added 2026-11-16):** `POST /api/corrections/decide` is gated
-by a `REVIEW_TOKEN` Pages secret (set in the Pages dashboard → Settings →
-Environment variables, Production). Until it's set the endpoint returns
-`501 review_not_configured` — deliberately, so it can never run open. Local
-dev uses `CIVICORD_REVIEW_TOKEN` in the shell env. The token value lives in
-the operator's secret store, not here.
+**Review token (added + SET 2026-11-16):** `POST /api/corrections/decide` is
+gated by a `REVIEW_TOKEN` Pages secret — **set** via
+`wrangler pages secret put REVIEW_TOKEN --project-name civicord` (echo |
+stdin). Env vars bind at deploy time, so a `pages deploy` was needed before
+the gate went live — verified: wrong token → 401, right token → reaches
+validation. Token also lives at `frontend/.dev.vars` + `frontend/.env`
+(`CIVICORD_REVIEW_TOKEN`, both gitignored, chmod 600) and in the operator's
+secret store.
 
 **`grant.py` verified on Sepolia (2026-11-16):** grant → delegate
 `0x892A…843b` (eac-delegate.key) could simulate `setText` on
