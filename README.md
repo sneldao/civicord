@@ -16,6 +16,16 @@ web-monitoring and the Library of Congress's Elections Web Archive — see
 
 ## Status
 
+**2026-11-25 · X Layer DeWEB mirror published and verified.** A bounded
+seven-candidate Holborn and St Pancras evidence bundle is live as a versioned
+publication mirror at `tape://20.2.272.tape` /
+<https://20-2-272.tapekit.org/>. Direct-chain verification passed for all seven
+frozen files at pinned block `76865195`; the canonical Civicord record and its
+methodology are unchanged. Public verification guide:
+[docs/deweb-mirror.md](docs/deweb-mirror.md); operator runbook:
+[docs/tapeout-operations.md](docs/tapeout-operations.md). The canonical-site
+mirror panel is implemented but not yet redeployed.
+
 **2026-11-16 · Two-stage audit lands; review queue gains decisions.** `civicord
 audit --status <class>` re-checks filtered rows (residential vantage for
 `inconclusive_blocked`) and merges back into the snapshot — the vantage fix is
@@ -140,9 +150,15 @@ Deployed via Cloudflare Pages (https://civicord.pages.dev); see
 | [docs/wayback-spike.md](docs/wayback-spike.md) | Wayback CDX spike findings + significance classes |
 | [docs/significance-labelling.md](docs/significance-labelling.md) | The "politically relevant vs arbitrary" calibration: ten-record instrument + why our signals are a precision problem |
 | [docs/outreach.md](docs/outreach.md) | Partner strategy and draft outreach emails |
-| [docs/hackathons.md](docs/hackathons.md) | Open entries we're eligible for, with quoted rule text and what each one still needs |
+| [docs/hackathons.md](docs/hackathons.md) | Entries and grants we're eligible for, with quoted rule text and current priority |
+| [docs/nlnet-ois.md](docs/nlnet-ois.md) | NLnet Open Internet Stack grant draft — eligibility constraints, work package and budget shape |
+| [docs/zapier-build-week.md](docs/zapier-build-week.md) | Zero-cost Zapier Build Week prototype rail for the journalist digest; limits and handoff criteria |
+| [docs/tapeout-accelerate.md](docs/tapeout-accelerate.md) | X Layer TapeOut/DeWEB mirror strategy and live publication evidence — constraints, cohort, transactions, verification model and stop rule |
+| [docs/tapeout-submission.md](docs/tapeout-submission.md) | Paste-ready TapeOut submission evidence pack — links, chain identifiers, transactions, verification commands and remaining gates |
+| [docs/deweb-mirror.md](docs/deweb-mirror.md) | **External** public verification guide for the Holborn DeWEB mirror — links, citation format, verification commands and trust limits |
+| [docs/tapeout-operations.md](docs/tapeout-operations.md) | **Internal** TapeOut operations runbook — environment variables, signing rules, update policy, deployment status and submission gates |
 | [docs/demo-script-mcp.md](docs/demo-script-mcp.md) | Shot list, narration and rebuild recipe for the MCP entry video (a HyperFrames composition under `data/film/mcp-entry/`), with the rule text it is answering; the cards it replaced are [demo-cards.html](docs/demo-cards.html) |
-| [docs/amazon-submission.md](docs/amazon-submission.md) | Paste-ready Amazon Devpost answers, incl. the before/after-window split and data-authorisation statement |
+| [docs/amazon-submission.md](docs/amazon-submission.md) | Historical Amazon Devpost submission text, incl. the before/after-window split and data-authorisation statement |
 | [docs/amazon-feedback.md](docs/amazon-feedback.md) | Per-tool product feedback required by that form |
 | [docs/hackernoon-decentralize-ai.md](docs/hackernoon-decentralize-ai.md) | Draft technical write-up of the precision measurements, for the Decentralize AI entry |
 | [RESEARCH.md](RESEARCH.md) | Adjacent projects, validated gaps, prior art |

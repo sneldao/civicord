@@ -116,6 +116,10 @@ across two election cycles would be the only longitudinal record of
 campaign-web decay that exists anywhere. The moat is continuity: keep the
 re-audit pipeline running at near-zero cost (static build + CSVs can
 survive on nothing), keep IDs stable forever, and never break a citation.
+Replication or verifiable mirrors can help readers survive the loss of any
+one host, but mirror locations are resolution surfaces, not new units of truth:
+every citation must continue to identify the stable record, its methodology,
+version and caveats independent of where the bytes are served.
 
 ## Governance (open question)
 

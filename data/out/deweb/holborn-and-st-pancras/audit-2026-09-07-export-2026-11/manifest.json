@@ -1,0 +1,96 @@
+{
+  "schema": "civicord-evidence-bundle/0.1",
+  "generatedAt": "2026-11-25T17:36:13Z",
+  "bundleVersion": "audit-2026-09-07-export-2026-11",
+  "methodologyVersion": "civicord-methodology/2026-11-25",
+  "auditBaseline": "2026-09-07",
+  "cohort": {
+    "kind": "uk-parliamentary-constituency",
+    "name": "Holborn and St Pancras",
+    "slug": "holborn-and-st-pancras",
+    "gssCode": "E14001290",
+    "personIds": [
+      "113881",
+      "7292",
+      "40908",
+      "5961",
+      "5077",
+      "2323",
+      "72613"
+    ]
+  },
+  "canonicalUrls": {
+    "113881": "https://civicord.pages.dev/candidates/113881",
+    "7292": "https://civicord.pages.dev/candidates/7292",
+    "40908": "https://civicord.pages.dev/candidates/40908",
+    "5961": "https://civicord.pages.dev/candidates/5961",
+    "5077": "https://civicord.pages.dev/candidates/5077",
+    "2323": "https://civicord.pages.dev/candidates/2323",
+    "72613": "https://civicord.pages.dev/candidates/72613"
+  },
+  "sourceSnapshot": {
+    "hashes": {
+      "candidates.json": "e00dbd4a6edba3f649f1ba8254da1ee4578def1a4326e022b5a3f7465468f253",
+      "constituencies.json": "dce09da155da8108d2a310e295436643070a454755e39e9de234192017e4aa22",
+      "claim_diffs.json": "1aca902a8f299e4800ee62a1004660e1e516460909bc58d164722356eee27040"
+    },
+    "git": {
+      "commit": "63ba60d0f9c64ef4d1c19ebb569a37a5c94d9dfa",
+      "workingTreeDirty": true
+    }
+  },
+  "publicationPolicy": {
+    "versioned": true,
+    "overwritePublishedSnapshot": false,
+    "mirrorRole": "secondary publication surface; canonical records remain the reference"
+  },
+  "caveats": [
+    "HTTP-response class",
+    "not evidence of intent",
+    "surname matching is a heuristic",
+    "scope mismatch"
+  ],
+  "licence": {
+    "civicordDerivedOutputs": "CC-BY",
+    "campaignLabExtractedText": "CC-BY with credit"
+  },
+  "claimDiffsIncluded": false,
+  "files": [
+    {
+      "path": "candidates.json",
+      "bytes": 9321,
+      "sha256": "4d8ae1eeaf4be659c562029d8dc97a41e618e233db979c37448f7dbc5a5e29cf",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "path": "caveats.md",
+      "bytes": 1131,
+      "sha256": "ae59dfd6edbcdc23976a96cbddf2e5c3cf6a8c42cfe0a2c935f0acceb2d7b3fe",
+      "contentType": "text/markdown; charset=utf-8"
+    },
+    {
+      "path": "index.html",
+      "bytes": 11621,
+      "sha256": "7aa9a87a8c2f95e5e4b4dbb20cc97880d6c25e32522f0948a878fa2f824a8c39",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "methodology.md",
+      "bytes": 2430,
+      "sha256": "1c317813a7544915d4f4dec5305d69a6612dccced5e523db98754fe120a71aa6",
+      "contentType": "text/markdown; charset=utf-8"
+    },
+    {
+      "path": "sources.json",
+      "bytes": 985,
+      "sha256": "b307c77d62452cacc042dfd93295fc66b68cae9317eb616b4b11c3c6f6d457ed",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "path": "verify.html",
+      "bytes": 1682,
+      "sha256": "6219dd12ea4117b7f65ce37cc50f833954b6d756315bb418e3a6ca3d11c9a4e7",
+      "contentType": "text/html; charset=utf-8"
+    }
+  ]
+}

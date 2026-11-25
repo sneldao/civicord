@@ -6,6 +6,7 @@ import WebMCP from "../../components/WebMCP.astro";
 import CommandPalette from "../../components/CommandPalette.astro";
 import ClientRecordScript from "../../components/ClientRecordScript.astro";
 import MobileEssentials from "../../components/MobileEssentials.astro";
+import TapeoutMirror from "../../components/TapeoutMirror.astro";
 import ScrollReveal from "../../components/ScrollReveal.astro";
 import { RECORD_ORIGIN, statusLabels } from "../../lib/record-copy";
 import {
@@ -167,6 +168,8 @@ const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
         <span class="thumb-label">Halftone: more / larger paper dots = lower response rate.</span>
       </div>
     )}
+
+    {c.slug === "holborn-and-st-pancras" && <TapeoutMirror />}
 
     <section class="entries">
       <h2>Candidates in this seat</h2>

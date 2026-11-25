@@ -1,0 +1,83 @@
+---
+const tapeName = "tape://20.2.272.tape";
+const mirrorRoot = "https://20-2-272.tapekit.org/";
+const versionedPrefix = "https://20-2-272.tapekit.org/civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11";
+const versionedIndex = `${versionedPrefix}/index.html`;
+const verifyPage = `${versionedPrefix}/verify.html`;
+const manifestUrl = `${versionedPrefix}/manifest.json`;
+const publicGuide = "https://github.com/sneldao/civicord/blob/main/docs/deweb-mirror.md";
+const manifestSha256 = "2993bbce8d018be26a1664abcb586f5b034cbb6fd7732c4a17e056e877465901";
+const container = "0xB078da6de46795656187052322Dda3A7E249C288";
+const pinnedBlock = "76865195";
+const directCommand = "python3 scripts/tapeout/verify_deweb.py data/out/deweb/holborn-and-st-pancras/audit-2026-09-07-export-2026-11 --container 0xB078da6de46795656187052322Dda3A7E249C288 --prefix civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11";
+---
+
+<section class="tapeout-mirror" aria-labelledby="tapeout-mirror-title">
+  <p class="tapeout-kicker">Experimental publication mirror</p>
+  <h2 id="tapeout-mirror-title">Check this seat's evidence bundle independently</h2>
+  <p>
+    The seven-candidate Holborn and St Pancras cohort was exported as a versioned evidence bundle and
+    mirrored to X Layer DeWEB. This page remains the canonical Civicord reading interface. The mirror is
+    a static copy for continuity and hash checking — not a second source of truth and not a current
+    availability check.
+  </p>
+
+  <div class="record-actions tapeout-actions" aria-label="Open the mirror and verification material">
+    <a class="btn-primary" href={mirrorRoot} rel="noopener noreferrer">Open the mirror</a>
+    <a class="btn-ghost" href={versionedIndex} rel="noopener noreferrer">Open the fixed version</a>
+    <a class="btn-ghost" href={verifyPage} rel="noopener noreferrer">Bundle verification page</a>
+    <a class="btn-ghost" href={publicGuide} rel="noopener noreferrer">Public verification guide</a>
+    <a class="btn-ghost" href={manifestUrl} rel="noopener noreferrer">manifest.json</a>
+    <button type="button" class="btn-ghost" data-copy-text={manifestSha256} data-copy-done="Manifest hash copied.">Copy manifest hash</button>
+    <span class="pair-copy-status" role="status"></span>
+  </div>
+
+  <dl class="tapeout-facts">
+    <div>
+      <dt>Bundle version</dt>
+      <dd><code>audit-2026-09-07-export-2026-11</code></dd>
+    </div>
+    <div>
+      <dt>Manifest SHA-256</dt>
+      <dd><code>{manifestSha256}</code></dd>
+    </div>
+    <div>
+      <dt>Tape name</dt>
+      <dd><code>{tapeName}</code></dd>
+    </div>
+    <div>
+      <dt>Container</dt>
+      <dd><code>{container}</code></dd>
+    </div>
+    <div>
+      <dt>Verification</dt>
+      <dd>7 files matched at pinned block <code>{pinnedBlock}</code></dd>
+    </div>
+    <div>
+      <dt>Contents</dt>
+      <dd>methodology, caveats, sources, records and hashes</dd>
+    </div>
+  </dl>
+
+  <details class="tapeout-direct">
+    <summary>Direct-chain verification details</summary>
+    <p>
+      The independent check did not use the gateway response. It read the file bytes from X Layer at one
+      pinned block through two RPC endpoints, checked the pinned SiteRegistry implementation and compared
+      size plus SHA-256 for all seven frozen files. The command was run from the repository root:
+    </p>
+    <pre><code>{directCommand}</code></pre>
+    <p>
+      Report: <code>data/out/deweb/verification/audit-2026-09-07-export-2026-11-b078da6de4.json</code>.
+      X Layer's public RPC-operator set is thin, so this is evidence of consistent chain-state reads, not
+      a claim of perfect censorship resistance or permanence.
+    </p>
+  </details>
+
+  <p class="muted tapeout-limits">
+    Important limits: the container holder can technically write paths in the container. Civicord's policy is an
+    append-only versioned publication policy, so citations should use the fixed versioned URL and its manifest hash.
+    Responses such as DNS errors, redirects and HTTP 403 are technical classes, not allegations of intent.
+    The mirror omits bulk claim diffs because their scope caveats need review.
+  </p>
+</section>

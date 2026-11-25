@@ -1,6 +1,10 @@
 # Amazon "Build, Ship, Shape" — submission text
 
-Paste-ready answers for <https://amazonappdev2026.devpost.com>. Deadline
+Status note, 2026-11-25: the submission window has closed; this file is retained
+as the historical submission/build record unless Devpost requires post-deadline
+action.
+
+Submission answers prepared for <https://amazonappdev2026.devpost.com>. Deadline
 **Fri 23 Oct 2026, 12:00 PT**. Anything marked `⟨TBD⟩` is a thing only a person
 can do: push the code, record and upload the video, open the pull request.
 **Entrant form: individual** (decided 2026-10-20) — see

@@ -1,0 +1,243 @@
+{
+  "cohort": [
+    {
+      "personId": "113881",
+      "name": "Andrew Feinstein",
+      "party": "Independent",
+      "url": "https://www.andrewfeinstein.org",
+      "elections": [
+        "parl.2024-07-04"
+      ],
+      "posts": [
+        "Holborn and St Pancras"
+      ],
+      "audit": {
+        "statusClass": "dns_error",
+        "statusCode": null,
+        "redirected": false,
+        "finalUrl": null,
+        "nameFound": null
+      },
+      "changeSignal": "gone",
+      "canonicalUrl": "https://civicord.pages.dev/candidates/113881",
+      "archivedExcerpts": [
+        {
+          "key": "https_www_andrewfeinstein_org_/https_www_andrewfeinstein_org/content_1.html",
+          "chars": 2141,
+          "snippet": "We’re fed up with spiralling costs and broken public services, as the super-rich get richer. Camden, there’s another cho",
+          "source": "Campaign Lab April 2025 scrape, extracted text, CC-BY with credit"
+        }
+      ]
+    },
+    {
+      "personId": "7292",
+      "name": "Bobby \"Elmo\" Smith",
+      "party": "Independent",
+      "url": "http://www.givemebackelmo.co.uk",
+      "elections": [
+        "parl.2024-07-04"
+      ],
+      "posts": [
+        "Holborn and St Pancras"
+      ],
+      "audit": {
+        "statusClass": "live",
+        "statusCode": "200",
+        "redirected": true,
+        "finalUrl": "https://www.givemebackelmo.co.uk/",
+        "nameFound": true
+      },
+      "changeSignal": "redirected",
+      "canonicalUrl": "https://civicord.pages.dev/candidates/7292",
+      "archivedExcerpts": []
+    },
+    {
+      "personId": "40908",
+      "name": "David Robert Stansell",
+      "party": "Green Party",
+      "url": "https://camden.greenparty.org.uk",
+      "elections": [
+        "parl.2024-07-04"
+      ],
+      "posts": [
+        "Holborn and St Pancras"
+      ],
+      "audit": {
+        "statusClass": "live",
+        "statusCode": "200",
+        "redirected": false,
+        "finalUrl": "https://camden.greenparty.org.uk",
+        "nameFound": false
+      },
+      "changeSignal": "repurposed_suspect",
+      "canonicalUrl": "https://civicord.pages.dev/candidates/40908",
+      "archivedExcerpts": [
+        {
+          "key": "https_camden_greenparty_org_uk_/https_camden_greenparty_org_uk_news_page_2/content_21.html",
+          "chars": 3021,
+          "snippet": "Councillor Lorna Jane Russell ready to submit ceasefire motion to Camden 22nd January 2024 / 22nd January 2024 by brigit",
+          "source": "Campaign Lab April 2025 scrape, extracted text, CC-BY with credit"
+        },
+        {
+          "key": "https_camden_greenparty_org_uk_/https_camden_greenparty_org_uk_news/content_11.html",
+          "chars": 2803,
+          "snippet": "Highgate newsletter spring 2025 19th February 2025 / 19th February 2025 by brigitteascher Read more »\nIntroducing three ",
+          "source": "Campaign Lab April 2025 scrape, extracted text, CC-BY with credit"
+        },
+        {
+          "key": "https_camden_greenparty_org_uk_/https_camden_greenparty_org_uk_category_uncategorised_page_2/content_19.html",
+          "chars": 2586,
+          "snippet": "22nd January 2024 / 22nd January 2024 by brigitteascher\nHighgate Green Party councillor Lorna Jane Russell has drafted a",
+          "source": "Campaign Lab April 2025 scrape, extracted text, CC-BY with credit"
+        }
+      ]
+    },
+    {
+      "personId": "5961",
+      "name": "John Poynton",
+      "party": "UK Independence Party (UKIP)",
+      "url": "https://jepoynton.com",
+      "elections": [
+        "parl.2024-07-04"
+      ],
+      "posts": [
+        "Holborn and St Pancras"
+      ],
+      "audit": {
+        "statusClass": "live",
+        "statusCode": "200",
+        "redirected": false,
+        "finalUrl": "https://jepoynton.com",
+        "nameFound": true
+      },
+      "changeSignal": "still_attested",
+      "canonicalUrl": "https://civicord.pages.dev/candidates/5961",
+      "archivedExcerpts": [
+        {
+          "key": "https_jepoynton_com_/https_jepoynton_com_2024_10_31_my-alternative-budget-speech-october-2024/content_27.html",
+          "chars": 25397,
+          "snippet": "Mr. Speaker, it is an honour and a privilege for me to have this opportunity to present to the House the government’s bu",
+          "source": "Campaign Lab April 2025 scrape, extracted text, CC-BY with credit"
+        },
+        {
+          "key": "https_jepoynton_com_/http_jepoynton_com/content_67.html",
+          "chars": 25397,
+          "snippet": "Mr. Speaker, it is an honour and a privilege for me to have this opportunity to present to the House the government’s bu",
+          "source": "Campaign Lab April 2025 scrape, extracted text, CC-BY with credit"
+        },
+        {
+          "key": "https_jepoynton_com_/https_jepoynton_com/content_1.html",
+          "chars": 25397,
+          "snippet": "Mr. Speaker, it is an honour and a privilege for me to have this opportunity to present to the House the government’s bu",
+          "source": "Campaign Lab April 2025 scrape, extracted text, CC-BY with credit"
+        }
+      ]
+    },
+    {
+      "personId": "5077",
+      "name": "Keir Starmer",
+      "party": "Labour Party",
+      "url": "http://www.keirstarmer.com",
+      "elections": [
+        "parl.2024-07-04"
+      ],
+      "posts": [
+        "Holborn and St Pancras"
+      ],
+      "audit": {
+        "statusClass": "http_error",
+        "statusCode": "403",
+        "redirected": true,
+        "finalUrl": "https://www.keirstarmer.com/",
+        "nameFound": null
+      },
+      "changeSignal": "redirected",
+      "canonicalUrl": "https://civicord.pages.dev/candidates/5077",
+      "archivedExcerpts": []
+    },
+    {
+      "personId": "2323",
+      "name": "Nick the Incredible Flying Brick",
+      "party": "The Official Monster Raving Loony Party",
+      "url": "https://www.nickdelves.co.uk",
+      "elections": [
+        "parl.2024-02-15",
+        "parl.2024-07-04"
+      ],
+      "posts": [
+        "Wellingborough",
+        "Holborn and St Pancras"
+      ],
+      "audit": {
+        "statusClass": "live",
+        "statusCode": "200",
+        "redirected": false,
+        "finalUrl": "https://www.nickdelves.co.uk",
+        "nameFound": false
+      },
+      "changeSignal": "repurposed_suspect",
+      "canonicalUrl": "https://civicord.pages.dev/candidates/2323",
+      "archivedExcerpts": [
+        {
+          "key": "https_www_nickdelves_co_uk_/https_www_nickdelves_co_uk_loony_blog_htm/content_17.html",
+          "chars": 119117,
+          "snippet": "| Home | Loony Blog | Latest Election |\nBlog and record of election activity\nParliamentary candidate for 14 elections:\n4",
+          "source": "Campaign Lab April 2025 scrape, extracted text, CC-BY with credit"
+        },
+        {
+          "key": "https_www_nickdelves_co_uk_/https_www_nickdelves_co_uk_gen_delves_htm/content_10.html",
+          "chars": 100707,
+          "snippet": "| Home | Family Tree | |\n| DELVES | ARMISTEAD | |\n| ELLIS | HARGER | |\n| GIBSON | CLARK | |\n| PERKINS | MILLER | |\n| NOR",
+          "source": "Campaign Lab April 2025 scrape, extracted text, CC-BY with credit"
+        },
+        {
+          "key": "https_www_nickdelves_co_uk_/https_www_nickdelves_co_uk_gen_gibson_htm/content_11.html",
+          "chars": 83689,
+          "snippet": "| Home | Family Tree | |\n| DELVES | ARMISTEAD | |\n| ELLIS | HARGER | |\n| GIBSON | CLARK | |\n| PERKINS | MILLER | |\n| NOR",
+          "source": "Campaign Lab April 2025 scrape, extracted text, CC-BY with credit"
+        }
+      ]
+    },
+    {
+      "personId": "72613",
+      "name": "Tom Scripps",
+      "party": "Socialist Equality Party",
+      "url": "https://www.socialism2024.org.uk",
+      "elections": [
+        "parl.2024-07-04"
+      ],
+      "posts": [
+        "Holborn and St Pancras"
+      ],
+      "audit": {
+        "statusClass": "dns_error",
+        "statusCode": null,
+        "redirected": false,
+        "finalUrl": null,
+        "nameFound": null
+      },
+      "changeSignal": "gone",
+      "canonicalUrl": "https://civicord.pages.dev/candidates/72613",
+      "archivedExcerpts": [
+        {
+          "key": "https_www_socialism2024_org_uk_/https_www_socialism2024_org_uk_statementofprinciples_html/content_10.html",
+          "chars": 46816,
+          "snippet": "Statement of Principles of the Socialist Equality Party (UK)\nThe World Tasks of the Socialist Equality Party\n1. The Soci",
+          "source": "Campaign Lab April 2025 scrape, extracted text, CC-BY with credit"
+        },
+        {
+          "key": "https_www_socialism2024_org_uk_/https_www_socialism2024_org_uk/content_1.html",
+          "chars": 8726,
+          "snippet": "War, the class struggle and the tasks of the Socialist Equality Party\nThis resolution was passed unanimously at the Seve",
+          "source": "Campaign Lab April 2025 scrape, extracted text, CC-BY with credit"
+        },
+        {
+          "key": "https_www_socialism2024_org_uk_/https_www_socialism2024_org_uk_home_html/content_4.html",
+          "chars": 8726,
+          "snippet": "War, the class struggle and the tasks of the Socialist Equality Party\nThis resolution was passed unanimously at the Seve",
+          "source": "Campaign Lab April 2025 scrape, extracted text, CC-BY with credit"
+        }
+      ]
+    }
+  ]
+}

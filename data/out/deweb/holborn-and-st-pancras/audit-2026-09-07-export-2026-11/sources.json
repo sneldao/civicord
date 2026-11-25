@@ -1,0 +1,30 @@
+{
+  "sources": [
+    {
+      "name": "Campaign Lab candidate-website scrape",
+      "url": "https://github.com/CampaignLab/candidate-website-scrape",
+      "use": "April 2025 candidate URLs and extracted page text snippets",
+      "license": "CC-BY with credit, per Civicord-recorded reuse agreement"
+    },
+    {
+      "name": "Democracy Club Candidates",
+      "url": "https://candidates.democracyclub.org.uk/",
+      "use": "stable person IDs, party and roster labels",
+      "license": "open data with attribution"
+    },
+    {
+      "name": "Civicord liveness audit",
+      "url": "https://civicord.pages.dev/methodology",
+      "use": "HTTP status, redirect and heuristic labels for the 2026-09-07 audit baseline",
+      "license": "CC-BY Civicord-derived output"
+    }
+  ],
+  "seat": {
+    "name": "Holborn and St Pancras",
+    "slug": "holborn-and-st-pancras",
+    "gssCode": "E14001290",
+    "region": "Greater London",
+    "country": "England",
+    "electorate": 75475
+  }
+}

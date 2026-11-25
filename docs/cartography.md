@@ -1,7 +1,7 @@
 # Cartography brief — Civicord's halftone hex & pointillist map
 
 **Date:** 2026-09-10 · **Sources:** Parallel Search API (3 passes, 22 sources) + manual verification · **Status:** ready to build
-**Question:** how does Civicord show 2,375 candidate sites across 650 constituencies without reinventing cartography? Two lenses on one permanent register: **Ledger = text, Map = picture.** Same filters, same URL.
+**Question:** how does Civicord show 2,375 candidate sites across 650 constituencies without reinventing cartography? Two lenses on one public register: **Ledger = text, Map = picture.** Same filters, same URL.
 
 ---
 

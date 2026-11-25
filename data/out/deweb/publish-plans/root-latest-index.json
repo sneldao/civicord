@@ -1,0 +1,93 @@
+{
+  "mode": "broadcast-complete",
+  "chainId": 196,
+  "rpc": "https://rpc.xlayer.tech",
+  "bundle": "/private/tmp/civicord-root-latest",
+  "prefix": "",
+  "container": "0xB078da6de46795656187052322Dda3A7E249C288",
+  "processor": null,
+  "tokenId": null,
+  "owner": "0x8b0b474f86bE342E5A5329Cc2E25016Aa274594e",
+  "from": "0x8b0b474f86bE342E5A5329Cc2E25016Aa274594e",
+  "containerOpened": true,
+  "open": {
+    "planned": false,
+    "feeWei": 0,
+    "gasEstimate": null,
+    "estimateError": null
+  },
+  "files": [
+    {
+      "path": "index.html",
+      "bytes": 11621,
+      "sha256": "7aa9a87a8c2f95e5e4b4dbb20cc97880d6c25e32522f0948a878fa2f824a8c39",
+      "contentType": "text/html; charset=utf-8",
+      "chunks": 1,
+      "source": "/private/tmp/civicord-root-latest/index.html",
+      "chainPath": "index.html",
+      "onchain": {
+        "size": 0,
+        "contentType": "",
+        "sha256": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "updatedAt": 0,
+        "chunkCount": 0
+      },
+      "action": "publish",
+      "gasEstimate": 2854720,
+      "estimateSource": "eth_estimateGas",
+      "calls": [
+        {
+          "op": "putFile",
+          "contract": "0xd6EFb7adCc9c83dC4924Ad56f6a8E4e969b9ADB6",
+          "signature": "putFile(address,string,string,bytes32,bytes)",
+          "argsPreview": [
+            "0xB078da6de46795656187052322Dda3A7E249C288",
+            "index.html",
+            "text/html; charset=utf-8",
+            "0x7aa9a87a8c2f95e5e4b4dbb20cc97880d6c25e32522f0948a878fa2f824a8c39",
+            "<bytes>"
+          ],
+          "gasEstimate": 2854720,
+          "estimateError": null
+        }
+      ]
+    }
+  ],
+  "fallback": {
+    "planned": false,
+    "path": null,
+    "gasEstimate": 0,
+    "estimateError": null
+  },
+  "bind": null,
+  "totals": {
+    "filesTotal": 1,
+    "filesToPublish": 1,
+    "filesUnchanged": 0,
+    "payloadBytes": 11621,
+    "gasEstimate": 2854720,
+    "gasPriceWei": 20000001,
+    "estimatedGasCostWei": 57094402854720,
+    "feeWei": 0,
+    "estimatedTotalWei": 57094402854720,
+    "estimatedTotalOKB": 5.709440285472e-05,
+    "fromBalanceWei": 23238670829075713,
+    "fromBalanceOKB": 0.023238670829075714,
+    "fundingShortfallWei": 0,
+    "fundingShortfallOKB": 0.0,
+    "estimatesLive": true
+  },
+  "safety": {
+    "immutablePaths": true,
+    "overwritingDifferentBytes": "aborted before broadcast",
+    "rawPrivateKeysAccepted": false,
+    "broadcastRequiresTypedConfirmation": true
+  },
+  "transactions": [
+    {
+      "op": "putFile",
+      "path": "index.html",
+      "tx": "0x64e24e5bcec082ef6b784f6e956bec073593c06df23c14d6b70c76acafc09ff1"
+    }
+  ]
+}

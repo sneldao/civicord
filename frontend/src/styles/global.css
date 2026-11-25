@@ -1992,3 +1992,75 @@ h3.change-kicker {
 @media print {
   .correction-request { display: none !important; }
 }
+
+/* TapeOut/DeWEB evidence mirror — quiet archival panel, secondary to the canonical record. */
+.tapeout-mirror {
+  margin: 1.8rem 0;
+  padding: 1rem 1.1rem 1.05rem;
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  background: color-mix(in srgb, var(--paper-deep) 42%, var(--paper));
+}
+.tapeout-kicker {
+  margin: 0 0 0.15rem;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.tapeout-mirror h2 {
+  margin: 0 0 0.45rem;
+  font-family: var(--serif);
+  font-size: clamp(1.25rem, 3vw, 1.65rem);
+  line-height: 1.2;
+}
+.tapeout-mirror > p { max-width: 76ch; }
+.tapeout-actions { margin-top: 0.8rem; }
+.tapeout-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem 1rem;
+  margin: 1rem 0;
+  padding: 0.8rem 0 0;
+  border-top: 1px solid var(--rule);
+}
+.tapeout-facts div { min-width: 0; }
+.tapeout-facts dt {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.tapeout-facts dd {
+  margin: 0.18rem 0 0;
+  font-size: 0.84rem;
+  overflow-wrap: anywhere;
+}
+.tapeout-facts code, .tapeout-direct code { font-size: 0.78em; }
+.tapeout-direct {
+  margin: 0.4rem 0 0.7rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--rule);
+}
+.tapeout-direct summary {
+  cursor: pointer;
+  font-family: var(--serif);
+  font-weight: 700;
+}
+.tapeout-direct pre {
+  overflow-x: auto;
+  padding: 0.7rem;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.tapeout-limits { font-size: 0.82rem; }
+@media (max-width: 760px) {
+  .tapeout-facts { grid-template-columns: 1fr; }
+  .tapeout-mirror { padding: 0.9rem 0.85rem; }
+}

@@ -1,13 +1,14 @@
 # Plan
 
-Delivery phases, the current sprint, and risks. Last updated 2026-09-11 23:35 BST.
+Delivery phases, current priorities, and risks. Last updated 2026-11-25.
 
-> **2026-11-16 addendum — current priorities.** The Sept sprint plan below is
+> **2026-11-25 update — current priorities.** The Sept sprint plan below is
 > historical. The live opportunity stack, ranked (full reasoning in
 > [hackathons.md](hackathons.md) and [personas.md](personas.md)):
 >
-> 1. **Send the outreach drafts** — four finished emails, none sent; the
->    institutional-home question is the project's durability story.
+> 1. **Send the outreach drafts** — four finished emails, still unsent as of
+>    the 2026-11-16 outreach review; the institutional-home question is the
+>    project's durability story.
 > 2. **Take-the-pen finish** — acceptance flow + decisions log + delegate
 >    grant tool (KV already bound; `/review` was read-only).
 > 3. **Two-stage vantage close-out** — `--status` re-check + merge (landed
@@ -19,10 +20,24 @@ Delivery phases, the current sprint, and risks. Last updated 2026-09-11 23:35 BS
 >    ~Mar (see [cadence.md](cadence.md)).
 > 6. **Publish the HackerNoon draft** ([hackernoon-decentralize-ai.md](hackernoon-decentralize-ai.md))
 >    — Round 2 open until Feb; doubles as shipping the significance findings.
-> 7. **Anna** — built, uncommitted; ask the AI-native-core question on the
->    forum before submitting.
+> 7. **Anna** — built, uncommitted; AI-native-core question posted as forum
+>    topic 594 on 2026-11-17, answer still pending before submission.
 > 8. **France 2027** — the second-jurisdiction proof; spike notes in
 >    [france-2027.md](france-2027.md).
+>
+> **TapeOut note (2026-11-25):** X Layer TapeOut Accelerate is a conditional,
+> time-boxed backup — not item 9 in the priority stack. It may proceed only if
+> the published, direct-chain-verified DeWEB evidence in
+> [tapeout-accelerate.md](tapeout-accelerate.md) remains valid, the work remains
+> a reusable evidence-export mirror, and it does not displace outreach,
+> take-the-pen, vantage close-out or NLnet. Publication is complete at
+> `tape://20.2.272.tape`; remaining work is deployment of the verification
+> panel, one external comprehension test, video and submission. Evidence pack:
+> [tapeout-submission.md](tapeout-submission.md); external verification guide:
+> [deweb-mirror.md](deweb-mirror.md); internal operator runbook:
+> [tapeout-operations.md](tapeout-operations.md). Internal submission deadline:
+> **4 Dec 2026**.
+
 (Day-of-week note: 2026-09-08 is a **Tuesday**; earlier drafts of this file
 labelled it Monday — all day labels below use the corrected mapping.)
 
@@ -148,8 +163,9 @@ Audience-first framing for all frontend content, in priority order:
 4. **Sponsors** — ENS as identity infrastructure; same surface as #1.
 5. **General public** — one glanceable idea; they never need to see the mechanics.
 
-Language rules: ban "blockchain/web3/mint" in user-facing copy — say "permanent
-record", "public register", "verify". Reading requires no wallet or account.
+Language rules: ban "blockchain/web3/mint" in user-facing copy — say
+"tamper-evident record", "public register", "verify". Do not claim permanence
+until the mainnet migration described in onchain-plan.md has actually happened. Reading requires no wallet or account.
 
 Delivered (frontend — 2,381 static pages at 23:35):
 - Homepage: narrative-only (no 2,375-row wall) — why-it-exists lede, 3-step "How it works" (Collect / Record / Verify), stats + 3 cohort feature cards (Gone/Redirected/Live → `/cohorts/[status]`), party survival board retargeted to `/browse?party=…`, hero search (`“Farage” / “Leeds Central” → Enter` pushes to `/browse?q=…`), primary `Browse full ledger — 2,375 entries` CTA. OG/twitter meta per page.
@@ -192,7 +208,7 @@ dependencies.
 
 **Brief:** [cartography.md](cartography.md) — 22 sources via 3 Parallel Search API passes (IDs `search_0a9a45…`, `search_c910f8…`, `search_43af96…`). Key generated; rate-limit note: `/v1/search` accepts `objective` + max 5 `search_queries`.
 
-**Premise validated:** Civicord has 650 jurisdictions (`posts` = constituency) but no sense of place — everything reads as a list. The public asks “what happened in Leeds Central?”, not “how did Labour’s sites survive?”. The map closes that gap with two lenses on the same permanent register: **Ledger = text, Map = picture**. Same filters, same URL. Viral unit becomes the constituency, not the ledger row.
+**Premise validated:** Civicord has 650 jurisdictions (`posts` = constituency) but no sense of place — everything reads as a list. The public asks “what happened in Leeds Central?”, not “how did Labour’s sites survive?”. The map closes that gap with two lenses on the same public register: **Ledger = text, Map = picture**. Same filters, same URL. Viral unit becomes the constituency, not the ledger row.
 
 **UX after (one register, two lenses):**
 
@@ -227,7 +243,7 @@ All built at `astro build` — no Maps API, no backend. State lives in the URL; 
 
 **8h path to demo:** `1` fetch AK v5 + ONS BUC + Names V2 → cache `data/boundaries/` · `2` write `build-map.mjs` (join + counts + TopoJSON) · `3` `index.astro` pointillist hero (static `<svg>`+`<clipPath>`+2,375 circles) · `4` `map.astro` + `constituencies/[slug].astro` halftone hex wired to existing filter state + linked brushing + `format=svg` download.
 
-**Day plan update (live — 2026-09-11 23:05 gateway LIVE + subgraph v0.0.3 syncing):** `3031` html + `652` API json (`constituencies` × 650 + list + summary) + `650` stipple deeds (1200×630 SVG, 2.5 MB, `build-og.mjs`) — `34M` `frontend/dist`, `4342` files. `openapi.yaml` + Recipe ([gateway/recipe.md](gateway/recipe.md)) at `gateway/` — `https://civicord-aieyq.bazgateway.com` (handle, `MCP Live · 5 tools` at `/mcp`, Marketplace *Pending verification*) — pay-per-`?constituency=` (x402/MPP `100`/`200` mcents, humans browse free). Worker alias `frontend/public/_worker.js` (`cb09faf`) maps extensionless Bazantic `/api/*` → `…json` with query filtering. Subgraph `v0.0.3` `QmUcjfa…` LIVE, `hasIndexingErrors:false` @ 8149999, syncing 3.5M blocks — `v0.0.2` faulted @ 11660475 (unpadded hex), `v0.0.1` pruned. Remaining: wait for subgraph sync, then demo video.
+**Day plan update (live — 2026-09-11 23:05 gateway LIVE + subgraph v0.0.3 syncing):** `3031` html + `652` API json (`constituencies` × 650 + list + summary) + `650` stipple deeds (1200×630 SVG, 2.5 MB, `build-og.mjs`) — `34M` `frontend/dist`, `4342` files. `openapi.yaml` + Recipe ([gateway/recipe.md](../gateway/recipe.md)) at `gateway/` — `https://civicord-aieyq.bazgateway.com` (handle, `MCP Live · 5 tools` at `/mcp`, Marketplace *Pending verification*) — pay-per-`?constituency=` (x402/MPP `100`/`200` mcents, humans browse free). Worker alias `frontend/public/_worker.js` (`cb09faf`) maps extensionless Bazantic `/api/*` → `…json` with query filtering. Subgraph `v0.0.3` `QmUcjfa…` LIVE, `hasIndexingErrors:false` @ 8149999, syncing 3.5M blocks — `v0.0.2` faulted @ 11660475 (unpadded hex), `v0.0.1` pruned. Remaining: wait for subgraph sync, then demo video.
 
 | Thu 11 | ✅ Gateway **LIVE** + Recipe + OG deeds + handle + marketplace pending — subgraph left to you |
 | Fri 12 | Demo video (2–4 min) + FEEDBACK.md — lead with map hook: “Check your constituency: 4/6 sites already gone” |

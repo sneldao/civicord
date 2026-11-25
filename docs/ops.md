@@ -4,10 +4,11 @@ Infrastructure and deployment notes for Civicord. This doc is **internal** —
 it's safe to commit (no secrets), but unlike `architecture.md` /
 `onchain-plan.md` it documents *how we run* the project rather than what it is.
 
-Last updated: 2026-11-16 — claim-review endpoints deployed
-(`4a4ce5af`, manual `wrangler pages deploy dist`; `/api/corrections`,
-`/api/corrections/decisions` 200, `decide` correctly 501s until
-`REVIEW_TOKEN` is set); earlier 2026-09-12 — change-feed signals +
+Last updated: 2026-11-25 — TapeOut/DeWEB operations cross-links added;
+prior 2026-11-16 — claim-review endpoints deployed
+(`4a4ce5af`, manual `wrangler pages deploy dist`; `/api/corrections`
+and `/api/corrections/decisions` 200; `REVIEW_TOKEN` is set and the
+`decide` gate is live); earlier 2026-09-12 — change-feed signals +
 Wayback significance spike
 live (`content_diffs.json`, browse `?sig=`, candidate Content chronology);
 prior 2026-09-11 23:45 — gateway **LIVE** (`civicord-aieyq.bazgateway.com`,
@@ -15,11 +16,18 @@ marketplace *Pending verification*), OG deeds live, worker alias for
 extensionless `/api/*` shipped (`68950dd3`); landing **reframed region-agnostic**
 and deployed (`c1804fad`); subgraph **v0.0.3 deployed** (`QmUcjfa4x4…`).
 
+## Adjacent runbooks
+
+TapeOut/X Layer DeWEB mirror operations — owner-key handling, verification
+commands, evidence-update policy and submission gates — are in
+[tapeout-operations.md](tapeout-operations.md). Public mirror verification
+documentation is [deweb-mirror.md](deweb-mirror.md).
+
 ## Hosting topology
 
 | Layer | Service | Notes |
 | --- | --- | --- |
-| Frontend (3,031 html + 652 api json + 650 deeds, `34M` dist) | Cloudflare Pages — project `civicord` | Live at https://civicord.pages.dev; **deployed manually** from local `frontend/dist` with `wrangler pages deploy` (see below) |
+| Frontend (current local build shape: 5,412 html including candidate reply pages + 3,027 API JSON + 650 OG SVGs, ~127M `dist`) | Cloudflare Pages — project `civicord` | Live at https://civicord.pages.dev; **deployed manually** from local `frontend/dist` with `wrangler pages deploy` (see below). The live deployment has reply/API routes but not yet the TapeOut mirror panel |
 | Data snapshots | Cloudflare R2 — bucket `civicord-data` (account e738) | Served same-origin at `/data/*` by `frontend/public/_worker.js` (5-min cache) |
 | Legacy/unused | Vercel (`civicord.vercel.app`) | `vercel.json` still present; superseded by Pages — delete when confident |
 | Future | VPS available for pipeline cron + FastAPI search API | Not yet used |
@@ -276,7 +284,7 @@ R2 snapshot at `https://civicord.pages.dev/data/candidates.json` → committed
 `src/data/candidates.json`. R2 snapshot: ~2.5 MB (`candidates.json`), alias at
 `civicord.pages.dev/data/candidates.json`.
 
-## Frontend deploy state (2026-09-11 — gateway LIVE, deeds live, worker alias shipped)
+## Frontend deploy state (2026-09-11 historical baseline — gateway LIVE, deeds live, worker alias shipped)
 
 - **Built:** `frontend/dist` — `3031` html (`2375` candidates + `650` constituencies + `6` static), `+ 3,027` API json (`650` × `/api/constituencies/{slug}.json` + `/api/constituencies.json` + `/api/summary.json` + `2,375` × `/api/candidates/{id}.json`), `+ 650` OG deeds (`/og/constituencies/{slug}.svg`, 1200×630, 2.5 MB via `public/og/`), `+ openapi.yaml` — `34M`, `4342` files, sitemap `3031` html. `cd frontend && npm run build` (chain: `build-data.mjs` → `build-map.mjs` → `build-og.mjs` → `astro build`). Previously `2381` html before map.
 - **Deployed:** `68950dd3` (plus `aeab68ad` / `266a570d` / `5e5ab5a0`) — `https://civicord.pages.dev` now serves extensionless `GET /api/constituencies`, `GET /api/constituencies/{slug}`, `GET /api/summary` via `frontend/public/_worker.js` rewrite (`cb09faf` — `…json` files on disk, Bazantic defines without `.json`). `?country=&region=&limit=` filtering now handled in the worker (was returning 650 unfiltered). Verified `21:30`.
@@ -285,7 +293,7 @@ R2 snapshot at `https://civicord.pages.dev/data/candidates.json` → committed
 - **Self-hosted MCP server (`mcp/`, 2026-10-20 — local, not deployed):** `cd mcp && npm install && npm start` → `http://127.0.0.1:8787/mcp`, with a browser MCP client at `GET /` and a plain-text description at `GET /about`. Streamable HTTP, protocol `2025-11-25`, seven read-only tools, `Origin` allowlist (`ALLOWED_ORIGINS`, loopback always allowed), binds `127.0.0.1` unless `HOST` says otherwise. Contract checks: `npm run check`, run in CI as the `mcp` job. Deliberately undeployed — see [hackathons.md](hackathons.md) § Status.
 - **OG:** every `/constituencies/{slug}` now has `og:image → /og/constituencies/{slug}.svg` (`summary_large_image`, 1200×630, `image/svg+xml`) + `twitter:image` — share test: paste a seat URL in Slack/X. Origin `200`, gateway `404` (resource is `0 mcents` but Fly returns `not found` — origin is canonical; documented in Recipe).
 - **`ba8efa8c` (2026-09-13, commit `d6d3a01`):** visitor-polish deploy — "responding" semantics, guided homepage paths, Copy citation, `#evidence`/`#verification`/`#agent-view` deep links, results-first `/browse`. Verified live: homepage + `/candidates/5693` markers, `GET /api/ens?id=5693` live `eth_call` (Sepolia), `GET /api/summary` 200.
-- **Last live Pages deploys:** `abf2f34a` (current — Oct snapshot live, ~49% responding; 09768d2c had remote-fetch clobbered the merged file, redeployed), `09768d2c` (superseded), `66caa91c` (CORRECTIONS_KV bound + /review queue surface), `b3efdcbc` ( claim flow MVP + exhibit homepage, commit `c506d87`, 5,411 pages), `3b79fecf` (exhibit-led homepage, commit `79f191c`), `b39827f2` (consistent interaction tier), `c1804fad` (region-agnostic landing), `68950dd3`, `aeab68ad`, `266a570d`, `5e5ab5a0` — all include `+652+650+1` (`4344` files incl. lazy `search-index.json`, `34M`). Pre-gateway were `ce51b262` / `61556895`.
+- **Pages deployment log:** `4a4ce5af` (current — claim-review endpoints live, Nov 2026), `abf2f34a` (Oct snapshot live, ~49% responding; `09768d2c` had remote-fetch clobbered the merged file and was redeployed), `66caa91c` (CORRECTIONS_KV bound + `/review` queue surface), `b3efdcbc` (claim-flow MVP + exhibit homepage, commit `c506d87`, roughly 5.4k pages), `3b79fecf` (exhibit-led homepage), `b39827f2` (consistent interaction tier), `c1804fad` (region-agnostic landing), then the Sep gateway-era deploys `68950dd3`, `aeab68ad`, `266a570d`, `5e5ab5a0`. The `34M`/`4342`-file numbers in this historical section describe the Sep 11 gateway-era build, not the current reply-page build shape summarized in Hosting topology. Pre-gateway deploys were `ce51b262` / `61556895`.
 - **Interaction-tier consistency (`b39827f2`, commit `c7040a4`):** ⌘K palette now on **all six** page templates (was 3), PeekSheet on candidate pages (seat hex peeks in place via `civicord:peek` event; explicit nav buttons unchanged), AgentView MCP + subgraph snippets are click-to-copy with the shared `copied ✓` feedback, kbd hints (`⌘K` / `/` / `Esc`) on index, seat, cohort + methodology pages. CSS purely additive (`+25/−0` incl. unscoped `.toolbar-hint kbd` / `.browse-hint kbd` / `.copyable`). Build `3031` html + `652` api + `650` deeds unchanged. Verified live `2026-09-12`: palette+hint on methodology/cohorts, peek on candidates, copyable + hint on seats, gateway `api/summary 200` free + metered `402` intact.
 - **Landing reframe (`c1804fad`, commit `56c9436`):** mission-first hero, no-JS `Region: UK · genesis` picker, `UK · genesis` dataset badge, static decay line (`April 2025 → Sept 2026 · 64% live`), infra-homage strip (registry `0x0895…2aa9` / resolver `0x340d…ee67` / subgraph `QmUcjfa…` / gateway `civicord-aieyq`), *“Built for one election. Designed for any.”* region section → `github.com/sneldao/civicord/issues`, public-good footer. **Additive only:** `global.css` is `+189/−0` with no existing selector touched, `HalftoneHexMap.astro` copy only, no route/data/component renamed — the `?constituency=` gateway contract is unchanged. Verified `23:45`: landing `200` with all markers, `/api/summary.json` `200`, `/api/constituencies/st-ives` `200`, `/og/constituencies/st-ives.svg` `200`, `/constituencies/ynys-mon` `200`, `/browse` `200`, `/methodology` `200`, gateway `api/summary 200` free + `api/constituencies/st-ives 402` (`2000`). Verify:
   ```bash

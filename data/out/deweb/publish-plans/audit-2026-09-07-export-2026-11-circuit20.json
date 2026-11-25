@@ -1,0 +1,353 @@
+{
+  "mode": "broadcast-complete",
+  "chainId": 196,
+  "rpc": "https://rpc.xlayer.tech",
+  "bundle": "/Users/udingethe/Dev/civicord/data/out/deweb/holborn-and-st-pancras/audit-2026-09-07-export-2026-11",
+  "prefix": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11",
+  "container": "0xB078da6de46795656187052322Dda3A7E249C288",
+  "processor": "0x57F319CF056F72F48cF1dbb670F2A3DB007Aa355",
+  "tokenId": 20,
+  "owner": "0x8b0b474f86bE342E5A5329Cc2E25016Aa274594e",
+  "from": "0x8b0b474f86bE342E5A5329Cc2E25016Aa274594e",
+  "containerOpened": false,
+  "open": {
+    "planned": true,
+    "feeWei": 80000000000000000,
+    "gasEstimate": 169739,
+    "estimateError": null
+  },
+  "files": [
+    {
+      "path": "candidates.json",
+      "bytes": 9321,
+      "sha256": "4d8ae1eeaf4be659c562029d8dc97a41e618e233db979c37448f7dbc5a5e29cf",
+      "contentType": "application/json; charset=utf-8",
+      "chunks": 1,
+      "source": "/Users/udingethe/Dev/civicord/data/out/deweb/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/candidates.json",
+      "chainPath": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/candidates.json",
+      "onchain": {
+        "size": 0,
+        "contentType": "",
+        "sha256": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "updatedAt": 0,
+        "chunkCount": 0
+      },
+      "action": "publish",
+      "gasEstimate": 1924200,
+      "estimateSource": "fallback formula",
+      "calls": [
+        {
+          "op": "putFile",
+          "contract": "0xd6EFb7adCc9c83dC4924Ad56f6a8E4e969b9ADB6",
+          "signature": "putFile(address,string,string,bytes32,bytes)",
+          "argsPreview": [
+            "0xB078da6de46795656187052322Dda3A7E249C288",
+            "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/candidates.json",
+            "application/json; charset=utf-8",
+            "0x4d8ae1eeaf4be659c562029d8dc97a41e618e233db979c37448f7dbc5a5e29cf",
+            "<bytes>"
+          ],
+          "gasEstimate": 1924200,
+          "estimateError": "container not open; fallback formula"
+        }
+      ]
+    },
+    {
+      "path": "caveats.md",
+      "bytes": 1131,
+      "sha256": "ae59dfd6edbcdc23976a96cbddf2e5c3cf6a8c42cfe0a2c935f0acceb2d7b3fe",
+      "contentType": "text/markdown; charset=utf-8",
+      "chunks": 1,
+      "source": "/Users/udingethe/Dev/civicord/data/out/deweb/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/caveats.md",
+      "chainPath": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/caveats.md",
+      "onchain": {
+        "size": 0,
+        "contentType": "",
+        "sha256": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "updatedAt": 0,
+        "chunkCount": 0
+      },
+      "action": "publish",
+      "gasEstimate": 286200,
+      "estimateSource": "fallback formula",
+      "calls": [
+        {
+          "op": "putFile",
+          "contract": "0xd6EFb7adCc9c83dC4924Ad56f6a8E4e969b9ADB6",
+          "signature": "putFile(address,string,string,bytes32,bytes)",
+          "argsPreview": [
+            "0xB078da6de46795656187052322Dda3A7E249C288",
+            "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/caveats.md",
+            "text/markdown; charset=utf-8",
+            "0xae59dfd6edbcdc23976a96cbddf2e5c3cf6a8c42cfe0a2c935f0acceb2d7b3fe",
+            "<bytes>"
+          ],
+          "gasEstimate": 286200,
+          "estimateError": "container not open; fallback formula"
+        }
+      ]
+    },
+    {
+      "path": "index.html",
+      "bytes": 11621,
+      "sha256": "7aa9a87a8c2f95e5e4b4dbb20cc97880d6c25e32522f0948a878fa2f824a8c39",
+      "contentType": "text/html; charset=utf-8",
+      "chunks": 1,
+      "source": "/Users/udingethe/Dev/civicord/data/out/deweb/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/index.html",
+      "chainPath": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/index.html",
+      "onchain": {
+        "size": 0,
+        "contentType": "",
+        "sha256": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "updatedAt": 0,
+        "chunkCount": 0
+      },
+      "action": "publish",
+      "gasEstimate": 2384200,
+      "estimateSource": "fallback formula",
+      "calls": [
+        {
+          "op": "putFile",
+          "contract": "0xd6EFb7adCc9c83dC4924Ad56f6a8E4e969b9ADB6",
+          "signature": "putFile(address,string,string,bytes32,bytes)",
+          "argsPreview": [
+            "0xB078da6de46795656187052322Dda3A7E249C288",
+            "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/index.html",
+            "text/html; charset=utf-8",
+            "0x7aa9a87a8c2f95e5e4b4dbb20cc97880d6c25e32522f0948a878fa2f824a8c39",
+            "<bytes>"
+          ],
+          "gasEstimate": 2384200,
+          "estimateError": "container not open; fallback formula"
+        }
+      ]
+    },
+    {
+      "path": "manifest.json",
+      "bytes": 3088,
+      "sha256": "2993bbce8d018be26a1664abcb586f5b034cbb6fd7732c4a17e056e877465901",
+      "contentType": "application/json; charset=utf-8",
+      "chunks": 1,
+      "source": "/Users/udingethe/Dev/civicord/data/out/deweb/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/manifest.json",
+      "chainPath": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/manifest.json",
+      "onchain": {
+        "size": 0,
+        "contentType": "",
+        "sha256": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "updatedAt": 0,
+        "chunkCount": 0
+      },
+      "action": "publish",
+      "gasEstimate": 677600,
+      "estimateSource": "fallback formula",
+      "calls": [
+        {
+          "op": "putFile",
+          "contract": "0xd6EFb7adCc9c83dC4924Ad56f6a8E4e969b9ADB6",
+          "signature": "putFile(address,string,string,bytes32,bytes)",
+          "argsPreview": [
+            "0xB078da6de46795656187052322Dda3A7E249C288",
+            "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/manifest.json",
+            "application/json; charset=utf-8",
+            "0x2993bbce8d018be26a1664abcb586f5b034cbb6fd7732c4a17e056e877465901",
+            "<bytes>"
+          ],
+          "gasEstimate": 677600,
+          "estimateError": "container not open; fallback formula"
+        }
+      ]
+    },
+    {
+      "path": "methodology.md",
+      "bytes": 2430,
+      "sha256": "1c317813a7544915d4f4dec5305d69a6612dccced5e523db98754fe120a71aa6",
+      "contentType": "text/markdown; charset=utf-8",
+      "chunks": 1,
+      "source": "/Users/udingethe/Dev/civicord/data/out/deweb/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/methodology.md",
+      "chainPath": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/methodology.md",
+      "onchain": {
+        "size": 0,
+        "contentType": "",
+        "sha256": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "updatedAt": 0,
+        "chunkCount": 0
+      },
+      "action": "publish",
+      "gasEstimate": 546000,
+      "estimateSource": "fallback formula",
+      "calls": [
+        {
+          "op": "putFile",
+          "contract": "0xd6EFb7adCc9c83dC4924Ad56f6a8E4e969b9ADB6",
+          "signature": "putFile(address,string,string,bytes32,bytes)",
+          "argsPreview": [
+            "0xB078da6de46795656187052322Dda3A7E249C288",
+            "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/methodology.md",
+            "text/markdown; charset=utf-8",
+            "0x1c317813a7544915d4f4dec5305d69a6612dccced5e523db98754fe120a71aa6",
+            "<bytes>"
+          ],
+          "gasEstimate": 546000,
+          "estimateError": "container not open; fallback formula"
+        }
+      ]
+    },
+    {
+      "path": "sources.json",
+      "bytes": 985,
+      "sha256": "b307c77d62452cacc042dfd93295fc66b68cae9317eb616b4b11c3c6f6d457ed",
+      "contentType": "application/json; charset=utf-8",
+      "chunks": 1,
+      "source": "/Users/udingethe/Dev/civicord/data/out/deweb/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/sources.json",
+      "chainPath": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/sources.json",
+      "onchain": {
+        "size": 0,
+        "contentType": "",
+        "sha256": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "updatedAt": 0,
+        "chunkCount": 0
+      },
+      "action": "publish",
+      "gasEstimate": 257000,
+      "estimateSource": "fallback formula",
+      "calls": [
+        {
+          "op": "putFile",
+          "contract": "0xd6EFb7adCc9c83dC4924Ad56f6a8E4e969b9ADB6",
+          "signature": "putFile(address,string,string,bytes32,bytes)",
+          "argsPreview": [
+            "0xB078da6de46795656187052322Dda3A7E249C288",
+            "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/sources.json",
+            "application/json; charset=utf-8",
+            "0xb307c77d62452cacc042dfd93295fc66b68cae9317eb616b4b11c3c6f6d457ed",
+            "<bytes>"
+          ],
+          "gasEstimate": 257000,
+          "estimateError": "container not open; fallback formula"
+        }
+      ]
+    },
+    {
+      "path": "verify.html",
+      "bytes": 1682,
+      "sha256": "6219dd12ea4117b7f65ce37cc50f833954b6d756315bb418e3a6ca3d11c9a4e7",
+      "contentType": "text/html; charset=utf-8",
+      "chunks": 1,
+      "source": "/Users/udingethe/Dev/civicord/data/out/deweb/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/verify.html",
+      "chainPath": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/verify.html",
+      "onchain": {
+        "size": 0,
+        "contentType": "",
+        "sha256": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "updatedAt": 0,
+        "chunkCount": 0
+      },
+      "action": "publish",
+      "gasEstimate": 396400,
+      "estimateSource": "fallback formula",
+      "calls": [
+        {
+          "op": "putFile",
+          "contract": "0xd6EFb7adCc9c83dC4924Ad56f6a8E4e969b9ADB6",
+          "signature": "putFile(address,string,string,bytes32,bytes)",
+          "argsPreview": [
+            "0xB078da6de46795656187052322Dda3A7E249C288",
+            "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/verify.html",
+            "text/html; charset=utf-8",
+            "0x6219dd12ea4117b7f65ce37cc50f833954b6d756315bb418e3a6ca3d11c9a4e7",
+            "<bytes>"
+          ],
+          "gasEstimate": 396400,
+          "estimateError": "container not open; fallback formula"
+        }
+      ]
+    }
+  ],
+  "fallback": {
+    "planned": true,
+    "path": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/index.html",
+    "gasEstimate": 60000,
+    "estimateError": "container not open; fallback formula"
+  },
+  "bind": {
+    "name": "20.2.272.tape",
+    "months": 120,
+    "monthlyFeeWei": 0,
+    "valueWei": 0,
+    "gasEstimate": 200000,
+    "estimateError": "Error: server returned an error response: error code 3: execution reverted, data: \"0x13a09949\""
+  },
+  "totals": {
+    "filesTotal": 7,
+    "filesToPublish": 7,
+    "filesUnchanged": 0,
+    "payloadBytes": 30258,
+    "gasEstimate": 6901339,
+    "gasPriceWei": 20000001,
+    "estimatedGasCostWei": 138026786901339,
+    "feeWei": 80000000000000000,
+    "estimatedTotalWei": 80138026786901339,
+    "estimatedTotalOKB": 0.08013802678690134,
+    "fromBalanceWei": 103431285079564254,
+    "fromBalanceOKB": 0.10343128507956426,
+    "fundingShortfallWei": 0,
+    "fundingShortfallOKB": 0.0,
+    "estimatesLive": false
+  },
+  "safety": {
+    "immutablePaths": true,
+    "overwritingDifferentBytes": "aborted before broadcast",
+    "rawPrivateKeysAccepted": false,
+    "broadcastRequiresTypedConfirmation": true
+  },
+  "transactions": [
+    {
+      "op": "open",
+      "tx": "0x2d104d591189bb877c526570b661f7dec1307d48555ae5e5cb3e40cfb327a8a9"
+    },
+    {
+      "op": "putFile",
+      "path": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/candidates.json",
+      "tx": "0x561cd94c35d9a8bd07fefc8df8835f5bb5b26f929f96cc76b604e7e404b1fffc"
+    },
+    {
+      "op": "putFile",
+      "path": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/caveats.md",
+      "tx": "0xa2cbc760d9a8171f61b4995292511979062de4eaed3fb3a4223029a4a2b90e71"
+    },
+    {
+      "op": "putFile",
+      "path": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/index.html",
+      "tx": "0x1cd7e89c0cb3d226f9ee8d9ddf353ac612ebe8fc4c2be52b7d3ec5a5aef494e2"
+    },
+    {
+      "op": "putFile",
+      "path": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/manifest.json",
+      "tx": "0x137f9b704be3a6661b77e1bb3945aef7067c93d41c34ef3c508e6a885ae79b0e"
+    },
+    {
+      "op": "putFile",
+      "path": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/methodology.md",
+      "tx": "0x5ccdf74888cd40be3a774117bb4c8dc843e4d763cfc6be8cae07d3d739c0c01f"
+    },
+    {
+      "op": "putFile",
+      "path": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/sources.json",
+      "tx": "0x6252637dc57b1561620cca9eba5b19dea1c440ffac3b7189711cb6107287c461"
+    },
+    {
+      "op": "putFile",
+      "path": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/verify.html",
+      "tx": "0xca29406d2c46e7dcb6cb4bde08c672f88bb8c02a5c47e92d03ac692030a57964"
+    },
+    {
+      "op": "setFallback",
+      "tx": "0xed240a9169c5fe90d143fde4327047eca616e3ca47358405573d3cfc115cadfb"
+    },
+    {
+      "op": "bind",
+      "name": "20.2.272.tape",
+      "tx": "0xecd393daea10783c8ed05a79575b9dccfa8d39ec86aa7ddc344080256c64d878"
+    }
+  ]
+}

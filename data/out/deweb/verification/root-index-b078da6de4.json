@@ -1,0 +1,21 @@
+{
+  "schema": "civicord-deweb-root-index-check/0.1",
+  "generatedAt": "2026-11-25T19:28:55.986488Z",
+  "container": "0xB078da6de46795656187052322Dda3A7E249C288",
+  "path": "index.html",
+  "pinnedBlock": 76865195,
+  "expectedSha256": "7aa9a87a8c2f95e5e4b4dbb20cc97880d6c25e32522f0948a878fa2f824a8c39",
+  "rpcs": {
+    "https://rpc.xlayer.tech": {
+      "bytes": 11621,
+      "sha256": "7aa9a87a8c2f95e5e4b4dbb20cc97880d6c25e32522f0948a878fa2f824a8c39",
+      "matchesFrozenIndex": true
+    },
+    "https://xlayer.drpc.org": {
+      "bytes": 11621,
+      "sha256": "7aa9a87a8c2f95e5e4b4dbb20cc97880d6c25e32522f0948a878fa2f824a8c39",
+      "matchesFrozenIndex": true
+    }
+  },
+  "ok": true
+}

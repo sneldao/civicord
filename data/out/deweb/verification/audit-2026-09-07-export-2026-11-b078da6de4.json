@@ -1,0 +1,243 @@
+{
+  "schema": "civicord-deweb-verification/0.1",
+  "generatedAt": "2026-11-25T19:17:52Z",
+  "ok": true,
+  "bundle": "/Users/udingethe/Dev/civicord/data/out/deweb/holborn-and-st-pancras/audit-2026-09-07-export-2026-11",
+  "container": "0xB078da6de46795656187052322Dda3A7E249C288",
+  "prefix": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11",
+  "siteRegistry": "0xd6EFb7adCc9c83dC4924Ad56f6a8E4e969b9ADB6",
+  "expectedImplementation": "0xa85c4143d1d4a77f54b8e4ecc9e6d1418afea45f",
+  "rpcs": [
+    "https://rpc.xlayer.tech",
+    "https://xlayer.drpc.org"
+  ],
+  "errors": [],
+  "warnings": [],
+  "trustNote": "Gateway responses are not used. Operator independence is limited to the configured endpoints; rpc.xlayer.tech and xlayer.drpc.org are treated as separate operators for this verification report.",
+  "chainIds": {
+    "https://rpc.xlayer.tech": 196,
+    "https://xlayer.drpc.org": 196
+  },
+  "heights": {
+    "https://rpc.xlayer.tech": 76865195,
+    "https://xlayer.drpc.org": 76865195
+  },
+  "pinnedBlock": 76865195,
+  "implementations": {
+    "https://rpc.xlayer.tech": "0xa85c4143d1d4a77f54b8e4ecc9e6d1418afea45f",
+    "https://xlayer.drpc.org": "0xa85c4143d1d4a77f54b8e4ecc9e6d1418afea45f"
+  },
+  "containerOpened": true,
+  "files": [
+    {
+      "path": "candidates.json",
+      "chainPath": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/candidates.json",
+      "localBytes": 9321,
+      "localSha256": "4d8ae1eeaf4be659c562029d8dc97a41e618e233db979c37448f7dbc5a5e29cf",
+      "rpc": {
+        "https://rpc.xlayer.tech": {
+          "fileInfo": {
+            "size": 9321,
+            "contentType": "application/json; charset=utf-8",
+            "sha256": "0x4d8ae1eeaf4be659c562029d8dc97a41e618e233db979c37448f7dbc5a5e29cf",
+            "updatedAt": 1795633869,
+            "chunkCount": 1
+          },
+          "payloadBytes": 9321,
+          "payloadSha256": "4d8ae1eeaf4be659c562029d8dc97a41e618e233db979c37448f7dbc5a5e29cf"
+        },
+        "https://xlayer.drpc.org": {
+          "fileInfo": {
+            "size": 9321,
+            "contentType": "application/json; charset=utf-8",
+            "sha256": "0x4d8ae1eeaf4be659c562029d8dc97a41e618e233db979c37448f7dbc5a5e29cf",
+            "updatedAt": 1795633869,
+            "chunkCount": 1
+          },
+          "payloadBytes": 9321,
+          "payloadSha256": "4d8ae1eeaf4be659c562029d8dc97a41e618e233db979c37448f7dbc5a5e29cf"
+        }
+      }
+    },
+    {
+      "path": "caveats.md",
+      "chainPath": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/caveats.md",
+      "localBytes": 1131,
+      "localSha256": "ae59dfd6edbcdc23976a96cbddf2e5c3cf6a8c42cfe0a2c935f0acceb2d7b3fe",
+      "rpc": {
+        "https://rpc.xlayer.tech": {
+          "fileInfo": {
+            "size": 1131,
+            "contentType": "text/markdown; charset=utf-8",
+            "sha256": "0xae59dfd6edbcdc23976a96cbddf2e5c3cf6a8c42cfe0a2c935f0acceb2d7b3fe",
+            "updatedAt": 1795633873,
+            "chunkCount": 1
+          },
+          "payloadBytes": 1131,
+          "payloadSha256": "ae59dfd6edbcdc23976a96cbddf2e5c3cf6a8c42cfe0a2c935f0acceb2d7b3fe"
+        },
+        "https://xlayer.drpc.org": {
+          "fileInfo": {
+            "size": 1131,
+            "contentType": "text/markdown; charset=utf-8",
+            "sha256": "0xae59dfd6edbcdc23976a96cbddf2e5c3cf6a8c42cfe0a2c935f0acceb2d7b3fe",
+            "updatedAt": 1795633873,
+            "chunkCount": 1
+          },
+          "payloadBytes": 1131,
+          "payloadSha256": "ae59dfd6edbcdc23976a96cbddf2e5c3cf6a8c42cfe0a2c935f0acceb2d7b3fe"
+        }
+      }
+    },
+    {
+      "path": "index.html",
+      "chainPath": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/index.html",
+      "localBytes": 11621,
+      "localSha256": "7aa9a87a8c2f95e5e4b4dbb20cc97880d6c25e32522f0948a878fa2f824a8c39",
+      "rpc": {
+        "https://rpc.xlayer.tech": {
+          "fileInfo": {
+            "size": 11621,
+            "contentType": "text/html; charset=utf-8",
+            "sha256": "0x7aa9a87a8c2f95e5e4b4dbb20cc97880d6c25e32522f0948a878fa2f824a8c39",
+            "updatedAt": 1795633876,
+            "chunkCount": 1
+          },
+          "payloadBytes": 11621,
+          "payloadSha256": "7aa9a87a8c2f95e5e4b4dbb20cc97880d6c25e32522f0948a878fa2f824a8c39"
+        },
+        "https://xlayer.drpc.org": {
+          "fileInfo": {
+            "size": 11621,
+            "contentType": "text/html; charset=utf-8",
+            "sha256": "0x7aa9a87a8c2f95e5e4b4dbb20cc97880d6c25e32522f0948a878fa2f824a8c39",
+            "updatedAt": 1795633876,
+            "chunkCount": 1
+          },
+          "payloadBytes": 11621,
+          "payloadSha256": "7aa9a87a8c2f95e5e4b4dbb20cc97880d6c25e32522f0948a878fa2f824a8c39"
+        }
+      }
+    },
+    {
+      "path": "manifest.json",
+      "chainPath": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/manifest.json",
+      "localBytes": 3088,
+      "localSha256": "2993bbce8d018be26a1664abcb586f5b034cbb6fd7732c4a17e056e877465901",
+      "rpc": {
+        "https://rpc.xlayer.tech": {
+          "fileInfo": {
+            "size": 3088,
+            "contentType": "application/json; charset=utf-8",
+            "sha256": "0x2993bbce8d018be26a1664abcb586f5b034cbb6fd7732c4a17e056e877465901",
+            "updatedAt": 1795633879,
+            "chunkCount": 1
+          },
+          "payloadBytes": 3088,
+          "payloadSha256": "2993bbce8d018be26a1664abcb586f5b034cbb6fd7732c4a17e056e877465901"
+        },
+        "https://xlayer.drpc.org": {
+          "fileInfo": {
+            "size": 3088,
+            "contentType": "application/json; charset=utf-8",
+            "sha256": "0x2993bbce8d018be26a1664abcb586f5b034cbb6fd7732c4a17e056e877465901",
+            "updatedAt": 1795633879,
+            "chunkCount": 1
+          },
+          "payloadBytes": 3088,
+          "payloadSha256": "2993bbce8d018be26a1664abcb586f5b034cbb6fd7732c4a17e056e877465901"
+        }
+      }
+    },
+    {
+      "path": "methodology.md",
+      "chainPath": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/methodology.md",
+      "localBytes": 2430,
+      "localSha256": "1c317813a7544915d4f4dec5305d69a6612dccced5e523db98754fe120a71aa6",
+      "rpc": {
+        "https://rpc.xlayer.tech": {
+          "fileInfo": {
+            "size": 2430,
+            "contentType": "text/markdown; charset=utf-8",
+            "sha256": "0x1c317813a7544915d4f4dec5305d69a6612dccced5e523db98754fe120a71aa6",
+            "updatedAt": 1795633882,
+            "chunkCount": 1
+          },
+          "payloadBytes": 2430,
+          "payloadSha256": "1c317813a7544915d4f4dec5305d69a6612dccced5e523db98754fe120a71aa6"
+        },
+        "https://xlayer.drpc.org": {
+          "fileInfo": {
+            "size": 2430,
+            "contentType": "text/markdown; charset=utf-8",
+            "sha256": "0x1c317813a7544915d4f4dec5305d69a6612dccced5e523db98754fe120a71aa6",
+            "updatedAt": 1795633882,
+            "chunkCount": 1
+          },
+          "payloadBytes": 2430,
+          "payloadSha256": "1c317813a7544915d4f4dec5305d69a6612dccced5e523db98754fe120a71aa6"
+        }
+      }
+    },
+    {
+      "path": "sources.json",
+      "chainPath": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/sources.json",
+      "localBytes": 985,
+      "localSha256": "b307c77d62452cacc042dfd93295fc66b68cae9317eb616b4b11c3c6f6d457ed",
+      "rpc": {
+        "https://rpc.xlayer.tech": {
+          "fileInfo": {
+            "size": 985,
+            "contentType": "application/json; charset=utf-8",
+            "sha256": "0xb307c77d62452cacc042dfd93295fc66b68cae9317eb616b4b11c3c6f6d457ed",
+            "updatedAt": 1795633886,
+            "chunkCount": 1
+          },
+          "payloadBytes": 985,
+          "payloadSha256": "b307c77d62452cacc042dfd93295fc66b68cae9317eb616b4b11c3c6f6d457ed"
+        },
+        "https://xlayer.drpc.org": {
+          "fileInfo": {
+            "size": 985,
+            "contentType": "application/json; charset=utf-8",
+            "sha256": "0xb307c77d62452cacc042dfd93295fc66b68cae9317eb616b4b11c3c6f6d457ed",
+            "updatedAt": 1795633886,
+            "chunkCount": 1
+          },
+          "payloadBytes": 985,
+          "payloadSha256": "b307c77d62452cacc042dfd93295fc66b68cae9317eb616b4b11c3c6f6d457ed"
+        }
+      }
+    },
+    {
+      "path": "verify.html",
+      "chainPath": "civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11/verify.html",
+      "localBytes": 1682,
+      "localSha256": "6219dd12ea4117b7f65ce37cc50f833954b6d756315bb418e3a6ca3d11c9a4e7",
+      "rpc": {
+        "https://rpc.xlayer.tech": {
+          "fileInfo": {
+            "size": 1682,
+            "contentType": "text/html; charset=utf-8",
+            "sha256": "0x6219dd12ea4117b7f65ce37cc50f833954b6d756315bb418e3a6ca3d11c9a4e7",
+            "updatedAt": 1795633890,
+            "chunkCount": 1
+          },
+          "payloadBytes": 1682,
+          "payloadSha256": "6219dd12ea4117b7f65ce37cc50f833954b6d756315bb418e3a6ca3d11c9a4e7"
+        },
+        "https://xlayer.drpc.org": {
+          "fileInfo": {
+            "size": 1682,
+            "contentType": "text/html; charset=utf-8",
+            "sha256": "0x6219dd12ea4117b7f65ce37cc50f833954b6d756315bb418e3a6ca3d11c9a4e7",
+            "updatedAt": 1795633890,
+            "chunkCount": 1
+          },
+          "payloadBytes": 1682,
+          "payloadSha256": "6219dd12ea4117b7f65ce37cc50f833954b6d756315bb418e3a6ca3d11c9a4e7"
+        }
+      }
+    }
+  ]
+}

@@ -14,6 +14,11 @@
    so civicord is legible to web-archive researchers from day one.
 5. **Privacy-aware.** Candidate sites are personal data (GDPR). Publish derived
    text/diffs openly; keep raw HTML access-controlled.
+6. **Mirrors are publication surfaces, not canonical truth.** Any future
+   verifiable/export mirror must be versioned and append-only, carry its own
+   methodology and caveats, and remain optional to read. The audit pipeline,
+   source evidence, stable IDs and canonical citations remain the system of
+   reference; a mirror must never overwrite a cited snapshot in place.
 
 ## Data model (v1 + constituency/map + gateway — 2026-09-11)
 
@@ -174,8 +179,9 @@ endpoints humans use — there is no separate agent backend, no key, no mock.
   [cartography.md](cartography.md): halftone = `radial-gradient` SVG
   `<pattern>` + `mix-blend-mode: multiply` + `contrast()`, dot `r = 1.5 +
   (1-liveShare)*3.5px`, colour + size double-encoding for accessibility/print.
-  Inset = ONS BUC TopoJSON. See cartography §3 for the full static stack and
-  size budget (`34M` dist, `4342` files incl. 650 OG).
+  Inset = ONS BUC TopoJSON. See cartography §3 for the full static stack.
+  The exact file count grows with candidate reply/API routes; the architectural constraint is no Maps API
+  and no runtime backend, not a frozen byte budget.
 - **gateway** (static, 2026-09-11 — **LIVE**) — `openapi.yaml` (`frontend/public/openapi.yaml`) + Recipe (`gateway/recipe.md`) + static API routes
   `GET /api/constituencies`, `GET /api/constituencies/{slug}` (650 prerendered
   JSON, the x402/MPP pay-per-`?constituency=` unit `100`/`200` mcents),

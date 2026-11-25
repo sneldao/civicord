@@ -4,7 +4,7 @@ Civicord’s **north star** is a citable record of **what changed** on political
 campaign websites over time — deleted claims, redirected destinations,
 repurposed domains, message shifts — not only whether a URL still answers.
 
-The permanent register (ENS names, audit ledger, The Graph index) is the
+The public register (ENS names, audit ledger, The Graph index) is the
 **spine**. Without it, a change feed is just another disposable scrape. With it,
 every delta can point at a public name and an auditable fact.
 

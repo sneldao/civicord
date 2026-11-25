@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verify this Civicord bundle</title>
+<style>body{max-width:840px;margin:40px auto;padding:0 20px;font:17px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}pre{background:#f5f7f8;padding:14px;overflow:auto}</style>
+</head><body>
+<h1>Verify this Civicord bundle</h1>
+<p>Bundle version: <code>audit-2026-09-07-export-2026-11</code></p>
+<p>This directory is a static evidence bundle. Its files are useful only if the
+bytes match the hashes in <code>manifest.json</code> and, after publication, the
+SHA-256 values recorded by the X Layer <code>SiteRegistry</code>.</p>
+<h2>Local verification</h2>
+<pre>python scripts/tapeout/evidence_bundle.py verify /path/to/bundle --self-test</pre>
+<h2>Chain verification after publication</h2>
+<p>Run the read-only direct-chain verifier with the published container address:</p>
+<pre>python scripts/tapeout/verify_deweb.py /path/to/bundle \
+  --container &lt;container&gt; \
+  --prefix civicord/uk-2024-25/holborn-and-st-pancras/audit-2026-09-07-export-2026-11</pre>
+<p>It pins one block, requires agreement between independent RPC operators,
+checks the pinned <code>SiteRegistry</code> implementation, reads every file,
+and verifies byte length plus SHA-256. It fails closed on disagreement. A manual
+spot check can compare one file with:</p>
+<pre>cast call &lt;SiteRegistry&gt; 'fileInfo(address,string)(uint32,string,bytes32,uint40,uint256)' &lt;container&gt; &lt;path&gt; --rpc-url https://rpc.xlayer.tech</pre>
+</body></html>

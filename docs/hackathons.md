@@ -1,20 +1,68 @@
 # Hackathon entries
 
-Two entries we can make honestly, both open as of 2026-10-19. A third
-opportunity — a recurring grant program, not a prize — was assessed on
-2026-11-16; an app is built locally and not submitted (§3). A fourth — a
-real grant, the largest opportunity assessed — was added 2026-11-16 (§4).
-Dates and rule text below were read off the
-organiser's own pages on the stated dates, not from search snippets — the
-eligibility lines are quoted verbatim because they are the reasons we can
-enter at all.
+> **Current opportunity stack, 2026-11-25:** TapeOut Accelerate is the only open
+> build-focused timed hackathon under active consideration, and it is
+> conditional backup work — see
+> [tapeout-accelerate.md](tapeout-accelerate.md). The larger strategic
+> opportunity remains the NLnet grant in §4. Amazon's submission window has
+> passed; HackerNoon Round 2 remains open as a writing deadline; Anna remains
+> an uncommitted strategic question.
+> Separately — not a hackathon — Zapier Build Week's free-call window
+> (250 MCP calls/day until 5 Jan 2027) is a zero-cost prototype rail for the
+> journalist digest the outreach strategy needs: see
+> [zapier-build-week.md](zapier-build-week.md).
+
+Dates and rule text below were read off the organisers' own pages on the
+stated dates, not from search snippets — the eligibility lines are quoted
+verbatim because they are the reasons we can enter at all. Keep that
+distinction: a page being open to entries is not the same as a page being a
+good use of Civicord time.
 
 Everything else found in the same sweep is listed under "not entering" further
 down, with the one-line reason, so nobody has to re-research it.
 
+
 ---
 
-## 1. Build, Ship, Shape — Amazon Developer Hackathon
+## TapeOut Accelerate — open conditional backup (X Layer × OKX)
+
+Time-boxed competition, assessed and researched on 2026-11-25. Canonical
+strategy: [tapeout-accelerate.md](tapeout-accelerate.md).
+
+|| |
+|---|---|
+| Window | **16 Oct – 7 Dec 2026, 23:59 UTC**; internal working deadline **4 Dec** |
+| Prize pool | 100,000 USDT headline, community-sponsored and potentially staged/milestone-based |
+| Existing projects | Allowed, but only substantial work in the window is judged |
+| Fit | Conditional: a versioned **verifiable DeWEB mirror** of one small evidence cohort, not a canonical-registry migration and not a circuit-shaped gimmick |
+| Default cohort | Holborn and St Pancras (seven candidates, mixed outcomes, compact bundle) |
+| Status | **Published and direct-chain verified on 2026-11-25.** Holborn bundle is live at `tape://20.2.272.tape` / <https://20-2-272.tapekit.org/> under container `0xB078da6de46795656187052322Dda3A7E249C288`; all seven frozen files pass pinned-block verification against two RPC endpoints. Remaining work is deployment of the canonical-site verification panel, external comprehension test, video and submission. Concise evidence pack: [tapeout-submission.md](tapeout-submission.md); public verification guide: [deweb-mirror.md](deweb-mirror.md); internal runbook: [tapeout-operations.md](tapeout-operations.md) |
+
+The important correction from the research pass: DeWEB can provide a useful
+static, hash-checked publication mirror, but it does not justify unqualified
+“permanent archive” language. The current directory can be changed by the
+container holder, X Layer has a thin independent-RPC set, the TapeKit stack is
+young and unaudited, and gateway availability is not independent verification.
+Any bundle must therefore use append-only versioned paths as a publication
+policy, embed caveats and methodology, and be verified from chain state rather
+than merely through `tapekit.org`.
+
+The entry is allowed to continue only because it is creating reusable
+evidence-export and verification infrastructure. It must not displace outreach,
+take-the-pen, vantage close-out or NLnet. The new-work boundary is the exporter,
+mirror publication, verification UX and negative-proof tests — not the
+pre-existing audit pipeline, ledger, frontend, ENS registry or data. Actual
+publication spend was 0.08024877 OKB across 11 successful transactions; the
+full transaction inventory and verification report are in
+[tapeout-accelerate.md](tapeout-accelerate.md).
+
+---
+
+## 1. Build, Ship, Shape — Amazon Developer Hackathon — submission window closed
+
+This section is retained as the historical/build record. Its remaining
+checklist language is not current work unless the Devpost submission state
+explicitly requires post-deadline action.
 
 Sponsor: Amazon Developer. Administrator: Devpost. Online, global.
 <https://amazonappdev2026.devpost.com> · [rules](https://amazonappdev2026.devpost.com/rules)
@@ -359,9 +407,9 @@ no deploy. A re-audit means regenerating the snapshot and cutting a version.
 - 19 tests + 11 smoke checks, `anna-app validate --strict`, one run through
   the local dev harness. Uncommitted; nothing published or submitted.
 
-The verdict above stands on priority: third of three, and the AI-native
-question is unanswered. **Ask Anna staff on the forum whether closed-set
-routing counts as an AI-native core before spending a review round on it.**
+The verdict above stands on priority: third of three. The AI-native question
+has been posted but remains unanswered; do not spend a review round until
+Anna staff answer whether closed-set routing counts as an AI-native core.
 
 **Posted 2026-11-17** as topic 594 in Developers:
 <https://forum.anna.partners/t/review-criteria-question-does-closed-set-model-routing-count-as-an-ai-native-core/594>
@@ -413,10 +461,11 @@ One grant at the floor (€5k) exceeds the combined realistic cash EV of every
 entry on this page. The recurring deadline means a weak first attempt costs a
 re-application, not the opportunity.
 
-### Status, 2026-11-16
+### Status, 2026-11-25
 
-Assessed, not drafted. Before writing: pick the work package (vantage + claim
-flow + May-2027 election pass is one coherent "mature the commons" narrative),
+Working draft exists in [nlnet-ois.md](nlnet-ois.md); not submitted. Before
+submitting: pick the final work package (vantage + claim flow + May-2027
+election pass is one coherent "mature the commons" narrative),
 read 2–3 funded proposals in the same space for tone, and check whether
 applying as an individual vs. through Campaign Lab changes anything.
 
