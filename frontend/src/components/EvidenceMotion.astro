@@ -1,0 +1,15 @@
+---
+// Viewport-triggered evidence motion; see ../lib/evidence-motion.ts
+---
+<script>
+  import { initEvidenceMotion } from "../lib/evidence-motion";
+
+  let teardown: (() => void) | undefined;
+  const boot = () => {
+    teardown?.();
+    teardown = initEvidenceMotion();
+  };
+
+  document.addEventListener("astro:page-load", boot);
+  if (document.readyState !== "loading") boot();
+</script>

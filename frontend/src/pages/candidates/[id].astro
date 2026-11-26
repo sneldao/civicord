@@ -9,6 +9,8 @@ import WebMCP from "../../components/WebMCP.astro";
 import CorrectionRequest from "../../components/CorrectionRequest.astro";
 import ClaimRecord from "../../components/ClaimRecord.astro";
 import ClaimPairs from "../../components/ClaimPairs.astro";
+import RecordAutopsy from "../../components/RecordAutopsy.astro";
+import EvidenceMotion from "../../components/EvidenceMotion.astro";
 import ClientRecordScript from "../../components/ClientRecordScript.astro";
 import { ClientRouter } from "astro:transitions";
 import { partyLiveShare } from "../../lib/cohorts";
@@ -183,14 +185,11 @@ const personShareText =
       </ul>
     </header>
 
-    <div class="record-actions" aria-label="Use this record">
+    <div class="record-actions record-actions--primary" aria-label="Use this record">
       <button type="button" class="btn-primary" id="copy-citation" data-citation={candidateCitation(person)}>Copy citation</button>
       <a class="btn-ghost" href="#evidence">View evidence</a>
       {claimDiff && (claimDiff.deleted?.length > 0 || claimDiff.added?.length > 0) && <a class="btn-ghost" href="#claims">Before and after</a>}
       <a class="btn-ghost" href="#correction">Propose a correction</a>
-      <a class="btn-ghost" href="#claim">Is this your record? Claim it</a>
-      <a class="btn-ghost" href={`/candidates/${person.id}/reply`}>Reply if this is wrong</a>
-      <a class="btn-ghost" href="/journalists">More change stories ↗</a>
       <button
         type="button"
         class="btn-ghost follow-btn"
@@ -202,9 +201,17 @@ const personShareText =
         data-follow-summary={follow.summary}
         aria-pressed="false"
       >Follow</button>
-      <a class="btn-ghost" href="/steward#following">See what you follow</a>
-      {person.onchain && <a class="btn-ghost" href="#verification">Verify this record</a>}
-      <a class="btn-ghost" href="#agent-view">Query The Graph</a>
+      <details class="action-overflow">
+        <summary class="btn-ghost">More actions</summary>
+        <div class="action-overflow-menu" aria-label="Secondary record actions">
+          <a href="#claim">Is this your record? Claim it</a>
+          <a href={`/candidates/${person.id}/reply`}>Reply if this is wrong</a>
+          <a href="/journalists">More change stories ↗</a>
+          <a href="/steward#following">See what you follow</a>
+          {person.onchain && <a href="#verification">Verify this record</a>}
+          <a href="#agent-view">Query The Graph</a>
+        </div>
+      </details>
     </div>
     <p id="citation-status" class="muted" role="status" aria-live="polite"></p>
     <div id="citation-fallback" hidden>
@@ -217,10 +224,12 @@ const personShareText =
       <b>{verdictCopy[0]}</b> — {verdictCopy[1]}
     </p>
 
+    <RecordAutopsy person={person} />
+
     {compareAvg !== null && personShare !== null && compareParty && (
       <p class="compare-line">
         {compareParty}: <b>{Math.round(compareAvg * 100)}% responding</b> across the party ·
-        this candidate: <b>{personShareText}</b>.
+        this candidate: <b>{personShareText}</b>.{" "}
         <a href={`/browse?party=${encodeURIComponent(compareParty.toLowerCase())}`}>See the cohort ↗</a>
       </p>
     )}
@@ -484,6 +493,7 @@ const personShareText =
     <CommandPalette />
     <MobileEssentials />
     <ScrollReveal />
+    <EvidenceMotion />
     <WebMCP />
 
     <script>

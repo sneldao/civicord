@@ -122,36 +122,45 @@ For new evidence or corrections:
 
 ## Canonical-site deployment status
 
-Deployed on **2026-11-26 UTC** as Cloudflare Pages deployment `979b8859`;
+Redeployed on **2026-11-26 UTC** as Cloudflare Pages deployment `b20692a7`;
 production is <https://civicord.pages.dev>. The deployment was made from the
 locally rebuilt `frontend/dist` with:
 
 ```bash
 cd frontend
 npm run build
-env -u CLOUDFLARE_API_KEY -u CLOUDFLARE_ACCOUNT_ID -u CLOUDFLARE_BASE_URL \
+env -u CLOUDFLARE_API_KEY -u CLOUDFLARE_BASE_URL \
   npx wrangler pages deploy dist --project-name civicord --branch main
 ```
 
+This deployment carries the evidence-led UX redesign: homepage audit anatomy
+and research context, exact-hostname redirect fork, constituency evidence
+dossiers, candidate address autopsies and the compressed TapeOut verification
+panel. It supersedes `979b8859`, which carried the first mirror panel.
+
 Post-deploy verification passed after propagation:
 
-- `/` returned 200.
+- `/` returned 200 and contained the audit anatomy, independent research
+  context and exact-hostname redirect fork.
 - `/data/candidates.json` returned 200 and the expected multi-megabyte snapshot.
 - `/constituencies/st-ives/` rendered the St Ives page rather than the homepage
   fallback.
 - `/api/summary` returned 200 JSON.
-- `/api/corrections?all=1` returned 200 JSON; bare `/api/corrections` correctly
-  returns 400 `personId_required` without a query.
+- `/api/corrections?all=1` returned 200 JSON.
 - `/constituencies/holborn-and-st-pancras/` returned 200 and contained the
-  `tapeout-mirror` panel, mirror root, public verification-guide link,
-  append-only versioned publication-policy wording and manifest SHA-256
+  seat dossier, mutually exclusive response classes, compressed TapeOut proof
+  sequence, public verification-guide link, append-only publication-policy
+  wording and manifest SHA-256
   `2993bbce8d018be26a1664abcb586f5b034cbb6fd7732c4a17e056e877465901`.
-- Preview deployment <https://979b8859.civicord.pages.dev/constituencies/holborn-and-st-pancras/>
-  also returned 200.
+- `/candidates/55924` returned 200 and contained the candidate address autopsy
+  plus compressed “More actions” disclosure.
+- Preview deployment <https://b20692a7.civicord.pages.dev/> returned 200.
 
 ## Remaining submission gates
 
+- Owner review/approval of the rendered v4 demo video.
+- Publish/upload the approved video and insert its public URL in
+  [tapeout-submission.md](tapeout-submission.md).
 - Run one unguided external comprehension test.
-- Record the ≤3 minute demo video and insert its public URL.
-- Submit the Google Form by the internal deadline, 2026-12-04. The form
-  currently requires the owner's Google sign-in.
+- Submit the Google Form by the internal deadline, 2026-12-04; final
+  submission requires the owner's Google sign-in.

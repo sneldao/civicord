@@ -1,0 +1,63 @@
+---
+interface Props {
+  context?: "problem" | "opportunity";
+  compact?: boolean;
+}
+
+const { context = "problem", compact = false } = Astro.props;
+
+const problem = [
+  {
+    stat: "25%",
+    label: "of webpages from 2013–23 were inaccessible by October 2023",
+    source: "Pew Research Center",
+    href: "https://www.pewresearch.org/data-labs/2024/05/17/when-online-content-disappears",
+  },
+  {
+    stat: "21%",
+    label: "of government webpages carry at least one broken link",
+    source: "Pew Research Center",
+    href: "https://www.pewresearch.org/data-labs/2024/05/17/when-online-content-disappears",
+  },
+  {
+    stat: "highly ephemeral",
+    label: "campaign sites disappear after elections — local candidates are especially exposed",
+    source: "ALA DttP",
+    href: "https://journals.ala.org/index.php/dttp/article/view/7685",
+  },
+];
+
+const opportunity = [
+  {
+    stat: "2bn",
+    label: "people were eligible to vote across 60+ countries in 2024",
+    source: "Oxford Internet Institute",
+    href: "https://www.oii.ox.ac.uk/introducing-the-2024-oii-elections-initiative",
+  },
+  {
+    stat: "2,253",
+    label: "UK election-related websites were archived by legal-deposit library partners in 2024",
+    source: "IIPC / British Library partners",
+    href: "https://netpreserve.org/ga2025/abstracts",
+  },
+];
+
+const items = context === "opportunity" ? opportunity : problem;
+const title = context === "opportunity" ? "The recurring public-interest gap" : "Independent evidence that this is not hypothetical";
+---
+
+<aside class:list={["evidence-context", compact && "evidence-context--compact"]} aria-label="External research context">
+  <div class="evidence-context-head">
+    <p class="evidence-kicker">Research context</p>
+    <h2>{title}</h2>
+  </div>
+  <div class="evidence-context-grid">
+    {items.map((item) => (
+      <a class="evidence-fact" href={item.href} rel="noopener noreferrer">
+        <b>{item.stat}</b>
+        <span>{item.label}</span>
+        <small>{item.source} ↗</small>
+      </a>
+    ))}
+  </div>
+</aside>

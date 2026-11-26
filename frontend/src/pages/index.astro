@@ -2,6 +2,8 @@
 import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import CommandPalette from "../components/CommandPalette.astro";
+import EvidenceContext from "../components/EvidenceContext.astro";
+import EvidenceMotion from "../components/EvidenceMotion.astro";
 import HexThumb from "../components/HexThumb.astro";
 import MobileEssentials from "../components/MobileEssentials.astro";
 import ScrollReveal from "../components/ScrollReveal.astro";
@@ -38,7 +40,26 @@ const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
 const GONE_CLASSES = ["dns_error", "connection_error"];
 const gone = audited.filter((w) => GONE_CLASSES.includes(w.audit?.statusClass ?? ""));
 const livePct = audited.length ? pct(live.length, audited.length) : 0;
+const liveWithoutRedirect = audited.filter((w) => w.audit?.statusClass === "live" && !w.audit.redirected);
+const otherAuditOutcomes = Math.max(0, audited.length - liveWithoutRedirect.length - gone.length - redirected.length);
 const randomIds = candidates.map((c) => c.id);
+const hostnameOf = (value: string) => {
+  try {
+    return new URL(value).hostname.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return "";
+  }
+};
+const redirectFork = redirected.reduce(
+  (acc, site) => {
+    const before = hostnameOf(site.url);
+    const after = hostnameOf(site.audit?.finalUrl ?? "");
+    if (before && before === after) acc.sameHost += 1;
+    else acc.differentHost += 1;
+    return acc;
+  },
+  { sameHost: 0, differentHost: 0 }
+);
 
 const lead = pickLeadWalkback(claimDiffsRaw as { byPerson?: Record<string, any> }, candidates);
 const leadChecked = lead?.checkedAt && /^\d{4}-\d{2}-\d{2}$/.test(lead.checkedAt)
@@ -80,20 +101,41 @@ const scopeText = structural && lead?.afterText
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="progress" aria-hidden="true"><b id="progress-bar"></b></div>
 
-    <header class="masthead door-masthead">
-      <h1 class="wordmark">Civicord<span class="dot">.</span></h1>
-      <p class="lede door-lede">
-        Campaign websites go quiet after the election. We keep what they said —
-        and what disappeared.
-      </p>
-      <p class="tagline door-support muted">
-        Free to read, openly licensed, every claim sourced. The UK is the first dataset.
-      </p>
+    <header class="door-hero">
+      <div class="masthead door-masthead">
+        <h1 class="wordmark">Civicord<span class="dot">.</span></h1>
+        <p class="lede door-lede">
+          Campaign websites go quiet after the election. We keep what they said —
+          and what disappeared.
+        </p>
+        <p class="tagline door-support muted">
+          Free to read, openly licensed, every claim sourced. The UK is the first dataset.
+        </p>
+        <div class="door-cta" role="group" aria-label="Start with the record">
+          <a class="btn-primary" href="#walkback-lead">See one disappearance</a>
+          <a class="btn-ghost" href="/browse">Open the ledger</a>
+        </div>
+      </div>
+      <aside class="hero-instrument" aria-label="Audit at a glance" data-motion-evidence>
+        <p class="instrument-kicker">September 2026 audit</p>
+        <div class="instrument-main">
+          <b><span data-count-to={livePct} data-count-label={`${livePct}%`}>{livePct}%</span></b>
+          <span>of audited URLs returned a successful HTTP response</span>
+        </div>
+        <div class="instrument-meter" aria-hidden="true">
+          <span style={`--final-w:${livePct}%`}></span>
+        </div>
+        <div class="instrument-grid">
+          <div><b data-count-to={gone.length} data-count-label={gone.length.toLocaleString("en-GB")}>{gone.length.toLocaleString("en-GB")}</b><span>unreachable</span></div>
+          <div><b data-count-to={redirected.length} data-count-label={redirected.length.toLocaleString("en-GB")}>{redirected.length.toLocaleString("en-GB")}</b><span>redirected</span></div>
+        </div>
+        <p class="instrument-note">A response is not proof that campaign content survived.</p>
+      </aside>
     </header>
 
     <main id="main" tabindex="-1">
       {lead ? (
-        <article class="exhibit" id="walkback-lead" aria-labelledby="exhibit-kicker" data-reveal>
+        <article class="exhibit" id="walkback-lead" aria-labelledby="exhibit-kicker" data-reveal data-motion-evidence>
           <p class="exhibit-kicker" id="exhibit-kicker">
             <span class="exhibit-stamp">Exhibit</span>
             {fateKicker[lead.fate]} · April 2025 → September 2026
@@ -151,18 +193,62 @@ const scopeText = structural && lead?.afterText
         </div>
       </section>
 
-      <section class="stats" aria-label="Audit summary" data-reveal>
-        <div class="stat"><b>{candidates.length.toLocaleString("en-GB")}</b><span>Candidates</span></div>
-        <div class="stat"><b>{seatsWithSites}</b><span>of {seatsTotal} seats have sites</span></div>
-        <div class="stat"><b>{audited.length ? pct(live.length, audited.length) : "—"}%</b><span>URLs responding</span></div>
-        <div class="stat"><b>{gone.length.toLocaleString("en-GB")}</b><span>DNS / connection failures</span></div>
-        <div class="stat"><b>{redirected.length.toLocaleString("en-GB")}</b><span>Redirect elsewhere</span></div>
+      <section class="audit-anatomy" aria-labelledby="audit-anatomy-title" data-reveal data-motion-evidence>
+        <div class="anatomy-head">
+          <p class="evidence-kicker">The audit, made legible</p>
+          <h2 id="audit-anatomy-title">2,375 campaign addresses. Four technical classes.</h2>
+          <p>
+            These are observations from one audit pass, not verdicts about intent. For readability each URL is assigned once:
+            redirects first, then failures, unredirected responses and other HTTP outcomes.
+          </p>
+        </div>
+        <div class="anatomy-ledger" role="list" aria-label="Audit outcome counts">
+          <div class="anatomy-row is-live" role="listitem">
+            <b data-count-to={liveWithoutRedirect.length} data-count-label={liveWithoutRedirect.length.toLocaleString("en-GB")}>{liveWithoutRedirect.length.toLocaleString("en-GB")}</b>
+            <span>responding, no redirect</span>
+            <i style={`--w:${pct(liveWithoutRedirect.length, audited.length)}%`} aria-hidden="true"></i>
+          </div>
+          <div class="anatomy-row is-gone" role="listitem">
+            <b data-count-to={gone.length} data-count-label={gone.length.toLocaleString("en-GB")}>{gone.length.toLocaleString("en-GB")}</b>
+            <span>DNS or connection failures</span>
+            <i style={`--w:${pct(gone.length, audited.length)}%`} aria-hidden="true"></i>
+          </div>
+          <div class="anatomy-row is-redirected" role="listitem">
+            <b data-count-to={redirected.length} data-count-label={redirected.length.toLocaleString("en-GB")}>{redirected.length.toLocaleString("en-GB")}</b>
+            <span>redirected URLs</span>
+            <i style={`--w:${pct(redirected.length, audited.length)}%`} aria-hidden="true"></i>
+          </div>
+          <div class="anatomy-row is-other" role="listitem">
+            <b data-count-to={otherAuditOutcomes} data-count-label={otherAuditOutcomes.toLocaleString("en-GB")}>{otherAuditOutcomes.toLocaleString("en-GB")}</b>
+            <span>other HTTP outcomes</span>
+            <i style={`--w:${pct(otherAuditOutcomes, audited.length)}%`} aria-hidden="true"></i>
+          </div>
+        </div>
+        <div class="redirect-fork" aria-label="Redirect fork by exact hostname">
+          <div class="fork-origin">
+            <b data-count-to={redirected.length} data-count-label={redirected.length.toLocaleString("en-GB")}>{redirected.length.toLocaleString("en-GB")}</b>
+            <span>redirects observed</span>
+          </div>
+          <svg class="fork-lines" viewBox="0 0 240 132" aria-hidden="true" focusable="false">
+            <path class="fork-path" d="M8 66 C72 66 82 24 150 24" />
+            <path class="fork-path fork-path--diff" d="M8 66 C72 66 82 108 150 108" />
+          </svg>
+          <div class="fork-branch fork-branch--same">
+            <b data-count-to={redirectFork.sameHost} data-count-label={redirectFork.sameHost.toLocaleString("en-GB")}>{redirectFork.sameHost.toLocaleString("en-GB")}</b>
+            <span>same hostname</span>
+          </div>
+          <div class="fork-branch fork-branch--diff">
+            <b data-count-to={redirectFork.differentHost} data-count-label={redirectFork.differentHost.toLocaleString("en-GB")}>{redirectFork.differentHost.toLocaleString("en-GB")}</b>
+            <span>different hostname</span>
+          </div>
+        </div>
+        <p class="fork-caveat">
+          Exact-hostname comparison: {redirectFork.sameHost.toLocaleString("en-GB")} redirects stayed on the same host;{" "}
+          {redirectFork.differentHost.toLocaleString("en-GB")} ended on a different host. Neither branch proves what the content now says.
+        </p>
       </section>
-      <p class="decay-line" aria-label="Decay over time" data-reveal>
-        <span class="decay-when"><b>April 2025</b></span>
-        <span class="decay-arrow" aria-hidden="true">→</span>
-        <span class="decay-when"><b>September 2026</b> — <b class="decay-now">{livePct}%</b> responding</span>
-      </p>
+
+      <EvidenceContext />
 
       <ul class="good-strip door-strip" data-reveal>
         <li><b>Public good</b><span>free to read, tamper-evident</span></li>
@@ -192,7 +278,7 @@ const scopeText = structural && lead?.afterText
           <a class="feature-card" href="/browse?change=repurposed_suspect">
             <span class="f-label">For researchers</span>
             <h3>Longitudinal, stable, citable</h3>
-            <span class="f-meta">2,375 candidate records keyed on Democracy Club IDs, filterable by outcome, party and place. Copy citation on every record.</span>
+            <span class="f-meta">2,375 candidate records keyed on stable IDs, filterable by outcome, party and place. Copy citation on every record.</span>
             <span class="f-cta">Enter the ledger →</span>
           </a>
         </div>
@@ -200,6 +286,10 @@ const scopeText = structural && lead?.afterText
           Also: <a href="/methodology#verified">what is verified, and what is not</a> · <a href="/steward">roster digest</a> · <a href="/journalists">journalist leads</a>
         </p>
       </section>
+
+      <div data-reveal>
+        <EvidenceContext context="opportunity" compact />
+      </div>
 
       <section class="future door-regions" id="regions" aria-label="Regions" data-reveal>
         <h2>Built for one election. Designed for any.</h2>
@@ -296,6 +386,7 @@ const scopeText = structural && lead?.afterText
     <CommandPalette />
     <MobileEssentials />
     <ScrollReveal />
+    <EvidenceMotion />
     <WebMCP />
   </body>
 </html>

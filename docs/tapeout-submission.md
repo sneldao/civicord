@@ -1,6 +1,6 @@
 # TapeOut Accelerate — submission evidence pack
 
-> Working copy updated **2026-11-26 UTC** after canonical-site deployment.
+> Working copy updated **2026-11-26 UTC** after the evidence-led canonical-site deployment.
 > Strategy, caveats and
 > full research context: [tapeout-accelerate.md](tapeout-accelerate.md). Public
 > verifier documentation: [deweb-mirror.md](deweb-mirror.md). Internal operator
@@ -21,7 +21,7 @@
 | Canonical Civicord cohort | <https://civicord.pages.dev/constituencies/holborn-and-st-pancras> |
 | Repository | <https://github.com/sneldao/civicord> |
 | Public verification guide | <https://github.com/sneldao/civicord/blob/main/docs/deweb-mirror.md> |
-| Demo video | `[insert public video URL]` |
+| Demo video | `[insert public video URL]` — local v4 master rendered; owner review + public upload pending |
 | Official submission form | <https://forms.gle/EoDNbxQ65dev1wFd9> |
 
 The gateway is a reading convenience. The stronger evidence is the frozen
@@ -100,12 +100,15 @@ RPCs returned root `index.html` bytes exactly matching the frozen versioned
 index at pinned block `76865195`. Raw `curl` is not a valid render
 check because the first gateway response can be the Service Worker bootstrap.
 
-Canonical-site evidence: Cloudflare Pages deployment `979b8859` is live.
+Canonical-site evidence: Cloudflare Pages deployment `b20692a7` is live.
 After propagation, `/constituencies/holborn-and-st-pancras/` returned 200 and
-contained the mirror panel, mirror root, public verification-guide link,
+contained the redesigned seat dossier, mutually exclusive response classes,
+compressed TapeOut verification sequence, public verification-guide link,
 append-only versioned publication-policy wording and frozen manifest SHA-256.
-The site root, data snapshot, St Ives constituency page, summary API and public
-corrections-queue read also returned expected responses.
+The homepage contained the audit anatomy, research context and exact-hostname
+redirect fork; a candidate page contained the new address autopsy. The data
+snapshot, St Ives constituency page, summary API and public corrections-queue
+read also returned expected responses.
 
 Negative proof: the ordinary bundle verifier's self-test alters bundle bytes,
 removes methodology material, uses a wrong schema and removes caveat language;
@@ -204,8 +207,9 @@ validation circuit is claimed.
 
 ## Remaining before submission
 
+- Owner review/approval of the rendered v4 demo video.
+- Publish/upload the approved video and insert its public URL above.
 - Run one unguided external comprehension test with a journalist, researcher or
   transparency-minded tester; record confusion and fix only comprehension.
-- Record the demo video and insert its public URL above.
 - Re-read the official form/rule text immediately before submission. The Google Form currently requires Google sign-in, so final submission is an owner action.
 - Submit by the internal deadline **2026-12-04**, not the final Dec 7 deadline.

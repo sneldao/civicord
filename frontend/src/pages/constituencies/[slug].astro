@@ -8,6 +8,7 @@ import ClientRecordScript from "../../components/ClientRecordScript.astro";
 import MobileEssentials from "../../components/MobileEssentials.astro";
 import TapeoutMirror from "../../components/TapeoutMirror.astro";
 import ScrollReveal from "../../components/ScrollReveal.astro";
+import EvidenceMotion from "../../components/EvidenceMotion.astro";
 import { RECORD_ORIGIN, statusLabels } from "../../lib/record-copy";
 import {
   seatFollowRecord,
@@ -51,6 +52,9 @@ const verdictCopy: Record<string, [string,string]> = {
   gone: ["Low response rate", "The rounded HTTP response rate at the audit was below 40%. Technical failures do not establish permanent removal."],
 };
 const shareLine = c.stats.sites ? `${c.stats.live} of ${c.stats.sites} sites responding (${c.stats.livePct}%) · ${c.stats.gone} unreachable · ${c.stats.redirected} redirected` : "no sites to show";
+const liveWithoutRedirect = (c.candidates ?? []).filter((cand: any) => cand.statusClass === "live" && !cand.redirected).length;
+const otherOutcomes = Math.max(0, c.stats.sites - liveWithoutRedirect - c.stats.gone - c.stats.redirected);
+const statusWidth = (n: number) => (c.stats.sites ? (n / c.stats.sites) * 100 : 0);
 
 function thumbFills(livePct: number) {
   if (livePct >= 66) return "var(--live)";
@@ -110,14 +114,34 @@ const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
       </ul>
     </header>
 
-    <p class={`verdict v-${verdict === 'empty' ? 'unknown' : verdict === 'gone' ? 'gone' : verdict === 'live' ? 'live' : 'mixed'}`} role="status">
-      <b>{verdictCopy[verdict][0]}</b> — {verdictCopy[verdict][1]} <span class="muted">{shareLine}</span>
-    </p>
+    <section class="seat-dossier" aria-labelledby="seat-dossier-title" data-motion-evidence>
+      <div class="seat-dossier-copy">
+        <p class="evidence-kicker">Seat dossier</p>
+        <h2 id="seat-dossier-title">{verdictCopy[verdict][0]}</h2>
+        <p>{verdictCopy[verdict][1]}</p>
+        <p class="seat-dossier-line">{shareLine}</p>
+      </div>
+      <div class="seat-status-instrument" aria-label="Response distribution for this seat">
+        <div class="seat-status-bar" aria-hidden="true">
+          <span class="seg-live" style={`--w:${statusWidth(liveWithoutRedirect)}%`}></span>
+          <span class="seg-gone" style={`--w:${statusWidth(c.stats.gone)}%`}></span>
+          <span class="seg-redirected" style={`--w:${statusWidth(c.stats.redirected)}%`}></span>
+          <span class="seg-other" style={`--w:${statusWidth(otherOutcomes)}%`}></span>
+        </div>
+        <div class="seat-status-counts">
+          <div><b data-count-to={liveWithoutRedirect} data-count-label={String(liveWithoutRedirect)}>{liveWithoutRedirect}</b><span>responding, no redirect</span></div>
+          <div><b data-count-to={c.stats.gone} data-count-label={String(c.stats.gone)}>{c.stats.gone}</b><span>unreachable</span></div>
+          <div><b data-count-to={c.stats.redirected} data-count-label={String(c.stats.redirected)}>{c.stats.redirected}</b><span>redirected</span></div>
+          <div><b data-count-to={otherOutcomes} data-count-label={String(otherOutcomes)}>{otherOutcomes}</b><span>other, no redirect</span></div>
+        </div>
+        <p>Each URL is assigned once for readability. Technical classes only — response success does not prove campaign content survived.</p>
+      </div>
+    </section>
 
     <section class="seat-story-wrap" aria-labelledby="seat-story-title">
       <h2 id="seat-story-title">What happened here</h2>
       <ol class="seat-story">
-        {timeline.beats.map((beat) => (
+        {timeline.beats.slice(0, 2).map((beat) => (
           <li>
             <time datetime={beat.datetime}>{beat.when}</time>
             <h3>{beat.heading}</h3>
@@ -136,6 +160,31 @@ const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
           </li>
         ))}
       </ol>
+      {timeline.beats.length > 2 && (
+        <details class="seat-story-more">
+          <summary>Open the full seat chronology — {timeline.beats.length - 2} more beats</summary>
+          <ol class="seat-story">
+            {timeline.beats.slice(2).map((beat) => (
+              <li>
+                <time datetime={beat.datetime}>{beat.when}</time>
+                <h3>{beat.heading}</h3>
+                <p>{beat.body}</p>
+                {beat.items.length > 0 && (
+                  <ul>
+                    {beat.items.map((item) => (
+                      <li class={`story-${item.tone}`}>
+                        <a href={item.href}>{item.name}</a>
+                        <span> — {item.detail}</span>
+                        {item.externalHref && <> · <a href={item.externalHref} rel="noopener noreferrer">{item.externalLabel ?? "Open the archive"}</a></>}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ol>
+        </details>
+      )}
       {timeline.footnote && <p class="muted pair-gap">{timeline.footnote}</p>}
     </section>
 
@@ -169,8 +218,6 @@ const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
       </div>
     )}
 
-    {c.slug === "holborn-and-st-pancras" && <TapeoutMirror />}
-
     <section class="entries">
       <h2>Candidates in this seat</h2>
       {c.stats.sites === 0 ? (
@@ -197,6 +244,8 @@ const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
         ))
       )}
     </section>
+
+    {c.slug === "holborn-and-st-pancras" && <TapeoutMirror />}
 
     <div class="browse-actions" style="margin-top:1.2rem">
       <a class="btn-primary" href={`/browse?constituency=${c.slug}`}>Open filtered ledger — {c.stats.sites} sites ↗</a>
@@ -237,5 +286,6 @@ const samplePersonId = String(c.candidates?.[0]?.id ?? "5693");
     <CommandPalette />
     <MobileEssentials />
     <ScrollReveal />
+    <EvidenceMotion />
   </body>
 </html>

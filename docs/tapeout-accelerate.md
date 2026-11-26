@@ -502,10 +502,13 @@ deadline is Dec 4.
 Days 1–3 are complete: the cohort passed review, the exporter/verifier exist,
 publication is live, direct-chain verification passes and the browser renders
 both the root entry URL and canonical versioned URL. Day 4 is complete:
-Cloudflare Pages deployment `979b8859` is live on the canonical site, and the
-Holborn cohort page publicly links to the mirror, verification guide and
-manifest hash. The remaining gates are one external comprehension test, the
-demo video and submission. Do not add scope. The concise evidence pack is [tapeout-submission.md](tapeout-submission.md).
+Cloudflare Pages deployment `b20692a7` is live on the canonical site. The
+Holborn cohort page now presents the mirror through a compressed verification
+sequence and publicly links to the verification guide and manifest hash; the
+homepage, constituency dossiers and candidate records have the evidence-led UX
+redesign. The v4 demo master is rendered locally, but still needs owner review
+and public upload. The remaining gates are video approval/publication, one
+external comprehension test and submission. Do not add scope. The concise evidence pack is [tapeout-submission.md](tapeout-submission.md).
 
 ### Day 1 — technical and cohort go/no-go
 
@@ -600,8 +603,9 @@ Enter Civicord only if all are true by **Dec 2**. Status on 2026-11-26 UTC:
 3. **Passed** — a clean browser opened it, and the direct-chain verifier
    checked all seven frozen files, not merely one hash.
 4. **Passed** — the local manifest verifier rejects malformed bundles.
-5. **In progress** — the paste-ready answers exist, but the video and final
-   submission have not yet been produced.
+5. **In progress** — the paste-ready answers exist and the v4 video master is
+   rendered locally, but owner approval, public upload and final submission
+   remain open.
 6. **Passed so far** — the exporter, publication planner and verifier are
    reusable evidence-export infrastructure; do not expand them into a
    competition-only product shell.

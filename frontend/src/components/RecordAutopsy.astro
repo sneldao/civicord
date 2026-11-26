@@ -1,0 +1,82 @@
+---
+import { AUDIT_DATE, statusLabels } from "../lib/record-copy";
+
+const { person } = Astro.props;
+const site = person.websites?.[0];
+const audit = site?.audit;
+const status = audit?.statusClass ?? "unknown";
+const statusLabel = audit ? (statusLabels[status] ?? status) : "Not audited";
+const change = site?.changeSignal ?? "unaudited";
+const isGone = ["dns_error", "connection_error"].includes(status);
+const isLive = status === "live";
+const isRedirected = audit?.redirected === true;
+const tone = isGone ? "gone" : isLive ? "live" : isRedirected ? "redirected" : status === "http_error" ? "error" : "unknown";
+const nameSignal = audit?.nameFound === true
+  ? "surname found"
+  : audit?.nameFound === false
+    ? "surname absent"
+    : "not assessed";
+const meaning = isGone
+  ? "The address did not answer in this audit pass. Temporary failure and permanent removal look the same here."
+  : isRedirected
+    ? "The audit followed a redirect. The destination may be a legitimate move, an official profile, or an unrelated use."
+    : isLive
+      ? "The server answered successfully. That alone does not prove campaign content survived."
+      : status === "http_error"
+        ? "The server returned an HTTP error. Blocking, misconfiguration and removal are not distinguished by this signal."
+        : "There is not enough evidence in this snapshot to classify the current state.";
+---
+
+{site && (
+  <section class={`record-autopsy autopsy-${tone}`} aria-labelledby="record-autopsy-title" data-motion-evidence>
+    <div class="autopsy-head">
+      <p class="evidence-kicker">Address autopsy</p>
+      <h2 id="record-autopsy-title">What happened to the campaign address?</h2>
+      <p>{meaning}</p>
+    </div>
+
+    <div class="autopsy-flow" aria-label="Audit evidence sequence">
+      <article class="autopsy-node autopsy-node--source">
+        <span>April 2025</span>
+        <b>Campaign address recorded</b>
+        <a href={site.url} rel="noopener noreferrer">{site.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}</a>
+      </article>
+
+      <svg class="autopsy-connector" viewBox="0 0 120 44" aria-hidden="true" focusable="false">
+        <path class="autopsy-path" d="M4 22 C35 22 55 22 108 22" />
+        <path class="autopsy-arrowhead" d="M104 15 L116 22 L104 29" />
+      </svg>
+
+      <article class={`autopsy-node autopsy-node--audit tone-${tone}`}>
+        <span>{AUDIT_DATE}</span>
+        <b>{statusLabel}</b>
+        <small>{audit?.statusCode ? `HTTP ${audit.statusCode}` : change.replaceAll("_", " ")}</small>
+      </article>
+
+      <svg class="autopsy-connector" viewBox="0 0 120 44" aria-hidden="true" focusable="false">
+        <path class="autopsy-path" d="M4 22 C35 22 55 22 108 22" />
+        <path class="autopsy-arrowhead" d="M104 15 L116 22 L104 29" />
+      </svg>
+
+      <article class="autopsy-node autopsy-node--signal">
+        <span>Evidence signal</span>
+        <b>{nameSignal}</b>
+        {isRedirected && audit?.finalUrl ? (
+          <small>destination: {audit.finalUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")}</small>
+        ) : (
+          <small>heuristic only — not proof of intent</small>
+        )}
+      </article>
+    </div>
+
+    <details class="autopsy-caveats">
+      <summary>What this does and does not prove</summary>
+      <ul>
+        <li>It proves what the audit observed for this URL on that date.</li>
+        <li>It does not prove why the response changed, who changed it, or whether the change was deliberate.</li>
+        <li>The candidate-name signal is a surname heuristic and can be wrong on party, council or shared sites.</li>
+        {person.websites.length > 1 && <li>This person has {person.websites.length} recorded websites; the full list below carries the per-URL detail.</li>}
+      </ul>
+    </details>
+  </section>
+)}

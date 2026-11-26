@@ -25,6 +25,10 @@ methodology are unchanged. Public verification guide:
 [docs/deweb-mirror.md](docs/deweb-mirror.md); operator runbook:
 [docs/tapeout-operations.md](docs/tapeout-operations.md). The canonical cohort
 page now publicly links to the mirror, verification guide and manifest hash.
+The canonical site has also been redeployed (`b20692a7`) with the evidence-led
+UX redesign: audit anatomy and research context on the homepage, constituency
+evidence dossiers, candidate address autopsies and a compressed TapeOut
+verification sequence.
 
 **2026-11-16 · Two-stage audit lands; review queue gains decisions.** `civicord
 audit --status <class>` re-checks filtered rows (residential vantage for
