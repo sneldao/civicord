@@ -1,6 +1,7 @@
 # TapeOut Accelerate — submission evidence pack
 
-> Working copy updated **2026-11-25** after publication. Strategy, caveats and
+> Working copy updated **2026-11-26 UTC** after canonical-site deployment.
+> Strategy, caveats and
 > full research context: [tapeout-accelerate.md](tapeout-accelerate.md). Public
 > verifier documentation: [deweb-mirror.md](deweb-mirror.md). Internal operator
 > runbook: [tapeout-operations.md](tapeout-operations.md). This file is the
@@ -99,6 +100,13 @@ RPCs returned root `index.html` bytes exactly matching the frozen versioned
 index at pinned block `76865195`. Raw `curl` is not a valid render
 check because the first gateway response can be the Service Worker bootstrap.
 
+Canonical-site evidence: Cloudflare Pages deployment `979b8859` is live.
+After propagation, `/constituencies/holborn-and-st-pancras/` returned 200 and
+contained the mirror panel, mirror root, public verification-guide link,
+append-only versioned publication-policy wording and frozen manifest SHA-256.
+The site root, data snapshot, St Ives constituency page, summary API and public
+corrections-queue read also returned expected responses.
+
 Negative proof: the ordinary bundle verifier's self-test alters bundle bytes,
 removes methodology material, uses a wrong schema and removes caveat language;
 each malformed case fails closed. Unit tests pass 2/2 and Ruff passes.
@@ -196,9 +204,6 @@ validation circuit is claimed.
 
 ## Remaining before submission
 
-- Deploy the canonical-site verification panel so
-  <https://civicord.pages.dev/constituencies/holborn-and-st-pancras> publicly
-  links to the mirror. It is implemented locally and build/browser verified.
 - Run one unguided external comprehension test with a journalist, researcher or
   transparency-minded tester; record confusion and fix only comprehension.
 - Record the demo video and insert its public URL above.

@@ -122,10 +122,9 @@ For new evidence or corrections:
 
 ## Canonical-site deployment status
 
-`frontend/src/components/TapeoutMirror.astro` is implemented and locally
-build/browser verified, but the public Cloudflare Pages site has not yet been
-redeployed with it. Deploying is a public action and needs explicit owner
-approval. When approved, follow [ops.md](ops.md#deploying-the-frontend):
+Deployed on **2026-11-26 UTC** as Cloudflare Pages deployment `979b8859`;
+production is <https://civicord.pages.dev>. The deployment was made from the
+locally rebuilt `frontend/dist` with:
 
 ```bash
 cd frontend
@@ -134,12 +133,24 @@ env -u CLOUDFLARE_API_KEY -u CLOUDFLARE_ACCOUNT_ID -u CLOUDFLARE_BASE_URL \
   npx wrangler pages deploy dist --project-name civicord --branch main
 ```
 
-After deploy, verify the live cohort page contains the mirror panel and the
-manifest hash, then update this section and `docs/tapeout-submission.md`.
+Post-deploy verification passed after propagation:
+
+- `/` returned 200.
+- `/data/candidates.json` returned 200 and the expected multi-megabyte snapshot.
+- `/constituencies/st-ives/` rendered the St Ives page rather than the homepage
+  fallback.
+- `/api/summary` returned 200 JSON.
+- `/api/corrections?all=1` returned 200 JSON; bare `/api/corrections` correctly
+  returns 400 `personId_required` without a query.
+- `/constituencies/holborn-and-st-pancras/` returned 200 and contained the
+  `tapeout-mirror` panel, mirror root, public verification-guide link,
+  append-only versioned publication-policy wording and manifest SHA-256
+  `2993bbce8d018be26a1664abcb586f5b034cbb6fd7732c4a17e056e877465901`.
+- Preview deployment <https://979b8859.civicord.pages.dev/constituencies/holborn-and-st-pancras/>
+  also returned 200.
 
 ## Remaining submission gates
 
-- Deploy the canonical-site mirror panel.
 - Run one unguided external comprehension test.
 - Record the ≤3 minute demo video and insert its public URL.
 - Submit the Google Form by the internal deadline, 2026-12-04. The form

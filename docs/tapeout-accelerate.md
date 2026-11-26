@@ -497,14 +497,15 @@ verification report: `data/out/deweb/verification/audit-2026-09-07-export-2026-1
 
 ## Execution plan and current status
 
-This is a hard time-box. Today is 2026-11-25; the internal deadline is Dec 4.
+This is a hard time-box. The entry was activated on 2026-11-25; the internal
+deadline is Dec 4.
 Days 1–3 are complete: the cohort passed review, the exporter/verifier exist,
 publication is live, direct-chain verification passes and the browser renders
-both the root entry URL and canonical versioned URL. Day 4 is implemented
-locally and build/browser verified, but still needs deployment before the
-canonical public site links to the mirror. The remaining gates are deployment,
-one external comprehension test, the demo video and submission. Do not add
-scope. The concise evidence pack is [tapeout-submission.md](tapeout-submission.md).
+both the root entry URL and canonical versioned URL. Day 4 is complete:
+Cloudflare Pages deployment `979b8859` is live on the canonical site, and the
+Holborn cohort page publicly links to the mirror, verification guide and
+manifest hash. The remaining gates are one external comprehension test, the
+demo video and submission. Do not add scope. The concise evidence pack is [tapeout-submission.md](tapeout-submission.md).
 
 ### Day 1 — technical and cohort go/no-go
 
@@ -591,7 +592,7 @@ scope. The concise evidence pack is [tapeout-submission.md](tapeout-submission.m
 
 ## Decision rule
 
-Enter Civicord only if all are true by **Dec 2**. Status on 2026-11-25:
+Enter Civicord only if all are true by **Dec 2**. Status on 2026-11-26 UTC:
 
 1. **Passed** — a meaningful versioned bundle is live on X Layer DeWEB.
 2. **Passed** — the bundle embeds methodology, licences and caveat language

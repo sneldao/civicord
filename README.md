@@ -16,15 +16,15 @@ web-monitoring and the Library of Congress's Elections Web Archive — see
 
 ## Status
 
-**2026-11-25 · X Layer DeWEB mirror published and verified.** A bounded
+**2026-11-26 UTC · X Layer DeWEB mirror published, verified and linked.** A bounded
 seven-candidate Holborn and St Pancras evidence bundle is live as a versioned
 publication mirror at `tape://20.2.272.tape` /
 <https://20-2-272.tapekit.org/>. Direct-chain verification passed for all seven
 frozen files at pinned block `76865195`; the canonical Civicord record and its
 methodology are unchanged. Public verification guide:
 [docs/deweb-mirror.md](docs/deweb-mirror.md); operator runbook:
-[docs/tapeout-operations.md](docs/tapeout-operations.md). The canonical-site
-mirror panel is implemented but not yet redeployed.
+[docs/tapeout-operations.md](docs/tapeout-operations.md). The canonical cohort
+page now publicly links to the mirror, verification guide and manifest hash.
 
 **2026-11-16 · Two-stage audit lands; review queue gains decisions.** `civicord
 audit --status <class>` re-checks filtered rows (residential vantage for

@@ -1,6 +1,6 @@
 # Plan
 
-Delivery phases, current priorities, and risks. Last updated 2026-11-25.
+Delivery phases, current priorities, and risks. Last updated 2026-11-26 UTC.
 
 > **2026-11-25 update — current priorities.** The Sept sprint plan below is
 > historical. The live opportunity stack, ranked (full reasoning in
@@ -31,8 +31,9 @@ Delivery phases, current priorities, and risks. Last updated 2026-11-25.
 > [tapeout-accelerate.md](tapeout-accelerate.md) remains valid, the work remains
 > a reusable evidence-export mirror, and it does not displace outreach,
 > take-the-pen, vantage close-out or NLnet. Publication is complete at
-> `tape://20.2.272.tape`; remaining work is deployment of the verification
-> panel, one external comprehension test, video and submission. Evidence pack:
+> `tape://20.2.272.tape`; the canonical verification panel is live in Cloudflare
+> Pages deployment `979b8859`. Remaining work is one external comprehension
+> test, video and submission. Evidence pack:
 > [tapeout-submission.md](tapeout-submission.md); external verification guide:
 > [deweb-mirror.md](deweb-mirror.md); internal operator runbook:
 > [tapeout-operations.md](tapeout-operations.md). Internal submission deadline:
