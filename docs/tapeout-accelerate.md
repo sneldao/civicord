@@ -506,9 +506,11 @@ Cloudflare Pages deployment `b20692a7` is live on the canonical site. The
 Holborn cohort page now presents the mirror through a compressed verification
 sequence and publicly links to the verification guide and manifest hash; the
 homepage, constituency dossiers and candidate records have the evidence-led UX
-redesign. The v4 demo master is rendered locally, but still needs owner review
-and public upload. The remaining gates are video approval/publication, one
-external comprehension test and submission. Do not add scope. The concise evidence pack is [tapeout-submission.md](tapeout-submission.md).
+redesign. The v5 demo master is published publicly at <https://youtu.be/BzZibyp2RbQ>.
+The Google Form has been pre-filled but intentionally left unsubmitted for owner
+review. The owner elected to proceed without the external comprehension test;
+that validation gate is therefore open but no longer blocking. The remaining
+gate is final owner submission. Do not add scope. The concise evidence pack is [tapeout-submission.md](tapeout-submission.md).
 
 ### Day 1 — technical and cohort go/no-go
 
@@ -603,9 +605,11 @@ Enter Civicord only if all are true by **Dec 2**. Status on 2026-11-26 UTC:
 3. **Passed** — a clean browser opened it, and the direct-chain verifier
    checked all seven frozen files, not merely one hash.
 4. **Passed** — the local manifest verifier rejects malformed bundles.
-5. **In progress** — the paste-ready answers exist and the v4 video master is
-   rendered locally, but owner approval, public upload and final submission
-   remain open.
+5. **In progress** — the paste-ready answers exist, the v5 video is public at
+   <https://youtu.be/BzZibyp2RbQ>, and the form is pre-filled; owner review and
+   final submission remain open. The owner elected to proceed without the
+   external comprehension test, so that validation gate is incomplete but not
+   blocking.
 6. **Passed so far** — the exporter, publication planner and verifier are
    reusable evidence-export infrastructure; do not expand them into a
    competition-only product shell.

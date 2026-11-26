@@ -1,13 +1,13 @@
 # TapeOut Accelerate — submission evidence pack
 
-> Working copy updated **2026-11-26 UTC** after the evidence-led canonical-site deployment.
+> Working copy updated **2026-11-26 UTC** after public demo-video publication.
 > Strategy, caveats and
 > full research context: [tapeout-accelerate.md](tapeout-accelerate.md). Public
 > verifier documentation: [deweb-mirror.md](deweb-mirror.md). Internal operator
 > runbook: [tapeout-operations.md](tapeout-operations.md). This file is the
 > concise evidence pack for the demo recording and submission form.
-> Do not submit until the demo-video link is inserted and the owner approves the
-> final form.
+> Do not submit until the owner reviews the pre-filled form and approves final
+> submission.
 
 ## Access links
 
@@ -21,7 +21,7 @@
 | Canonical Civicord cohort | <https://civicord.pages.dev/constituencies/holborn-and-st-pancras> |
 | Repository | <https://github.com/sneldao/civicord> |
 | Public verification guide | <https://github.com/sneldao/civicord/blob/main/docs/deweb-mirror.md> |
-| Demo video | `[insert public video URL]` — local v4 master rendered; owner review + public upload pending |
+| Demo video | <https://youtu.be/BzZibyp2RbQ> — public YouTube upload of the reviewed v5 master |
 | Official submission form | <https://forms.gle/EoDNbxQ65dev1wFd9> |
 
 The gateway is a reading convenience. The stronger evidence is the frozen
@@ -180,7 +180,7 @@ validation, canonical-site verification UX and documentation.
 
 ### Demo
 
-`[insert public video URL]` shows a vanished/redirected campaign URL, the
+`https://youtu.be/BzZibyp2RbQ` shows a vanished/redirected campaign URL, the
 canonical Civicord record, the DeWEB mirror, direct-chain/hash verification and
 a malformed bundle failing closed. Repository:
 <https://github.com/sneldao/civicord>; mirror: `tape://20.2.272.tape` /
@@ -207,9 +207,9 @@ validation circuit is claimed.
 
 ## Remaining before submission
 
-- Owner review/approval of the rendered v4 demo video.
-- Publish/upload the approved video and insert its public URL above.
-- Run one unguided external comprehension test with a journalist, researcher or
-  transparency-minded tester; record confusion and fix only comprehension.
+- Owner review of the pre-filled Google Form draft. The form is filled but intentionally unsubmitted; verify the Telegram/X handles and personal details before submitting.
+- External comprehension test: **not run**. On 2026-11-26 the owner elected to
+  proceed without it; treat this as an accepted evidence-quality risk, not as a
+  completed validation gate.
 - Re-read the official form/rule text immediately before submission. The Google Form currently requires Google sign-in, so final submission is an owner action.
 - Submit by the internal deadline **2026-12-04**, not the final Dec 7 deadline.

@@ -158,9 +158,9 @@ Post-deploy verification passed after propagation:
 
 ## Remaining submission gates
 
-- Owner review/approval of the rendered v4 demo video.
-- Publish/upload the approved video and insert its public URL in
-  [tapeout-submission.md](tapeout-submission.md).
-- Run one unguided external comprehension test.
+- Owner review of the pre-filled Google Form draft. The public v5 demo URL is
+  recorded in [tapeout-submission.md](tapeout-submission.md).
+- The unguided external comprehension test was **not run**; the owner elected
+  on 2026-11-26 to proceed without it. Do not represent it as completed.
 - Submit the Google Form by the internal deadline, 2026-12-04; final
   submission requires the owner's Google sign-in.
